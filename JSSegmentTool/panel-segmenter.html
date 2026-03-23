@@ -1,0 +1,1446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel Segmenter</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #101218;
+      --panel: #171b24;
+      --panel-2: #1e2430;
+      --panel-3: #262e3d;
+      --line: #313a4b;
+      --text: #ecf2ff;
+      --muted: #93a0b9;
+      --accent: #6cb8ff;
+      --accent-2: #8cffc1;
+      --danger: #ff7b90;
+      --warning: #ffd36c;
+      --overlay: rgba(108, 184, 255, 0.16);
+      --overlay-selected: rgba(140, 255, 193, 0.18);
+      --sidebar-width: 336px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button,
+    input,
+    label,
+    select {
+      font: inherit;
+    }
+
+    button,
+    input[type="range"],
+    input[type="text"] {
+      width: 100%;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: background 120ms ease, border-color 120ms ease, opacity 120ms ease;
+    }
+
+    button:hover:not(:disabled) {
+      background: var(--panel-3);
+      border-color: #44536d;
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    button.active {
+      border-color: var(--accent);
+      box-shadow: inset 0 0 0 1px rgba(108, 184, 255, 0.45);
+      background: rgba(108, 184, 255, 0.14);
+    }
+
+    input[type="file"] {
+      width: 100%;
+    }
+
+    input[type="text"] {
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 12px;
+    }
+
+    .app {
+      height: 100%;
+    }
+
+    #viewport {
+      position: fixed;
+      inset: 0 var(--sidebar-width) 0 0;
+      overflow: hidden;
+      background:
+        linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.03) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.03) 75%);
+      background-size: 28px 28px;
+      background-position: 0 0, 0 14px, 14px -14px, -14px 0;
+      user-select: none;
+      touch-action: none;
+    }
+
+    #viewport.is-pan {
+      cursor: grab;
+    }
+
+    #viewport.is-panning {
+      cursor: grabbing;
+    }
+
+    #canvas-wrapper {
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform-origin: top left;
+      will-change: transform;
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+    }
+
+    #source-image,
+    #overlay {
+      position: absolute;
+      left: 0;
+      top: 0;
+      display: block;
+    }
+
+    #source-image {
+      pointer-events: none;
+    }
+
+    #overlay {
+      overflow: visible;
+    }
+
+    #overlay.select-mode .panel-rect {
+      cursor: move;
+    }
+
+    #overlay.draw-mode {
+      cursor: crosshair;
+    }
+
+    #overlay.pan-mode .panel-hit,
+    #overlay.pan-mode .panel-handle {
+      pointer-events: none;
+    }
+
+    .panel-rect {
+      fill: var(--overlay);
+      stroke: var(--accent);
+      stroke-width: 2;
+      vector-effect: non-scaling-stroke;
+      pointer-events: none;
+    }
+
+    .panel-rect.selected {
+      fill: var(--overlay-selected);
+      stroke: var(--accent-2);
+    }
+
+    .panel-hit {
+      fill: transparent;
+      stroke: transparent;
+      stroke-width: 12;
+      vector-effect: non-scaling-stroke;
+      cursor: move;
+    }
+
+    .panel-label {
+      fill: var(--text);
+      font-size: 20px;
+      font-weight: 700;
+      paint-order: stroke;
+      stroke: rgba(0, 0, 0, 0.7);
+      stroke-width: 4px;
+      vector-effect: non-scaling-stroke;
+      pointer-events: none;
+    }
+
+    .panel-handle {
+      fill: var(--accent-2);
+      stroke: #08110b;
+      stroke-width: 2;
+      vector-effect: non-scaling-stroke;
+      cursor: pointer;
+    }
+
+    .panel-guide {
+      fill: rgba(255, 211, 108, 0.12);
+      stroke: var(--warning);
+      stroke-width: 2;
+      stroke-dasharray: 12 8;
+      vector-effect: non-scaling-stroke;
+      pointer-events: none;
+    }
+
+    #sidebar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: var(--sidebar-width);
+      background: rgba(23, 27, 36, 0.97);
+      border-left: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+      overflow: auto;
+      padding: 18px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .section {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .section h2,
+    .section h3,
+    .section p {
+      margin: 0;
+    }
+
+    .section h2,
+    .section h3 {
+      font-size: 14px;
+      margin-bottom: 8px;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .toolbar-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .meta {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .status {
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--text);
+      min-height: 2.9em;
+    }
+
+    .status span {
+      color: var(--muted);
+    }
+
+    .slider-wrap {
+      display: grid;
+      gap: 6px;
+    }
+
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      color: var(--text);
+      font-size: 12px;
+    }
+
+    #panel-list {
+      display: grid;
+      gap: 8px;
+      max-height: 42vh;
+      overflow: auto;
+      padding-right: 2px;
+    }
+
+    .panel-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--panel-2);
+      cursor: pointer;
+    }
+
+    .panel-item:hover {
+      background: var(--panel-3);
+    }
+
+    .panel-item.selected {
+      border-color: var(--accent-2);
+      box-shadow: inset 0 0 0 1px rgba(140, 255, 193, 0.35);
+    }
+
+    .panel-item-title {
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .panel-item-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .delete-btn {
+      width: auto;
+      min-width: 36px;
+      padding: 6px 10px;
+      color: var(--danger);
+    }
+
+    .empty {
+      font-size: 13px;
+      color: var(--muted);
+      padding: 12px;
+      border: 1px dashed var(--line);
+      border-radius: 10px;
+    }
+
+    .kbd {
+      display: inline-block;
+      padding: 1px 6px;
+      border: 1px solid var(--line);
+      border-bottom-width: 2px;
+      border-radius: 6px;
+      background: var(--panel-2);
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    a.inline-link {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .drop-hint {
+      position: absolute;
+      left: 22px;
+      bottom: 22px;
+      z-index: 5;
+      padding: 10px 12px;
+      font-size: 13px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(16, 18, 24, 0.78);
+      color: var(--muted);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div id="viewport" class="is-pan">
+      <div id="canvas-wrapper">
+        <img id="source-image" alt="" />
+        <svg id="overlay" xmlns="http://www.w3.org/2000/svg"></svg>
+      </div>
+      <div class="drop-hint">Drop a page image here. Wheel = zoom. Pan mode = drag background.</div>
+    </div>
+
+    <aside id="sidebar">
+      <div class="stack">
+        <section class="section stack">
+          <div>
+            <h2>Panel Segmenter</h2>
+            <p class="meta">Loads a comic page, proposes panel rectangles with OpenCV, lets you correct them manually, and exports Blender-ready UV JSON.</p>
+          </div>
+          <div class="status" id="status">Loading OpenCV.js...<br /><span>You can already load an image while the detector initializes.</span></div>
+        </section>
+
+        <section class="section stack">
+          <div>
+            <h3>Image</h3>
+          </div>
+          <input id="file-input" type="file" accept="image/*" />
+          <input id="source-path" type="text" placeholder="Source image path for export JSON" />
+          <div class="row">
+            <button id="fit-button" type="button">Fit View</button>
+            <button id="clear-button" type="button">Clear Rects</button>
+          </div>
+          <div class="meta" id="image-meta">No image loaded yet.</div>
+        </section>
+
+        <section class="section stack">
+          <div>
+            <h3>Modes</h3>
+          </div>
+          <div class="toolbar-grid">
+            <button id="mode-select" class="active" type="button">Select</button>
+            <button id="mode-pan" type="button">Pan</button>
+            <button id="mode-draw" type="button">Draw</button>
+          </div>
+          <div class="meta">Drag a rectangle to move it. Drag handles to resize. Press <span class="kbd">Esc</span> to leave draw mode and <span class="kbd">Backspace</span> to delete the selected rect.</div>
+        </section>
+
+        <section class="section stack">
+          <div>
+            <h3>Auto Detect</h3>
+          </div>
+          <div class="slider-wrap">
+            <label class="slider-label" for="threshold-slider">
+              <span>Threshold</span>
+              <span class="pill" id="threshold-value">40</span>
+            </label>
+            <input id="threshold-slider" type="range" min="1" max="160" step="1" value="40" />
+          </div>
+          <div class="slider-wrap">
+            <label class="slider-label" for="kernel-slider">
+              <span>Close Kernel</span>
+              <span class="pill" id="kernel-value">5</span>
+            </label>
+            <input id="kernel-slider" type="range" min="1" max="15" step="2" value="5" />
+          </div>
+          <button id="detect-button" type="button" disabled>Auto Detect</button>
+          <div class="meta">The detector targets the inside edge of the black frame stroke. If a page is darker than usual, increase the threshold slightly.</div>
+        </section>
+
+        <section class="section stack">
+          <div class="row" style="align-items:center;">
+            <h3 style="margin:0;">Panels</h3>
+            <div class="meta" style="text-align:right;"><span id="panel-count">0</span> total</div>
+          </div>
+          <div id="panel-list"></div>
+        </section>
+
+        <section class="section stack">
+          <div>
+            <h3>Export</h3>
+          </div>
+          <button id="export-button" type="button" disabled>Export JSON</button>
+          <div class="meta">Exports normalized Blender UVs with original pixel coordinates preserved in the `px` field.</div>
+        </section>
+      </div>
+    </aside>
+
+    <canvas id="cv-canvas" style="display:none;"></canvas>
+  </div>
+
+  <script>
+    const SVG_NS = "http://www.w3.org/2000/svg";
+    const HANDLE_RADIUS_SCREEN = 6;
+    const MIN_RECT_SIZE = 4;
+
+    const state = {
+      rects: [],
+      selectedId: null,
+      nextId: 1,
+      mode: "select",
+      previousModeBeforePan: null,
+      temporaryPanMode: false,
+      image: null,
+      cvReady: false,
+      transform: { x: 0, y: 0, scale: 1 },
+      interaction: null,
+    };
+
+    const viewportEl = document.getElementById("viewport");
+    const wrapperEl = document.getElementById("canvas-wrapper");
+    const imageEl = document.getElementById("source-image");
+    const overlayEl = document.getElementById("overlay");
+    const cvCanvasEl = document.getElementById("cv-canvas");
+    const fileInputEl = document.getElementById("file-input");
+    const sourcePathEl = document.getElementById("source-path");
+    const imageMetaEl = document.getElementById("image-meta");
+    const statusEl = document.getElementById("status");
+    const detectButtonEl = document.getElementById("detect-button");
+    const exportButtonEl = document.getElementById("export-button");
+    const fitButtonEl = document.getElementById("fit-button");
+    const clearButtonEl = document.getElementById("clear-button");
+    const panelListEl = document.getElementById("panel-list");
+    const panelCountEl = document.getElementById("panel-count");
+    const thresholdSliderEl = document.getElementById("threshold-slider");
+    const thresholdValueEl = document.getElementById("threshold-value");
+    const kernelSliderEl = document.getElementById("kernel-slider");
+    const kernelValueEl = document.getElementById("kernel-value");
+
+    const modeButtons = {
+      select: document.getElementById("mode-select"),
+      pan: document.getElementById("mode-pan"),
+      draw: document.getElementById("mode-draw"),
+    };
+
+    function setStatus(message, detail = "") {
+      statusEl.innerHTML = detail
+        ? `${escapeHtml(message)}<br /><span>${escapeHtml(detail)}</span>`
+        : escapeHtml(message);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function isEditableTarget(target) {
+      return Boolean(target && target.closest && target.closest("input, textarea, select, button"));
+    }
+
+    function roundNumber(value, digits = 6) {
+      return Number(value.toFixed(digits));
+    }
+
+    function createRect(x, y, w, h) {
+      return {
+        id: state.nextId++,
+        x,
+        y,
+        w,
+        h,
+      };
+    }
+
+    function getSelectedRect() {
+      return state.rects.find((rect) => rect.id === state.selectedId) || null;
+    }
+
+    function sortRects(rects) {
+      if (!state.image) {
+        return [...rects];
+      }
+      const rowTolerance = Math.max(12, state.image.height * 0.02);
+      return [...rects].sort((a, b) => {
+        if (Math.abs(a.y - b.y) <= rowTolerance) {
+          return a.x - b.x || a.y - b.y;
+        }
+        return a.y - b.y || a.x - b.x;
+      });
+    }
+
+    function updateModeButtons() {
+      Object.entries(modeButtons).forEach(([mode, button]) => {
+        button.classList.toggle("active", state.mode === mode);
+      });
+      viewportEl.classList.toggle("is-pan", state.mode === "pan");
+      overlayEl.classList.toggle("select-mode", state.mode === "select");
+      overlayEl.classList.toggle("draw-mode", state.mode === "draw");
+      overlayEl.classList.toggle("pan-mode", state.mode === "pan");
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      state.interaction = null;
+      viewportEl.classList.remove("is-panning");
+      updateModeButtons();
+      render();
+    }
+
+    function hasImageLoaded() {
+      return Boolean(state.image && imageEl.src);
+    }
+
+    function updateControls() {
+      const imageLoaded = hasImageLoaded();
+      detectButtonEl.disabled = !(imageLoaded && state.cvReady);
+      exportButtonEl.disabled = !(imageLoaded && state.rects.length > 0);
+      clearButtonEl.disabled = state.rects.length === 0;
+      fitButtonEl.disabled = !imageLoaded;
+      panelCountEl.textContent = String(state.rects.length);
+      thresholdValueEl.textContent = thresholdSliderEl.value;
+      kernelValueEl.textContent = kernelSliderEl.value;
+    }
+
+    function applyTransform() {
+      const { x, y, scale } = state.transform;
+      wrapperEl.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
+    }
+
+    function fitToViewport() {
+      if (!hasImageLoaded()) {
+        return;
+      }
+      const padding = 32;
+      const viewportWidth = viewportEl.clientWidth;
+      const viewportHeight = viewportEl.clientHeight;
+      const scale = Math.min(
+        (viewportWidth - padding * 2) / state.image.width,
+        (viewportHeight - padding * 2) / state.image.height,
+        1
+      );
+      state.transform.scale = Math.max(0.05, scale);
+      state.transform.x = (viewportWidth - state.image.width * state.transform.scale) / 2;
+      state.transform.y = (viewportHeight - state.image.height * state.transform.scale) / 2;
+      applyTransform();
+      render();
+    }
+
+    function screenToImage(clientX, clientY) {
+      if (!hasImageLoaded()) {
+        return { x: 0, y: 0 };
+      }
+      const viewportRect = viewportEl.getBoundingClientRect();
+      return {
+        x: clamp((clientX - viewportRect.left - state.transform.x) / state.transform.scale, 0, state.image.width),
+        y: clamp((clientY - viewportRect.top - state.transform.y) / state.transform.scale, 0, state.image.height),
+      };
+    }
+
+    function zoomAt(clientX, clientY, zoomFactor) {
+      if (!hasImageLoaded()) {
+        return;
+      }
+      const previous = screenToImage(clientX, clientY);
+      const nextScale = clamp(state.transform.scale * zoomFactor, 0.05, 20);
+      const viewportRect = viewportEl.getBoundingClientRect();
+      state.transform.scale = nextScale;
+      state.transform.x = clientX - viewportRect.left - previous.x * nextScale;
+      state.transform.y = clientY - viewportRect.top - previous.y * nextScale;
+      applyTransform();
+      render();
+    }
+
+    function setImage(dataUrl, fileName) {
+      imageEl.onload = () => {
+        const width = imageEl.naturalWidth;
+        const height = imageEl.naturalHeight;
+        state.image = {
+          name: fileName || "page-image",
+          width,
+          height,
+        };
+        wrapperEl.style.width = `${width}px`;
+        wrapperEl.style.height = `${height}px`;
+        imageEl.width = width;
+        imageEl.height = height;
+        overlayEl.setAttribute("viewBox", `0 0 ${width} ${height}`);
+        overlayEl.setAttribute("width", width);
+        overlayEl.setAttribute("height", height);
+        state.rects = [];
+        state.selectedId = null;
+        state.nextId = 1;
+        if (!sourcePathEl.value || sourcePathEl.dataset.autofilled !== "false") {
+          sourcePathEl.value = fileName || "page-image";
+          sourcePathEl.dataset.autofilled = "true";
+        }
+        imageMetaEl.textContent = `${width} x ${height}px`;
+        fitToViewport();
+        updateControls();
+        setStatus(
+          "Image loaded.",
+          state.cvReady ? "Run Auto Detect or start drawing panels manually." : "OpenCV is still loading, but manual editing already works."
+        );
+      };
+      imageEl.src = dataUrl;
+    }
+
+    function loadFile(file) {
+      if (!file) {
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = () => setImage(reader.result, file.name);
+      reader.readAsDataURL(file);
+    }
+
+    function normalizeRectFromPoints(a, b) {
+      return {
+        x: Math.min(a.x, b.x),
+        y: Math.min(a.y, b.y),
+        w: Math.abs(b.x - a.x),
+        h: Math.abs(b.y - a.y),
+      };
+    }
+
+    function sanitizeRect(rect) {
+      if (!state.image) {
+        return rect;
+      }
+      let x = clamp(rect.x, 0, state.image.width);
+      let y = clamp(rect.y, 0, state.image.height);
+      let w = Math.max(MIN_RECT_SIZE, rect.w);
+      let h = Math.max(MIN_RECT_SIZE, rect.h);
+      if (x + w > state.image.width) {
+        x = Math.max(0, state.image.width - w);
+      }
+      if (y + h > state.image.height) {
+        y = Math.max(0, state.image.height - h);
+      }
+      w = Math.min(w, state.image.width - x);
+      h = Math.min(h, state.image.height - y);
+      return { ...rect, x, y, w, h };
+    }
+
+    function replaceRect(updatedRect) {
+      state.rects = state.rects.map((rect) => (rect.id === updatedRect.id ? sanitizeRect(updatedRect) : rect));
+    }
+
+    function deleteRectById(rectId) {
+      state.rects = state.rects.filter((rect) => rect.id !== rectId);
+      if (state.selectedId === rectId) {
+        state.selectedId = null;
+      }
+      updateControls();
+      render();
+    }
+
+    function beginDraw(clientX, clientY) {
+      const point = screenToImage(clientX, clientY);
+      state.interaction = {
+        type: "draw",
+        start: point,
+        current: point,
+      };
+      render();
+    }
+
+    function beginPan(clientX, clientY) {
+      state.interaction = {
+        type: "pan",
+        startClientX: clientX,
+        startClientY: clientY,
+        startX: state.transform.x,
+        startY: state.transform.y,
+      };
+      viewportEl.classList.add("is-panning");
+    }
+
+    function beginMoveRect(rectId, clientX, clientY) {
+      const rect = state.rects.find((item) => item.id === rectId);
+      if (!rect) {
+        return;
+      }
+      state.selectedId = rectId;
+      const point = screenToImage(clientX, clientY);
+      state.interaction = {
+        type: "move",
+        rectId,
+        startPointer: point,
+        startRect: { ...rect },
+      };
+      render();
+    }
+
+    function beginResizeRect(rectId, handle, clientX, clientY) {
+      const rect = state.rects.find((item) => item.id === rectId);
+      if (!rect) {
+        return;
+      }
+      state.selectedId = rectId;
+      state.interaction = {
+        type: "resize",
+        rectId,
+        handle,
+        startRect: { ...rect },
+        startPointer: screenToImage(clientX, clientY),
+      };
+      render();
+    }
+
+    function updateInteraction(clientX, clientY) {
+      if (!state.interaction || !hasImageLoaded()) {
+        return;
+      }
+
+      if (state.interaction.type === "pan") {
+        const deltaX = clientX - state.interaction.startClientX;
+        const deltaY = clientY - state.interaction.startClientY;
+        state.transform.x = state.interaction.startX + deltaX;
+        state.transform.y = state.interaction.startY + deltaY;
+        applyTransform();
+        render();
+        return;
+      }
+
+      const point = screenToImage(clientX, clientY);
+
+      if (state.interaction.type === "draw") {
+        state.interaction.current = point;
+        render();
+        return;
+      }
+
+      if (state.interaction.type === "move") {
+        const { startPointer, startRect, rectId } = state.interaction;
+        const updatedRect = {
+          ...startRect,
+          id: rectId,
+          x: startRect.x + (point.x - startPointer.x),
+          y: startRect.y + (point.y - startPointer.y),
+        };
+        replaceRect(updatedRect);
+        render();
+        return;
+      }
+
+      if (state.interaction.type === "resize") {
+        const { startRect, rectId, handle } = state.interaction;
+        let left = startRect.x;
+        let right = startRect.x + startRect.w;
+        let top = startRect.y;
+        let bottom = startRect.y + startRect.h;
+
+        if (handle.includes("w")) {
+          left = point.x;
+        }
+        if (handle.includes("e")) {
+          right = point.x;
+        }
+        if (handle.includes("n")) {
+          top = point.y;
+        }
+        if (handle.includes("s")) {
+          bottom = point.y;
+        }
+
+        if (right - left < MIN_RECT_SIZE) {
+          if (handle.includes("w")) {
+            left = right - MIN_RECT_SIZE;
+          } else {
+            right = left + MIN_RECT_SIZE;
+          }
+        }
+
+        if (bottom - top < MIN_RECT_SIZE) {
+          if (handle.includes("n")) {
+            top = bottom - MIN_RECT_SIZE;
+          } else {
+            bottom = top + MIN_RECT_SIZE;
+          }
+        }
+
+        left = clamp(left, 0, state.image.width - MIN_RECT_SIZE);
+        right = clamp(right, MIN_RECT_SIZE, state.image.width);
+        top = clamp(top, 0, state.image.height - MIN_RECT_SIZE);
+        bottom = clamp(bottom, MIN_RECT_SIZE, state.image.height);
+
+        if (right - left < MIN_RECT_SIZE) {
+          if (handle.includes("w")) {
+            left = right - MIN_RECT_SIZE;
+          } else {
+            right = left + MIN_RECT_SIZE;
+          }
+        }
+
+        if (bottom - top < MIN_RECT_SIZE) {
+          if (handle.includes("n")) {
+            top = bottom - MIN_RECT_SIZE;
+          } else {
+            bottom = top + MIN_RECT_SIZE;
+          }
+        }
+
+        replaceRect({
+          id: rectId,
+          x: left,
+          y: top,
+          w: right - left,
+          h: bottom - top,
+        });
+        render();
+      }
+    }
+
+    function endInteraction() {
+      if (!state.interaction) {
+        return;
+      }
+
+      if (state.interaction.type === "draw") {
+        const rect = normalizeRectFromPoints(state.interaction.start, state.interaction.current);
+        if (rect.w >= MIN_RECT_SIZE && rect.h >= MIN_RECT_SIZE) {
+          const newRect = createRect(rect.x, rect.y, rect.w, rect.h);
+          state.rects.push(newRect);
+          state.selectedId = newRect.id;
+          setStatus("Panel added.", "Switch back to Select mode if you want to edit existing rectangles.");
+        }
+        if (state.mode === "draw") {
+          setMode("select");
+        }
+      }
+
+      state.interaction = null;
+      viewportEl.classList.remove("is-panning");
+      updateControls();
+      render();
+    }
+
+    function getDisplayOrder() {
+      const order = new Map();
+      sortRects(state.rects).forEach((rect, index) => {
+        order.set(rect.id, index + 1);
+      });
+      return order;
+    }
+
+    function render() {
+      overlayEl.innerHTML = "";
+
+      if (!hasImageLoaded()) {
+        renderPanelList();
+        updateControls();
+        return;
+      }
+
+      const orderMap = getDisplayOrder();
+
+      for (const rect of sortRects(state.rects)) {
+        const group = document.createElementNS(SVG_NS, "g");
+
+        const rectEl = document.createElementNS(SVG_NS, "rect");
+        rectEl.setAttribute("class", `panel-rect${rect.id === state.selectedId ? " selected" : ""}`);
+        rectEl.setAttribute("x", rect.x);
+        rectEl.setAttribute("y", rect.y);
+        rectEl.setAttribute("width", rect.w);
+        rectEl.setAttribute("height", rect.h);
+        group.appendChild(rectEl);
+
+        const labelEl = document.createElementNS(SVG_NS, "text");
+        labelEl.setAttribute("class", "panel-label");
+        labelEl.setAttribute("x", rect.x + 8);
+        labelEl.setAttribute("y", rect.y + 24);
+        labelEl.textContent = String(orderMap.get(rect.id));
+        group.appendChild(labelEl);
+
+        if (state.mode !== "pan") {
+          const hitEl = document.createElementNS(SVG_NS, "rect");
+          hitEl.setAttribute("class", "panel-hit");
+          hitEl.setAttribute("x", rect.x);
+          hitEl.setAttribute("y", rect.y);
+          hitEl.setAttribute("width", rect.w);
+          hitEl.setAttribute("height", rect.h);
+          hitEl.addEventListener("pointerdown", (event) => {
+            if (state.mode !== "select") {
+              return;
+            }
+            event.stopPropagation();
+            beginMoveRect(rect.id, event.clientX, event.clientY);
+          });
+          hitEl.addEventListener("click", (event) => {
+            event.stopPropagation();
+            state.selectedId = rect.id;
+            render();
+          });
+          group.appendChild(hitEl);
+        }
+
+        if (rect.id === state.selectedId && state.mode === "select") {
+          const radius = HANDLE_RADIUS_SCREEN / state.transform.scale;
+          const handles = [
+            { key: "nw", x: rect.x, y: rect.y },
+            { key: "n", x: rect.x + rect.w / 2, y: rect.y },
+            { key: "ne", x: rect.x + rect.w, y: rect.y },
+            { key: "e", x: rect.x + rect.w, y: rect.y + rect.h / 2 },
+            { key: "se", x: rect.x + rect.w, y: rect.y + rect.h },
+            { key: "s", x: rect.x + rect.w / 2, y: rect.y + rect.h },
+            { key: "sw", x: rect.x, y: rect.y + rect.h },
+            { key: "w", x: rect.x, y: rect.y + rect.h / 2 },
+          ];
+
+          handles.forEach((handle) => {
+            const handleEl = document.createElementNS(SVG_NS, "circle");
+            handleEl.setAttribute("class", "panel-handle");
+            handleEl.setAttribute("cx", handle.x);
+            handleEl.setAttribute("cy", handle.y);
+            handleEl.setAttribute("r", radius);
+            handleEl.addEventListener("pointerdown", (event) => {
+              event.stopPropagation();
+              beginResizeRect(rect.id, handle.key, event.clientX, event.clientY);
+            });
+            group.appendChild(handleEl);
+          });
+        }
+
+        overlayEl.appendChild(group);
+      }
+
+      if (state.interaction && state.interaction.type === "draw") {
+        const preview = normalizeRectFromPoints(state.interaction.start, state.interaction.current);
+        const previewEl = document.createElementNS(SVG_NS, "rect");
+        previewEl.setAttribute("class", "panel-guide");
+        previewEl.setAttribute("x", preview.x);
+        previewEl.setAttribute("y", preview.y);
+        previewEl.setAttribute("width", preview.w);
+        previewEl.setAttribute("height", preview.h);
+        overlayEl.appendChild(previewEl);
+      }
+
+      renderPanelList();
+      updateControls();
+    }
+
+    function renderPanelList() {
+      panelListEl.innerHTML = "";
+      const orderedRects = sortRects(state.rects);
+
+      if (orderedRects.length === 0) {
+        const emptyEl = document.createElement("div");
+        emptyEl.className = "empty";
+        emptyEl.textContent = "No panels yet. Use Auto Detect or Draw mode.";
+        panelListEl.appendChild(emptyEl);
+        return;
+      }
+
+      orderedRects.forEach((rect, index) => {
+        const itemEl = document.createElement("div");
+        itemEl.className = `panel-item${rect.id === state.selectedId ? " selected" : ""}`;
+        itemEl.addEventListener("click", () => {
+          state.selectedId = rect.id;
+          setMode("select");
+        });
+
+        const bodyEl = document.createElement("div");
+        const titleEl = document.createElement("div");
+        titleEl.className = "panel-item-title";
+        titleEl.textContent = `Panel ${index + 1}`;
+        const subtitleEl = document.createElement("div");
+        subtitleEl.className = "panel-item-subtitle";
+        subtitleEl.textContent = `${Math.round(rect.x)}, ${Math.round(rect.y)} - ${Math.round(rect.w)} x ${Math.round(rect.h)}`;
+        bodyEl.appendChild(titleEl);
+        bodyEl.appendChild(subtitleEl);
+
+        const deleteButtonEl = document.createElement("button");
+        deleteButtonEl.type = "button";
+        deleteButtonEl.className = "delete-btn";
+        deleteButtonEl.textContent = "x";
+        deleteButtonEl.addEventListener("click", (event) => {
+          event.stopPropagation();
+          deleteRectById(rect.id);
+        });
+
+        itemEl.appendChild(bodyEl);
+        itemEl.appendChild(deleteButtonEl);
+        panelListEl.appendChild(itemEl);
+      });
+    }
+
+    function makeDownload(filename, text) {
+      const blob = new Blob([text], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    }
+
+    function exportJson() {
+      if (!hasImageLoaded() || state.rects.length === 0) {
+        return;
+      }
+
+      const panels = sortRects(state.rects).map((rect, index) => {
+        const u0 = rect.x / state.image.width;
+        const u1 = (rect.x + rect.w) / state.image.width;
+        const v0 = 1 - (rect.y + rect.h) / state.image.height;
+        const v1 = 1 - rect.y / state.image.height;
+
+        return {
+          id: index + 1,
+          u0: roundNumber(u0),
+          v0: roundNumber(v0),
+          u1: roundNumber(u1),
+          v1: roundNumber(v1),
+          px: {
+            x: Math.round(rect.x),
+            y: Math.round(rect.y),
+            w: Math.round(rect.w),
+            h: Math.round(rect.h),
+          },
+        };
+      });
+
+      const payload = {
+        source_image: sourcePathEl.value.trim() || state.image.name,
+        image_width: state.image.width,
+        image_height: state.image.height,
+        panels,
+      };
+
+      const baseName = (state.image.name || "panels").replace(/\.[^.]+$/, "");
+      makeDownload(`${baseName}.panels.json`, JSON.stringify(payload, null, 2));
+      setStatus("Exported JSON.", "The file contains normalized UVs plus original pixel coordinates for debugging.");
+    }
+
+    function detectPanels() {
+      if (!hasImageLoaded()) {
+        setStatus("Load an image first.");
+        return;
+      }
+      if (!state.cvReady || !window.cv) {
+        setStatus("OpenCV is not ready yet.", "Wait for the runtime to finish loading, then run detection again.");
+        return;
+      }
+
+      setStatus("Detecting panels...", "Running grayscale, blur, threshold, morphology, and contour filtering.");
+
+      const ctx = cvCanvasEl.getContext("2d");
+      cvCanvasEl.width = state.image.width;
+      cvCanvasEl.height = state.image.height;
+      ctx.clearRect(0, 0, cvCanvasEl.width, cvCanvasEl.height);
+      ctx.drawImage(imageEl, 0, 0, cvCanvasEl.width, cvCanvasEl.height);
+
+      const thresholdValue = Number(thresholdSliderEl.value);
+      const kernelSize = Number(kernelSliderEl.value);
+
+      let src;
+      let gray;
+      let blurred;
+      let binary;
+      let closed;
+      let contours;
+      let hierarchy;
+      let kernel;
+
+      try {
+        src = cv.imread(cvCanvasEl);
+        gray = new cv.Mat();
+        blurred = new cv.Mat();
+        binary = new cv.Mat();
+        closed = new cv.Mat();
+        contours = new cv.MatVector();
+        hierarchy = new cv.Mat();
+        kernel = cv.Mat.ones(kernelSize, kernelSize, cv.CV_8U);
+
+        cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY);
+        cv.GaussianBlur(gray, blurred, new cv.Size(5, 5), 0);
+        cv.threshold(blurred, binary, thresholdValue, 255, cv.THRESH_BINARY_INV);
+        cv.morphologyEx(binary, closed, cv.MORPH_CLOSE, kernel);
+        cv.findContours(closed, contours, hierarchy, cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE);
+
+        const totalArea = state.image.width * state.image.height;
+        const minArea = totalArea * 0.006;
+        const maxArea = totalArea * 0.9;
+        const candidates = [];
+        const depthCache = new Map();
+
+        function getDepth(index) {
+          if (depthCache.has(index)) {
+            return depthCache.get(index);
+          }
+          let depth = 0;
+          let cursor = index;
+          while (cursor !== -1) {
+            const node = hierarchy.intPtr(0, cursor);
+            const parent = node[3];
+            if (parent === -1) {
+              break;
+            }
+            depth += 1;
+            cursor = parent;
+          }
+          depthCache.set(index, depth);
+          return depth;
+        }
+
+        for (let index = 0; index < contours.size(); index += 1) {
+          const contour = contours.get(index);
+          const perimeter = cv.arcLength(contour, true);
+          const approx = new cv.Mat();
+
+          try {
+            cv.approxPolyDP(contour, approx, 0.02 * perimeter, true);
+            if (approx.rows !== 4) {
+              continue;
+            }
+
+            const rect = cv.boundingRect(approx);
+            const area = rect.width * rect.height;
+            if (area < minArea || area > maxArea) {
+              continue;
+            }
+
+            const aspect = rect.width / rect.height;
+            if (!Number.isFinite(aspect) || aspect < 0.08 || aspect > 12) {
+              continue;
+            }
+
+            const depth = getDepth(index);
+            const hierarchyNode = hierarchy.intPtr(0, index);
+            const parent = hierarchyNode[3];
+
+            candidates.push({
+              x: rect.x,
+              y: rect.y,
+              w: rect.width,
+              h: rect.height,
+              area,
+              depth,
+              parent,
+            });
+          } finally {
+            contour.delete();
+            approx.delete();
+          }
+        }
+
+        candidates.sort((a, b) => {
+          if (b.depth !== a.depth) {
+            return b.depth - a.depth;
+          }
+          return a.area - b.area;
+        });
+
+        const filtered = [];
+
+        function isNearDuplicate(a, b) {
+          const dx = Math.abs(a.x - b.x);
+          const dy = Math.abs(a.y - b.y);
+          const dw = Math.abs(a.w - b.w);
+          const dh = Math.abs(a.h - b.h);
+          const overlapX = Math.max(0, Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x));
+          const overlapY = Math.max(0, Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y));
+          const intersection = overlapX * overlapY;
+          const union = a.w * a.h + b.w * b.h - intersection;
+          const iou = union > 0 ? intersection / union : 0;
+          return (dx <= 10 && dy <= 10 && dw <= 14 && dh <= 14) || iou > 0.92;
+        }
+
+        for (const candidate of candidates) {
+          if (candidate.parent === -1 && candidate.depth === 0) {
+            continue;
+          }
+          if (!filtered.some((kept) => isNearDuplicate(kept, candidate))) {
+            filtered.push(candidate);
+          }
+        }
+
+        state.rects = sortRects(
+          filtered.map((rect) => createRect(rect.x, rect.y, rect.w, rect.h))
+        );
+        state.selectedId = state.rects[0]?.id ?? null;
+
+        if (state.rects.length === 0) {
+          setStatus("No panel rectangles detected.", "Try a slightly higher threshold or add rectangles manually in Draw mode.");
+        } else {
+          setStatus(
+            `Detected ${state.rects.length} panel${state.rects.length === 1 ? "" : "s"}.`,
+            "Review the proposed rectangles, fine-tune as needed, then export JSON."
+          );
+        }
+
+        updateControls();
+        render();
+      } catch (error) {
+        console.error(error);
+        setStatus("Detection failed.", error && error.message ? error.message : "Open the browser console for more detail.");
+      } finally {
+        if (src) src.delete();
+        if (gray) gray.delete();
+        if (blurred) blurred.delete();
+        if (binary) binary.delete();
+        if (closed) closed.delete();
+        if (contours) contours.delete();
+        if (hierarchy) hierarchy.delete();
+        if (kernel) kernel.delete();
+      }
+    }
+
+    fileInputEl.addEventListener("change", (event) => {
+      loadFile(event.target.files && event.target.files[0]);
+    });
+
+    sourcePathEl.addEventListener("input", () => {
+      sourcePathEl.dataset.autofilled = "false";
+    });
+
+    fitButtonEl.addEventListener("click", fitToViewport);
+    clearButtonEl.addEventListener("click", () => {
+      state.rects = [];
+      state.selectedId = null;
+      setStatus("Cleared all rectangles.");
+      updateControls();
+      render();
+    });
+    detectButtonEl.addEventListener("click", detectPanels);
+    exportButtonEl.addEventListener("click", exportJson);
+
+    Object.entries(modeButtons).forEach(([mode, button]) => {
+      button.addEventListener("click", () => setMode(mode));
+    });
+
+    thresholdSliderEl.addEventListener("input", updateControls);
+    kernelSliderEl.addEventListener("input", updateControls);
+
+    overlayEl.addEventListener("pointerdown", (event) => {
+      if (!hasImageLoaded()) {
+        return;
+      }
+      if (state.mode === "draw") {
+        beginDraw(event.clientX, event.clientY);
+        return;
+      }
+      if (state.mode === "pan") {
+        beginPan(event.clientX, event.clientY);
+        return;
+      }
+      state.selectedId = null;
+      render();
+    });
+
+    viewportEl.addEventListener("pointerdown", (event) => {
+      if (!hasImageLoaded()) {
+        return;
+      }
+      if (state.mode === "pan" && event.target === viewportEl) {
+        beginPan(event.clientX, event.clientY);
+      }
+    });
+
+    viewportEl.addEventListener(
+      "wheel",
+      (event) => {
+        if (!hasImageLoaded()) {
+          return;
+        }
+        event.preventDefault();
+        const zoomFactor = Math.exp(-event.deltaY * 0.0012);
+        zoomAt(event.clientX, event.clientY, zoomFactor);
+      },
+      { passive: false }
+    );
+
+    window.addEventListener("pointermove", (event) => {
+      updateInteraction(event.clientX, event.clientY);
+    });
+
+    window.addEventListener("pointerup", endInteraction);
+    window.addEventListener("pointercancel", endInteraction);
+
+    window.addEventListener("keydown", (event) => {
+      if (isEditableTarget(event.target)) {
+        return;
+      }
+
+      if (event.key === "Escape") {
+        state.interaction = null;
+        if (state.mode === "draw") {
+          setMode("select");
+        } else {
+          render();
+        }
+      }
+
+      if ((event.key === "Backspace" || event.key === "Delete") && state.selectedId !== null) {
+        event.preventDefault();
+        deleteRectById(state.selectedId);
+      }
+
+      if (event.code === "Space" && state.mode !== "pan" && !event.repeat) {
+        event.preventDefault();
+        state.previousModeBeforePan = state.mode;
+        state.temporaryPanMode = true;
+        setMode("pan");
+      }
+    });
+
+    window.addEventListener("keyup", (event) => {
+      if (event.code === "Space" && state.mode === "pan" && state.temporaryPanMode) {
+        const returnMode = state.previousModeBeforePan || "select";
+        state.previousModeBeforePan = null;
+        state.temporaryPanMode = false;
+        setMode(returnMode);
+      }
+    });
+
+    window.addEventListener("resize", () => {
+      if (hasImageLoaded()) {
+        render();
+      }
+    });
+
+    ["dragenter", "dragover"].forEach((type) => {
+      window.addEventListener(type, (event) => {
+        event.preventDefault();
+      });
+    });
+
+    window.addEventListener("drop", (event) => {
+      event.preventDefault();
+      const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
+      loadFile(file);
+    });
+
+    function loadOpenCv() {
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = "https://docs.opencv.org/4.x/opencv.js";
+      script.onload = () => {
+        if (!window.cv) {
+          setStatus("OpenCV script loaded, but runtime object was not created.");
+          return;
+        }
+        window.cv.onRuntimeInitialized = () => {
+          state.cvReady = true;
+          updateControls();
+          setStatus(
+            "OpenCV ready.",
+            hasImageLoaded() ? "Run Auto Detect when you are ready." : "Load an image to begin."
+          );
+        };
+      };
+      script.onerror = () => {
+        setStatus(
+          "Failed to load OpenCV.js.",
+          "Check your network connection or save a local copy of opencv.js if you need the tool fully offline."
+        );
+      };
+      document.body.appendChild(script);
+    }
+
+    updateModeButtons();
+    updateControls();
+    renderPanelList();
+    loadOpenCv();
+  </script>
+</body>
+</html>
