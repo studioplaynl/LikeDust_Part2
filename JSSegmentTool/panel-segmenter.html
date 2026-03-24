@@ -442,7 +442,7 @@
             <button id="mode-pan" type="button">Pan</button>
             <button id="mode-draw" type="button">Draw</button>
           </div>
-          <div class="meta">Drag a rectangle to move it. Drag handles to resize. Press <span class="kbd">Esc</span> to leave draw mode and <span class="kbd">Backspace</span> to delete the selected rect.</div>
+          <div class="meta">Drag a rectangle to move it. Drag handles to resize.<br>Shortcuts: <span class="kbd">S</span> Select, <span class="kbd">D</span> Pan, <span class="kbd">F</span> Draw.<br>Press <span class="kbd">Esc</span> to leave draw mode and <span class="kbd">Backspace</span> to delete the selected rect.</div>
         </section>
 
         <section class="section stack">
@@ -501,10 +501,14 @@
 
         <section class="section stack">
           <div>
-            <h3>Export</h3>
+            <h3>Export / Import</h3>
           </div>
-          <button id="export-button" type="button" disabled>Export JSON</button>
-          <div class="meta">Exports normalized Blender UVs with original pixel coordinates preserved in the `px` field.</div>
+          <div class="row">
+            <button id="export-button" type="button" disabled>Export JSON</button>
+            <button id="import-button" type="button">Import JSON</button>
+          </div>
+          <input id="json-file-input" type="file" accept=".json,application/json" style="display: none;" />
+          <div class="meta">Exports normalized Blender UVs with original pixel coordinates preserved in the `px` field. You can also import a previously saved JSON to refine it.</div>
         </section>
       </div>
     </aside>
@@ -542,6 +546,8 @@
     const statusEl = document.getElementById("status");
     const detectButtonEl = document.getElementById("detect-button");
     const exportButtonEl = document.getElementById("export-button");
+    const importButtonEl = document.getElementById("import-button");
+    const jsonFileInputEl = document.getElementById("json-file-input");
     const fitButtonEl = document.getElementById("fit-button");
     const clearButtonEl = document.getElementById("clear-button");
     const panelListEl = document.getElementById("panel-list");
@@ -758,6 +764,45 @@
       const reader = new FileReader();
       reader.onload = () => setImage(reader.result, file.name);
       reader.readAsDataURL(file);
+    }
+
+    function loadJsonFile(file) {
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          
+          if (!data.panels || !Array.isArray(data.panels)) {
+            throw new Error("Invalid JSON format: missing panels array");
+          }
+
+          state.rects = data.panels.map(panel => {
+            return createRect(
+              panel.px.x, 
+              panel.px.y, 
+              panel.px.w, 
+              panel.px.h
+            );
+          });
+          
+          state.selectedId = state.rects.length > 0 ? state.rects[0].id : null;
+          
+          if (data.source_image && sourcePathEl) {
+            sourcePathEl.value = data.source_image;
+            sourcePathEl.dataset.autofilled = "false";
+          }
+
+          setStatus(`Imported ${state.rects.length} panels from JSON.`);
+          updateControls();
+          render();
+        } catch (error) {
+          console.error(error);
+          setStatus("Failed to import JSON.", error.message);
+        }
+      };
+      reader.readAsText(file);
     }
 
     function normalizeRectFromPoints(a, b) {
@@ -1441,6 +1486,13 @@
     });
     detectButtonEl.addEventListener("click", detectPanels);
     exportButtonEl.addEventListener("click", exportJson);
+    importButtonEl.addEventListener("click", () => {
+      jsonFileInputEl.click();
+    });
+    jsonFileInputEl.addEventListener("change", (event) => {
+      loadJsonFile(event.target.files && event.target.files[0]);
+      event.target.value = ""; 
+    });
 
     Object.entries(modeButtons).forEach(([mode, button]) => {
       button.addEventListener("click", () => setMode(mode));
@@ -1561,6 +1613,16 @@
         deleteRectById(state.selectedId);
       }
 
+      if (event.key.toLowerCase() === "s") {
+        setMode("select");
+      }
+      if (event.key.toLowerCase() === "d") {
+        setMode("pan");
+      }
+      if (event.key.toLowerCase() === "f") {
+        setMode("draw");
+      }
+
       if (event.code === "Space" && state.mode !== "pan" && !event.repeat) {
         event.preventDefault();
         state.previousModeBeforePan = state.mode;
@@ -1593,7 +1655,13 @@
     window.addEventListener("drop", (event) => {
       event.preventDefault();
       const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
-      loadFile(file);
+      if (!file) return;
+      
+      if (file.type === "application/json" || file.name.endsWith(".json")) {
+        loadJsonFile(file);
+      } else if (file.type.startsWith("image/")) {
+        loadFile(file);
+      }
     });
 
     function loadOpenCv() {

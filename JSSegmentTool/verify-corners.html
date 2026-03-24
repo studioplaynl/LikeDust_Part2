@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Corner Verification</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; background: #101218; color: #ecf2ff; font-family: system-ui, sans-serif; padding: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px; }
+    .cell { background: #1e2430; border-radius: 10px; padding: 12px; }
+    .cell h4 { margin: 0 0 8px; color: #8cffc1; font-size: 13px; }
+    .cell canvas { image-rendering: pixelated; display: block; }
+    .verdict { margin-top: 6px; font-size: 12px; }
+    .ok { color: #8cffc1; }
+    .adjust { color: #ffd36c; }
+    h2 { color: #6cb8ff; }
+  </style>
+</head>
+<body>
+  <h2>Corner Verification - image-0012.png</h2>
+  <p style="color:#93a0b9">Red crosshair marks the detected edge position. Verify it sits on the inside of the black border.</p>
+  <div id="grid" class="grid"></div>
+
+  <script>
+    const panels = [
+      { id: 1, x: 530, y: 661, w: 872, h: 1041 },
+      { id: 2, x: 1449, y: 661, w: 1561, h: 1038 },
+      { id: 3, x: 530, y: 1744, w: 516, h: 967 },
+      { id: 4, x: 1189, y: 1741, w: 1821, h: 962 },
+      { id: 5, x: 530, y: 2744, w: 2480, h: 1610 },
+    ];
+
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = "/images/Images%20from%20PDF%20-%20large/image-0012.png";
+
+    img.onload = () => {
+      const grid = document.getElementById("grid");
+
+      panels.forEach((p, idx) => {
+        const corners = [
+          { name: "Top-Left", cx: p.x, cy: p.y },
+          { name: "Top-Right", cx: p.x + p.w, cy: p.y },
+          { name: "Bottom-Left", cx: p.x, cy: p.y + p.h },
+          { name: "Bottom-Right", cx: p.x + p.w, cy: p.y + p.h },
+        ];
+
+        corners.forEach(corner => {
+          const cell = document.createElement("div");
+          cell.className = "cell";
+
+          const title = document.createElement("h4");
+          title.textContent = `Panel ${p.id} - ${corner.name} (${corner.cx}, ${corner.cy})`;
+          cell.appendChild(title);
+
+          const zoomCanvas = document.createElement("canvas");
+          const zoomSize = 60;
+          const scale = 5;
+          zoomCanvas.width = zoomSize * scale;
+          zoomCanvas.height = zoomSize * scale;
+          zoomCanvas.style.width = `${zoomSize * scale}px`;
+          zoomCanvas.style.height = `${zoomSize * scale}px`;
+
+          const zctx = zoomCanvas.getContext("2d");
+          zctx.imageSmoothingEnabled = false;
+
+          const sx = corner.cx - zoomSize / 2;
+          const sy = corner.cy - zoomSize / 2;
+          zctx.drawImage(img, sx, sy, zoomSize, zoomSize, 0, 0, zoomSize * scale, zoomSize * scale);
+
+          // Draw crosshair at detected point
+          const centerX = zoomSize * scale / 2;
+          const centerY = zoomSize * scale / 2;
+
+          zctx.strokeStyle = "rgba(255, 68, 68, 0.9)";
+          zctx.lineWidth = 2;
+          zctx.beginPath();
+          zctx.moveTo(centerX - 30, centerY);
+          zctx.lineTo(centerX + 30, centerY);
+          zctx.moveTo(centerX, centerY - 30);
+          zctx.lineTo(centerX, centerY + 30);
+          zctx.stroke();
+
+          // Draw a small circle for precise location
+          zctx.strokeStyle = "rgba(255, 68, 68, 0.7)";
+          zctx.lineWidth = 1;
+          zctx.beginPath();
+          zctx.arc(centerX, centerY, 8, 0, Math.PI * 2);
+          zctx.stroke();
+
+          cell.appendChild(zoomCanvas);
+
+          // Analyze local brightness at the corner to verify
+          const b = getAvgBrightness(img, corner.cx, corner.cy, 2);
+          const verdict = document.createElement("div");
+          verdict.className = "verdict";
+          if (b < 90) {
+            verdict.innerHTML = `<span class="ok">&#10003; On dark border (brightness: ${Math.round(b)})</span>`;
+          } else if (b < 140) {
+            verdict.innerHTML = `<span class="adjust">~ Near edge (brightness: ${Math.round(b)})</span>`;
+          } else {
+            verdict.innerHTML = `<span class="adjust">! In bright area (brightness: ${Math.round(b)}) - may need adjustment</span>`;
+          }
+          cell.appendChild(verdict);
+
+          grid.appendChild(cell);
+        });
+      });
+    };
+
+    function getAvgBrightness(img, cx, cy, r) {
+      const c = document.createElement("canvas");
+      const s = r * 2 + 1;
+      c.width = s; c.height = s;
+      const ctx = c.getContext("2d");
+      ctx.drawImage(img, cx - r, cy - r, s, s, 0, 0, s, s);
+      const d = ctx.getImageData(0, 0, s, s).data;
+      let sum = 0;
+      for (let i = 0; i < d.length; i += 4) {
+        sum += (d[i] + d[i+1] + d[i+2]) / 3;
+      }
+      return sum / (s * s);
+    }
+  </script>
+</body>
+</html>
