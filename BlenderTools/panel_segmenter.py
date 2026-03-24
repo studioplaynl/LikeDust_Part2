@@ -15,6 +15,12 @@ from bpy.props import FloatProperty, StringProperty, BoolProperty, PointerProper
 from bpy.app.handlers import persistent
 
 # ---------------------------------------------------------------------------
+# Re-entrancy guard (module-level set to avoid recursive sync loops)
+# ---------------------------------------------------------------------------
+
+_syncing_objects = set()
+
+# ---------------------------------------------------------------------------
 # Core: sync an object's crop properties -> Mapping node + transform
 # ---------------------------------------------------------------------------
 
@@ -59,11 +65,12 @@ def sync_panel_to_crop(obj):
 def _crop_update(self, context):
     obj = self.id_data
     if isinstance(obj, bpy.types.Object) and obj.get("is_panel_crop"):
-        # Prevent recursive updates from depsgraph handler
-        if not getattr(obj, "_pseg_syncing", False):
-            obj._pseg_syncing = True
-            sync_panel_to_crop(obj)
-            obj._pseg_syncing = False
+        if obj.name not in _syncing_objects:
+            _syncing_objects.add(obj.name)
+            try:
+                sync_panel_to_crop(obj)
+            finally:
+                _syncing_objects.discard(obj.name)
 
 
 # ---------------------------------------------------------------------------
@@ -118,20 +125,23 @@ def pseg_depsgraph_update(scene, depsgraph):
             # Find objects using this material
             for obj in scene.objects:
                 if obj.get("is_panel_crop") and obj.active_material == mat:
+                    if obj.name in _syncing_objects:
+                        continue
                     crop = obj.pseg_crop
-                    # Check if values actually changed to avoid infinite loops
                     if (abs(crop.top_left_x - top_left_x) > 1e-5 or
                         abs(crop.bottom_right_x - bottom_right_x) > 1e-5 or
                         abs(crop.top_left_y - top_left_y) > 1e-5 or
                         abs(crop.bottom_right_y - bottom_right_y) > 1e-5):
                         
-                        obj._pseg_syncing = True
-                        crop.top_left_x = top_left_x
-                        crop.bottom_right_x = bottom_right_x
-                        crop.top_left_y = top_left_y
-                        crop.bottom_right_y = bottom_right_y
-                        sync_panel_to_crop(obj)
-                        obj._pseg_syncing = False
+                        _syncing_objects.add(obj.name)
+                        try:
+                            crop.top_left_x = top_left_x
+                            crop.bottom_right_x = bottom_right_x
+                            crop.top_left_y = top_left_y
+                            crop.bottom_right_y = bottom_right_y
+                            sync_panel_to_crop(obj)
+                        finally:
+                            _syncing_objects.discard(obj.name)
 
 # ---------------------------------------------------------------------------
 # Material builder
@@ -218,16 +228,17 @@ def _make_panel_plane(context, name, image, top_left_x, top_left_y, bottom_right
 
     obj["is_panel_crop"] = True
 
-    # Set crop properties via dict access to avoid triggering update callbacks
     crop = obj.pseg_crop
-    obj._pseg_syncing = True
-    crop.top_left_x = top_left_x
-    crop.top_left_y = top_left_y
-    crop.bottom_right_x = bottom_right_x
-    crop.bottom_right_y = bottom_right_y
-    obj.location.z = z
-    sync_panel_to_crop(obj)
-    obj._pseg_syncing = False
+    _syncing_objects.add(obj.name)
+    try:
+        crop.top_left_x = top_left_x
+        crop.top_left_y = top_left_y
+        crop.bottom_right_x = bottom_right_x
+        crop.bottom_right_y = bottom_right_y
+        obj.location.z = z
+        sync_panel_to_crop(obj)
+    finally:
+        _syncing_objects.discard(obj.name)
 
     return obj
 
