@@ -11,6 +11,7 @@ bl_info = {
 import bpy
 import json
 import os
+import re
 from bpy.props import FloatProperty, StringProperty, BoolProperty, PointerProperty, IntProperty
 from bpy.app.handlers import persistent
 
@@ -82,6 +83,7 @@ class PSEGSceneProps(bpy.types.PropertyGroup):
     page_width: IntProperty(name="Page Width", default=1000)
     page_height: IntProperty(name="Page Height", default=1000)
     pixel_scale: FloatProperty(name="Pixel Scale", default=0.001, precision=4)
+    save_folder: StringProperty(name="Save Folder", subtype='DIR_PATH', description="Directory to save the .blend file")
 
 class PSEGCropProps(bpy.types.PropertyGroup):
     top_left_x: FloatProperty(name="X", default=0.0, min=0.0, max=1.0,
@@ -306,6 +308,33 @@ def _make_reference_plane(context, image, pw, ph):
 
 
 # ---------------------------------------------------------------------------
+# Viewport Helper
+# ---------------------------------------------------------------------------
+
+def _set_top_view(context):
+    """Set the 3D viewport to Top Orthographic and frame all objects."""
+    for area in context.screen.areas:
+        if area.type == 'VIEW_3D':
+            for space in area.spaces:
+                if space.type == 'VIEW_3D':
+                    space.shading.type = 'MATERIAL'
+            
+            region = next((r for r in area.regions if r.type == 'WINDOW'), None)
+            if region:
+                if hasattr(context, "temp_override"):
+                    with context.temp_override(area=area, region=region):
+                        bpy.ops.view3d.view_axis(type='TOP')
+                        bpy.ops.view3d.view_all(center=True)
+                else:
+                    override = context.copy()
+                    override['area'] = area
+                    override['region'] = region
+                    bpy.ops.view3d.view_axis(override, type='TOP')
+                    bpy.ops.view3d.view_all(override, center=True)
+            break
+
+
+# ---------------------------------------------------------------------------
 # Operators
 # ---------------------------------------------------------------------------
 
@@ -328,6 +357,7 @@ class PSEG_OT_assign_image(bpy.types.Operator):
         scene.pseg.source_image = image
         scene.pseg.page_width = image.size[0]
         scene.pseg.page_height = image.size[1]
+        scene.pseg.save_folder = os.path.dirname(self.filepath)
         
         _make_reference_plane(context, image, image.size[0], image.size[1])
         
@@ -341,13 +371,15 @@ class PSEG_OT_assign_image(bpy.types.Operator):
                     if tx:
                         tx.image = image
         
-        # Set viewport to Material Preview
-        for area in context.screen.areas:
-            if area.type == 'VIEW_3D':
-                for space in area.spaces:
-                    if space.type == 'VIEW_3D':
-                        space.shading.type = 'MATERIAL'
-                break
+        # Check for JSON in the same directory
+        base_path = os.path.splitext(self.filepath)[0]
+        json_path = base_path + ".panels.json"
+        
+        if os.path.exists(json_path):
+            self.report({'INFO'}, f"Found matching JSON: {os.path.basename(json_path)}")
+            bpy.ops.pseg.import_json(filepath=json_path)
+        else:
+            _set_top_view(context)
                 
         return {'FINISHED'}
 
@@ -541,12 +573,7 @@ class PSEG_OT_import_json(bpy.types.Operator):
                     z=0.001 * (i + 1),
                 )
 
-            for area in context.screen.areas:
-                if area.type == 'VIEW_3D':
-                    for space in area.spaces:
-                        if space.type == 'VIEW_3D':
-                            space.shading.type = 'MATERIAL'
-                    break
+            _set_top_view(context)
 
             bpy.ops.object.select_all(action='DESELECT')
             self.report({'INFO'}, f"Imported {len(panels)} panels")
@@ -558,6 +585,54 @@ class PSEG_OT_import_json(bpy.types.Operator):
     def invoke(self, context, event):
         context.window_manager.fileselect_add(self)
         return {'RUNNING_MODAL'}
+
+
+class PSEG_OT_save_scene(bpy.types.Operator):
+    """Save the current scene with a standardized name based on the image"""
+    bl_idname = "pseg.save_scene"
+    bl_label = "Save Scene"
+    bl_options = {'REGISTER'}
+
+    def execute(self, context):
+        scene = context.scene
+        if not scene.pseg.source_image:
+            self.report({'ERROR'}, "No source image assigned to base the name on.")
+            return {'CANCELLED'}
+            
+        img_name = scene.pseg.source_image.name
+        base_name = os.path.splitext(img_name)[0]
+        
+        numbers = re.findall(r'\d+', base_name)
+        if numbers:
+            num_str = numbers[-1]
+            if len(num_str) > 3 and num_str.startswith('0'):
+                num_str = num_str[1:] # convert 0012 to 012
+            formatted_name = f"Panel{num_str}-segmented with addon.blend"
+        else:
+            formatted_name = f"{base_name}-segmented with addon.blend"
+            
+        save_dir = scene.pseg.save_folder
+        if not save_dir:
+            if scene.pseg.source_image.filepath:
+                save_dir = os.path.dirname(bpy.path.abspath(scene.pseg.source_image.filepath))
+            else:
+                save_dir = bpy.app.tempdir
+                
+        save_dir = bpy.path.abspath(save_dir)
+        
+        if not os.path.exists(save_dir):
+            try:
+                os.makedirs(save_dir)
+            except Exception as e:
+                self.report({'ERROR'}, f"Could not create directory: {e}")
+                return {'CANCELLED'}
+                
+        save_path = os.path.join(save_dir, formatted_name)
+        
+        bpy.ops.wm.save_as_mainfile(filepath=save_path)
+        self.report({'INFO'}, f"Saved scene as: {formatted_name}")
+        
+        return {'FINISHED'}
 
 
 class PSEG_OT_select_panel(bpy.types.Operator):
@@ -667,6 +742,19 @@ class PSEG_PT_main(bpy.types.Panel):
         row = layout.row(align=True)
         row.operator("pseg.export_json", text="Export JSON", icon='EXPORT')
         row.operator("pseg.import_json", text="Import JSON", icon='IMPORT')
+        
+        layout.separator()
+        
+        # Save Scene Section
+        box = layout.box()
+        box.label(text="Save Scene:", icon='FILE_BLEND')
+        
+        row = box.row()
+        row.prop(scene.pseg, "save_folder", text="")
+        
+        row = box.row()
+        row.scale_y = 1.2
+        row.operator("pseg.save_scene", text="Save Auto-named Blend", icon='FILE_TICK')
 
 
 # ---------------------------------------------------------------------------
@@ -681,6 +769,7 @@ _classes = (
     PSEG_OT_remove_panel,
     PSEG_OT_export_json,
     PSEG_OT_import_json,
+    PSEG_OT_save_scene,
     PSEG_OT_select_panel,
     PSEG_PT_main,
 )

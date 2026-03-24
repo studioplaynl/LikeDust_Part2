@@ -424,7 +424,10 @@
           <div>
             <h3>Image</h3>
           </div>
-          <input id="file-input" type="file" accept="image/*" />
+          <div style="display: flex; gap: 8px;">
+            <input id="file-input" type="file" accept="image/*,application/json,.json" multiple style="flex: 1; min-width: 0;" />
+            <button id="load-auto-json-btn" type="button" disabled style="width: auto; white-space: nowrap;" title="Load JSON with same name">Load JSON</button>
+          </div>
           <input id="source-path" type="text" placeholder="Source image path for export JSON" />
           <div class="row">
             <button id="fit-button" type="button">Fit View</button>
@@ -529,6 +532,7 @@
       previousModeBeforePan: null,
       temporaryPanMode: false,
       image: null,
+      lastLoadedFile: null,
       cvReady: false,
       transform: { x: 0, y: 0, scale: 1 },
       interaction: null,
@@ -541,6 +545,7 @@
     const overlayEl = document.getElementById("overlay");
     const cvCanvasEl = document.getElementById("cv-canvas");
     const fileInputEl = document.getElementById("file-input");
+    const loadAutoJsonBtnEl = document.getElementById("load-auto-json-btn");
     const sourcePathEl = document.getElementById("source-path");
     const imageMetaEl = document.getElementById("image-meta");
     const statusEl = document.getElementById("status");
@@ -587,7 +592,11 @@
     }
 
     function isEditableTarget(target) {
-      return Boolean(target && target.closest && target.closest("input, textarea, select, button"));
+      if (!target || !target.tagName) return false;
+      const tag = target.tagName.toLowerCase();
+      if (tag === 'input' && (target.type === 'text' || target.type === 'number')) return true;
+      if (tag === 'textarea') return true;
+      return false;
     }
 
     function roundNumber(value, digits = 6) {
@@ -661,6 +670,7 @@
       exportButtonEl.disabled = !(imageLoaded && state.rects.length > 0);
       clearButtonEl.disabled = state.rects.length === 0;
       fitButtonEl.disabled = !imageLoaded;
+      loadAutoJsonBtnEl.disabled = !imageLoaded || !state.lastLoadedFile;
       panelCountEl.textContent = String(state.rects.length);
       
       if (document.activeElement !== preblurInputEl) preblurInputEl.value = preblurSliderEl.value;
@@ -757,12 +767,69 @@
       imageEl.src = dataUrl;
     }
 
-    function loadFile(file) {
+    function tryLoadAdjacentJson(file) {
+      const jsonName = file.name.replace(/\.[^.]+$/, '.panels.json');
+      const urlsToTry = [jsonName];
+      
+      if (file.path) {
+        // If we have an absolute path, try to guess the server relative path
+        // e.g. C:\...\images\Images from PDF - large\image-0012.png -> /images/Images from PDF - large/image-0012.panels.json
+        const match = file.path.match(/(images[\\/].+)$/i);
+        if (match && match[1]) {
+          const relativePath = match[1].replace(/\\/g, '/').replace(/\.[^.]+$/, '.panels.json');
+          urlsToTry.push('/' + relativePath);
+          urlsToTry.push('../' + relativePath);
+          urlsToTry.push('../../' + relativePath);
+        }
+        
+        // Try file:// URL as fallback
+        urlsToTry.push('file:///' + file.path.replace(/\\/g, '/').replace(/\.[^.]+$/, '.panels.json'));
+      }
+      
+      const tryNext = (index) => {
+        if (index >= urlsToTry.length) return;
+        
+        fetch(urlsToTry[index])
+          .then(res => {
+            if (res.ok) return res.json();
+            throw new Error('Not found');
+          })
+          .then(data => {
+            if (data && data.panels) {
+              state.rects = data.panels.map(panel => createRect(panel.px.x, panel.px.y, panel.px.w, panel.px.h));
+              state.selectedId = state.rects.length > 0 ? state.rects[0].id : null;
+              
+              if (data.source_image && sourcePathEl) {
+                sourcePathEl.value = data.source_image;
+                sourcePathEl.dataset.autofilled = "false";
+              }
+              
+              setStatus(`Auto-loaded ${state.rects.length} panels from ${jsonName}.`);
+              updateControls();
+              render();
+            }
+          })
+          .catch(err => {
+            tryNext(index + 1);
+          });
+      };
+      
+      tryNext(0);
+    }
+
+    function loadFile(file, jsonFile = null) {
       if (!file) {
         return;
       }
+      state.lastLoadedFile = file;
       const reader = new FileReader();
-      reader.onload = () => setImage(reader.result, file.name);
+      reader.onload = () => {
+        setImage(reader.result, file.name);
+        
+        if (jsonFile) {
+          setTimeout(() => loadJsonFile(jsonFile), 100);
+        }
+      };
       reader.readAsDataURL(file);
     }
 
@@ -1188,7 +1255,7 @@
       URL.revokeObjectURL(url);
     }
 
-    function exportJson() {
+    async function exportJson() {
       if (!hasImageLoaded() || state.rects.length === 0) {
         return;
       }
@@ -1222,7 +1289,32 @@
       };
 
       const baseName = (state.image.name || "panels").replace(/\.[^.]+$/, "");
-      makeDownload(`${baseName}.panels.json`, JSON.stringify(payload, null, 2));
+      const defaultName = `${baseName}.panels.json`;
+      const text = JSON.stringify(payload, null, 2);
+
+      if (window.showSaveFilePicker) {
+        try {
+          const handle = await window.showSaveFilePicker({
+            suggestedName: defaultName,
+            types: [{
+              description: 'JSON Files',
+              accept: { 'application/json': ['.json'] },
+            }],
+          });
+          const writable = await handle.createWritable();
+          await writable.write(text);
+          await writable.close();
+          setStatus("Exported JSON.", "Saved successfully.");
+          return;
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            console.error(err);
+          }
+          if (err.name === 'AbortError') return;
+        }
+      }
+
+      makeDownload(defaultName, text);
       setStatus("Exported JSON.", "The file contains normalized UVs plus original pixel coordinates for debugging.");
     }
 
@@ -1469,7 +1561,28 @@
     }
 
     fileInputEl.addEventListener("change", (event) => {
-      loadFile(event.target.files && event.target.files[0]);
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+      
+      let imageFile = null;
+      let jsonFile = null;
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.type === "application/json" || file.name.endsWith(".json")) {
+          jsonFile = file;
+        } else if (file.type.startsWith("image/") || file.name.match(/\.(png|jpg|jpeg|webp)$/i)) {
+          imageFile = file;
+        }
+      }
+      
+      if (imageFile) {
+        loadFile(imageFile, jsonFile);
+      } else if (jsonFile) {
+        loadJsonFile(jsonFile);
+      }
+      
+      event.target.value = "";
     });
 
     sourcePathEl.addEventListener("input", () => {
@@ -1492,6 +1605,12 @@
     jsonFileInputEl.addEventListener("change", (event) => {
       loadJsonFile(event.target.files && event.target.files[0]);
       event.target.value = ""; 
+    });
+
+    loadAutoJsonBtnEl.addEventListener("click", () => {
+      if (state.lastLoadedFile) {
+        tryLoadAdjacentJson(state.lastLoadedFile);
+      }
     });
 
     Object.entries(modeButtons).forEach(([mode, button]) => {
@@ -1654,13 +1773,25 @@
 
     window.addEventListener("drop", (event) => {
       event.preventDefault();
-      const file = event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0];
-      if (!file) return;
+      const files = event.dataTransfer && event.dataTransfer.files;
+      if (!files || files.length === 0) return;
       
-      if (file.type === "application/json" || file.name.endsWith(".json")) {
-        loadJsonFile(file);
-      } else if (file.type.startsWith("image/")) {
-        loadFile(file);
+      let imageFile = null;
+      let jsonFile = null;
+      
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (file.type === "application/json" || file.name.endsWith(".json")) {
+          jsonFile = file;
+        } else if (file.type.startsWith("image/") || file.name.match(/\.(png|jpg|jpeg|webp)$/i)) {
+          imageFile = file;
+        }
+      }
+      
+      if (imageFile) {
+        loadFile(imageFile, jsonFile);
+      } else if (jsonFile) {
+        loadJsonFile(jsonFile);
       }
     });
 
