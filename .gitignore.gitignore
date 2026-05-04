@@ -1,0 +1,85 @@
+# Root repo ignores
+.DS_Store
+*.log
+.utmp/
+
+# Unity project folder
+/Unity/[Ll]ibrary/
+/Unity/[Tt]emp/
+/Unity/[Oo]bj/
+/Unity/[Bb]uild/
+/Unity/[Bb]uilds/
+/Unity/[Ll]ogs/
+/Unity/[Uu]ser[Ss]ettings/
+/Unity/[Mm]emoryCaptures/
+/Unity/[Rr]ecordings/
+/Unity/[Pp]rofiler[Cc]aptures/
+
+# Unity generated project files
+/Unity/*.csproj
+/Unity/*.unityproj
+/Unity/*.sln
+/Unity/*.slnx
+/Unity/*.suo
+/Unity/*.tmp
+/Unity/*.user
+/Unity/*.userprefs
+/Unity/*.pidb
+/Unity/*.booproj
+/Unity/*.svd
+/Unity/*.pdb
+/Unity/*.mdb
+/Unity/*.opendb
+/Unity/*.VC.db
+
+# Rider / IDE
+/Unity/.idea/
+.idea/
+*.DotSettings.user
+.vs/
+.gradle/
+.consulo/
+
+# Unity crash / generated files
+/Unity/sysinfo.txt
+/Unity/mono_crash.*
+/Unity/*.pidb.meta
+/Unity/*.pdb.meta
+/Unity/*.mdb.meta
+
+# Builds / packages
+/Unity/*.apk
+/Unity/*.aab
+/Unity/*.unitypackage
+/Unity/*.unitypackage.meta
+/Unity/*.app
+
+# Blender temp files
+*.blend1
+*.blend1.meta
+
+# Crashlytics
+/Unity/crashlytics-build.properties
+
+# TestRunner generated files
+/Unity/InitTestScene*.unity*
+/Unity/[Aa]ssets/[Ii]nit[Tt]est[Ss]cene*.unity*
+
+# Addressables generated files
+/Unity/ServerData/
+/Unity/[Aa]ssets/StreamingAssets/aa*
+/Unity/[Aa]ssets/AddressableAssetsData/link.xml*
+/Unity/[Aa]ssets/Addressables_Temp*
+/Unity/[Aa]ssets/AddressableAssetsData/*/*.bin*
+
+# Visual Scripting generated files
+/Unity/[Aa]ssets/Unity.VisualScripting.Generated/VisualScripting.Flow/UnitOptions.db
+/Unity/[Aa]ssets/Unity.VisualScripting.Generated/VisualScripting.Flow/UnitOptions.db.meta
+/Unity/[Aa]ssets/Unity.VisualScripting.Generated/VisualScripting.Core/Property Providers
+/Unity/[Aa]ssets/Unity.VisualScripting.Generated/VisualScripting.Core/Property Providers.meta
+
+# Unity generated cache in Assets
+/Unity/[Aa]ssets/[Ss]ceneDependencyCache*
+
+# JetBrains Unity plugin
+/Unity/[Aa]ssets/Plugins/Editor/JetBrains*
