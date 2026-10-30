@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#e9e2d0">
+<title>Adem</title>
+<link rel="stylesheet" href="../shared/shared.css">
+<style>
+/* Abstract: geen kamer maar lucht. Inktstof op papier dat bij elke ademhaling een nieuwe vorm aanneemt. Licht thema: inkt op papier. */
+body{background:var(--paper);color:#16130f}
+.ld-top .ghost{color:#16130f;background:rgba(233,226,208,.7);border-color:rgba(22,19,15,.35)}
+.ld-top .ghost:hover,.ld-top .ghost[aria-pressed="true"]{color:#8a5d10;border-color:#8a5d10}
+.ld-chap{color:#5a554b}.ld-chap b{color:#8a5d10}
+.ld-dots i{border-color:#16130f}.ld-dots i.on{background:#16130f}
+.ld-hint{color:#16130f;text-shadow:0 0 12px var(--paper),0 0 4px var(--paper)}
+.ld-hint small{color:#8a5d10}
+.ld-dev{color:rgba(22,19,15,.45)}
+.ld-card{background:radial-gradient(ellipse at center,rgba(233,226,208,.6),rgba(233,226,208,.97));color:#16130f}
+.ld-card p{color:#4a463e}.ld-card .eye{color:#8a5d10}
+.ld-card .btn{background:#16130f;color:var(--chalk)}.ld-card .btn:hover{background:var(--ochre);color:#000}
+/* adem-meter */
+.breath{position:fixed;z-index:20;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:84px;height:84px;pointer-events:none;opacity:0;transition:opacity .5s}
+.breath.on{opacity:1}
+.breath svg{width:100%;height:100%;overflow:visible}
+.breath .lbl{position:absolute;inset:0;display:grid;place-items:center;font:700 .7rem var(--f-display);letter-spacing:.2em;text-transform:uppercase;color:#16130f}
+/* titel van de vorm */
+.shape{position:fixed;z-index:22;left:50%;top:calc(64px + env(safe-area-inset-top,0px));transform:translateX(-50%);text-align:center;pointer-events:none;transition:opacity .8s;opacity:0}
+.shape.on{opacity:1}
+.shape .eye{font:500 .72rem var(--f-display);letter-spacing:.3em;text-transform:uppercase;color:#8a5d10;margin:0}
+.shape h2{font:800 clamp(1.8rem,5vw,3.2rem)/1 var(--f-display);text-transform:uppercase;margin:.15em 0 0;color:#16130f}
+.shape button{pointer-events:auto;margin-top:12px;font:700 .85rem var(--f-display);letter-spacing:.18em;text-transform:uppercase;background:#16130f;color:var(--chalk);border:0;padding:10px 20px;cursor:pointer}
+.shape button:hover{background:var(--ochre);color:#000}
+</style>
+</head>
+<body>
+<!-- Variatie 3 · Adem (abstract interactiemodel).
+     "We All Breathe The Same Air" en "Like Dust" letterlijk genomen: het verhaal is stof in de lucht.
+     Houd ingedrukt (of spatie) om in te ademen: alle inktstof wordt naar je toe gezogen. Laat los om uit te ademen:
+     de stof waait uit en vormt het volgende beeld. Vliegtuig → Sam ineengedoken in het AZC → de fiets → de brief → Sam → de kamer.
+     Elk beeld opent zijn hoofdstuk; pas daarna kun je weer ademen. Na elk hoofdstuk blijft er een inktvlek achter op het papier.
+     De beelden zijn gestippeld uit de lagen van room 2.psd en de green-screen-opname van Sam. -->
+<canvas class="gl" id="gl"></canvas>
+<div class="shape" id="shape"><p class="eye" id="shEye"></p><h2 id="shTitle"></h2><button type="button" id="shOpen">Open het hoofdstuk</button></div>
+<div class="breath" id="breath"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" fill="none" stroke="rgba(22,19,15,.15)" stroke-width="3"/><path id="breathArc" fill="none" stroke="#16130f" stroke-width="5" stroke-linecap="round"/></svg><div class="lbl" id="breathLbl">adem in</div></div>
+<div class="ld-card" id="start">
+  <div>
+    <p class="eye">We All Breathe The Same Air · de kamer</p>
+    <h1>Adem</h1>
+    <p>Houd ingedrukt om in te ademen. Laat los om uit te ademen. Wat je uitblaast, wordt het volgende stuk van het verhaal.</p>
+    <button class="btn" id="go" type="button">Begin</button>
+  </div>
+</div>
+<div class="ld-card off" id="end">
+  <div>
+    <p class="eye">Einde van deel 2</p>
+    <h1>We all breathe<br>the same air.</h1>
+    <p>Dit is de kamer waar Sam terechtkomt. Hoe, dat vertelt deel 3.</p>
+    <button class="btn" id="again" type="button">Nog één keer ademen</button>
+  </div>
+</div>
+<script src="../shared/lib/three.min.js"></script>
+<script src="../shared/assets.js"></script>
+<script src="../shared/shared.js"></script>
+<script src="app.js"></script>
+</body></html>

@@ -1,0 +1,62 @@
+/* Like Dust 2 · gedeelde stijl voor de kamer-variaties. Zelfde tokens als de hoofdstukken en de intro. */
+@import url("fonts/fonts.css");
+:root{
+  --ink:#000; --ink-soft:#14110d; --chalk:#ece8de; --chalk-dim:#a3a59e; --paper:#e9e2d0;
+  --ochre:#D6A93E; --ochre-dim:#a8873a; --stamp:#c0402c; --card:#e9c94a;
+  --slate:#4f6870; --teal:#7f9ea0; --pool:#2f5d86; --skin:#b9765a;
+  --shade:rgba(0,0,0,.62);
+  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"Literata",Georgia,serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,monospace;
+  color-scheme:dark;
+}
+html,body{margin:0;height:100%;background:var(--ink);color:var(--chalk);font-family:var(--f-body);overflow:hidden;-webkit-text-size-adjust:100%}
+canvas.gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+[hidden]{display:none!important}
+
+.ld-top{position:fixed;z-index:30;top:calc(12px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;justify-content:space-between;align-items:center;gap:10px;pointer-events:none}
+.ld-top>*{pointer-events:auto}
+.ld-chap{font:500 .75rem var(--f-display);letter-spacing:.22em;text-transform:uppercase;color:var(--chalk-dim)}
+.ld-chap b{color:var(--ochre);font-weight:700}
+.ld-tools{display:flex;gap:8px;align-items:center}
+.ghost{font:700 .78rem var(--f-display);letter-spacing:.2em;text-transform:uppercase;color:var(--chalk);background:var(--shade);border:1px solid rgba(236,232,222,.35);padding:9px 14px;cursor:pointer;text-decoration:none;display:inline-block}
+.ghost:hover,.ghost[aria-pressed="true"]{border-color:var(--ochre);color:var(--ochre)}
+.btn{font:700 1rem var(--f-display);letter-spacing:.18em;text-transform:uppercase;color:#000;background:var(--chalk);border:0;padding:14px 30px;cursor:pointer}
+.btn:hover{background:var(--ochre)}
+.btn:focus-visible,.ghost:focus-visible{outline:2px solid var(--ochre);outline-offset:4px}
+
+.ld-dots{display:flex;gap:7px;align-items:center;padding:0 6px}
+.ld-dots i{width:10px;height:10px;border-radius:50%;border:2px solid var(--ochre);display:block;transition:background .4s}
+.ld-dots i.on{background:var(--ochre)}
+
+/* hint onderin, als ondertitel */
+.ld-hint{position:fixed;z-index:25;left:50%;bottom:calc(26px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:min(88vw,720px);text-align:center;
+  font:400 1.02rem/1.45 var(--f-body);color:var(--chalk);text-shadow:0 1px 3px #000,0 0 18px #000;transition:opacity .8s;pointer-events:none}
+.ld-hint.off{opacity:0}
+.ld-hint small{display:block;font:500 .7rem var(--f-display);letter-spacing:.22em;text-transform:uppercase;color:var(--ochre);margin-bottom:4px}
+
+/* label dat het object volgt */
+.ld-tag{position:fixed;z-index:24;pointer-events:none;transform:translate(-50%,-100%);font:700 .8rem var(--f-display);letter-spacing:.2em;text-transform:uppercase;color:var(--chalk);
+  background:rgba(0,0,0,.7);border:1px solid var(--ochre);padding:6px 10px;white-space:nowrap;opacity:0;transition:opacity .25s}
+.ld-tag.on{opacity:1}
+.ld-tag em{font-style:normal;color:var(--ochre)}
+
+/* start- en eindkaart */
+.ld-card{position:fixed;inset:0;z-index:40;display:grid;place-items:center;text-align:center;padding:24px;background:radial-gradient(ellipse at center,rgba(0,0,0,.55),rgba(0,0,0,.92));transition:opacity 1.2s}
+.ld-card.off{opacity:0;pointer-events:none}
+.ld-card .eye{font:500 .78rem var(--f-display);letter-spacing:.3em;text-transform:uppercase;color:var(--ochre);margin:0 0 14px}
+.ld-card h1{font:800 clamp(2.4rem,7vw,5rem)/.95 var(--f-display);letter-spacing:.02em;text-transform:uppercase;margin:0 0 18px}
+.ld-card p{font:400 1.05rem/1.55 var(--f-body);color:var(--chalk-dim);max-width:34em;margin:0 auto 26px}
+
+.ld-card.light{background:radial-gradient(ellipse at center,rgba(245,243,236,.0),rgba(245,243,236,.55));color:#111}
+.ld-card.light h1{color:#111}.ld-card.light p{color:#3a3730}.ld-card.light .eye{color:var(--ochre-dim)}
+.ld-card.light .btn{background:#111;color:var(--chalk)}.ld-card.light .btn:hover{background:var(--ochre);color:#000}
+/* hoofdstuk-overlay */
+.ld-chapter{position:fixed;inset:0;z-index:60;background:#000;opacity:0;transition:opacity .6s;pointer-events:none}
+.ld-chapter.on{opacity:1;pointer-events:auto}
+.ld-chapter iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.ld-chapter .back{position:absolute;z-index:2;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px))}
+.ld-wipe{position:fixed;inset:0;z-index:70;pointer-events:none;width:100%;height:100%}
+
+.ld-dev{position:fixed;z-index:30;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));font:400 .68rem var(--f-mono);color:rgba(236,232,222,.4)}
+@media (max-width:560px){.ld-dev{display:none}.ld-top .ld-chap{display:none}.ld-top .ghost{padding:8px 10px;font-size:.68rem;letter-spacing:.14em}.ld-dots{gap:5px;padding:0 2px}.ld-dots i{width:8px;height:8px}}

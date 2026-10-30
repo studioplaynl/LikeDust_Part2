@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#000000">
+<title>Herinneringskamer</title>
+<link rel="stylesheet" href="../shared/shared.css">
+</head>
+<body>
+<!-- Variatie 1 · De herinneringskamer.
+     De geschilderde kamer uit het After Effects-ontwerp (room 2.psd), laag voor laag in Three.js gezet: achtergrond, fiets, brief, foto's,
+     duif, geld, lijstje en paspoort hangen op hun eigen diepte en schuiven mee met de muis. Spullen van hoofdstukken die je nog niet zag,
+     zijn een krijtschets; na het hoofdstuk loopt de verf er als inkt in. Het licht door het dakraam wordt per hoofdstuk warmer.
+     Als alles gezien is, vliegt de duif weg, staat Sam op en loopt de kamer wit vol: deel 3. -->
+<canvas class="gl" id="gl"></canvas>
+<div class="ld-card" id="start">
+  <div>
+    <p class="eye">We All Breathe The Same Air · de kamer</p>
+    <h1>Herinnerings&shy;kamer</h1>
+    <p>Er ligt één ding klaar in de kamer. Na elk hoofdstuk komt er iets bij.</p>
+    <button class="btn" id="go" type="button">Kijk rond</button>
+  </div>
+</div>
+<div class="ld-card light off" id="end">
+  <div>
+    <p class="eye">Einde van deel 2</p>
+    <h1>Hoe kwam ik<br>hier terecht?</h1>
+    <p>Het verhaal van Sam gaat verder in deel 3.</p>
+    <button class="btn" id="again" type="button">Terug naar de kamer</button>
+  </div>
+</div>
+<script src="../shared/lib/three.min.js"></script>
+<script src="../shared/assets.js"></script>
+<script src="../shared/shared.js"></script>
+<script src="app.js"></script>
+</body></html>

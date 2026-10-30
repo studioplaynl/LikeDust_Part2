@@ -1,0 +1,21 @@
+WE ALL BREATHE THE SAME AIR · DE KAMER — variaties in Three.js
+==============================================================
+
+Open index.html: daar staan de vier variaties.
+
+v1_herinneringskamer/  2.5D, de geschilderde kamer uit "After effects file/001/data/room 2.psd" (lagen op diepte).
+v2_zolderkamer/        3D, de zolderkamer uit de briefing (Room.png), toon-shaded met stift-nabewerking.
+v3_adem/               Abstract: adem in/uit, inktstof die van vorm verandert door het verhaal.
+v4_popupboek/          3D pop-upboek: de kamer vouwt omhoog uit het papier, één spread per hoofdstuk.
+shared/                Three.js r160, assets.js (PSD-lagen + uitgekeyde green-screen-clips als data-URI),
+                       shared.js (hoofdstuk-overlay, fade-overgang, voortgang, GLSL voor stift/inkt), lettertypes, geluiden.
+
+- De map moet naast "All hoofdstuken met interactie 1-4 " blijven staan: de kamer opent de hoofdstukken daaruit (iframe).
+- Werkt vanaf schijf. Via een webserver (of Netlify) ziet de kamer ook de eindkaart van een hoofdstuk;
+  vanaf schijf telt een hoofdstuk als gezien na 15 seconden kijken.
+- In elke kamer staat alleen het voorwerp dat je nu kunt aanklikken; na elk hoofdstuk komt er iets bij.
+- Klik op het voorwerp en de film start meteen (de hoofdstukpagina krijgt ?autoplay=1 mee).
+  Daarvoor staat onderaan elke hoofdstuk-index.html een klein extra script. Los geopend gedraagt het hoofdstuk zich als vanouds.
+- Zolderkamer: beweeg de muis naar de rand en de kamer draait die kant op.
+- Testen: toets 1–4 zet een hoofdstuk op gezien, 0 of ↺ wist de voortgang.
+- Geen build-stap: elk app.js is een gewoon script met de globale THREE.

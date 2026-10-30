@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#000000">
+<title>Pop-upboek</title>
+<link rel="stylesheet" href="../shared/shared.css">
+<style>
+.nav{position:fixed;z-index:25;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);display:flex;gap:10px;align-items:center}
+.nav .ghost[disabled]{opacity:.3;cursor:default}
+.nav span{font:500 .72rem var(--f-display);letter-spacing:.22em;text-transform:uppercase;color:var(--chalk-dim);min-width:9em;text-align:center}
+.ld-hint{bottom:calc(76px + env(safe-area-inset-bottom,0px))}
+</style>
+</head>
+<body>
+<!-- Variatie 4 · Het pop-upboek.
+     De kamer als boek op tafel (het "book opening"-geluid uit het After Effects-project was de aanleiding).
+     Sla het open en de kamer vouwt omhoog uit het papier: de muur uit room 2.psd met de spullen als uitgesneden karton.
+     Elke volgende spread is een hoofdstuk: links Sams zin, rechts het ding dat omhoog klapt en het hoofdstuk opent.
+     Nog niet geziene dingen zijn een inktschets; daarna gekleurd. Doorbladeren kan pas als je het hoofdstuk zag.
+     De laatste spread: dezelfde kamer, nu in kleur, met Sam van achteren. -->
+<canvas class="gl" id="gl"></canvas>
+<div class="nav" id="nav" hidden><button class="ghost" id="prev" type="button">← Terug</button><span id="where"></span><button class="ghost" id="next" type="button">Blader →</button></div>
+<script src="../shared/lib/three.min.js"></script>
+<script src="../shared/assets.js"></script>
+<script src="../shared/shared.js"></script>
+<script src="app.js"></script>
+</body></html>

@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="nl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#000000">
+<title>De kamer · variaties</title>
+<link rel="stylesheet" href="shared/fonts/fonts.css">
+<style>
+/* Landingspagina voor de kamer-variaties. Zelfde donkere look als de intro en de hoofdstukken. */
+:root{--ink:#000;--chalk:#ece8de;--chalk-dim:#a3a59e;--ochre:#D6A93E;--ochre-dim:#a8873a;--line:rgba(236,232,222,.16);
+  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;--f-body:"Literata",Georgia,serif;--f-mono:"IBM Plex Mono",ui-monospace,monospace;color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--ink);color:var(--chalk);font-family:var(--f-body);-webkit-text-size-adjust:100%}
+body{background:radial-gradient(ellipse at 50% -10%,#1d1810 0%,#000 60%) fixed}
+.wrap{max-width:1180px;margin:0 auto;padding:calc(48px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 80px max(16px,env(safe-area-inset-left,0px))}
+.eye{font:500 .78rem var(--f-display);letter-spacing:.3em;text-transform:uppercase;color:var(--ochre);margin:0 0 12px}
+h1{font:800 clamp(2.8rem,9vw,6.4rem)/.9 var(--f-display);text-transform:uppercase;margin:0 0 22px;letter-spacing:.01em}
+.lead{font:400 clamp(1.02rem,1.6vw,1.2rem)/1.6 var(--f-body);color:var(--chalk-dim);max-width:44em;margin:0 0 40px}
+.lead b{color:var(--chalk);font-weight:500}
+h2{font:700 .95rem var(--f-display);letter-spacing:.24em;text-transform:uppercase;color:var(--chalk-dim);margin:56px 0 18px;border-top:1px solid var(--line);padding-top:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,520px),1fr));gap:22px}
+a.card{display:block;color:inherit;text-decoration:none;border:1px solid var(--line);background:rgba(20,17,12,.6);transition:border-color .25s,transform .25s}
+a.card:hover{border-color:var(--ochre);transform:translateY(-2px)}
+a.card:focus-visible{outline:2px solid var(--ochre);outline-offset:4px}
+.thumb{aspect-ratio:800/365;background:#111 center/cover no-repeat;border-bottom:1px solid var(--line);position:relative}
+.thumb span{position:absolute;left:14px;top:12px;font:800 1.6rem var(--f-display);color:var(--ochre);text-shadow:0 1px 8px #000}
+.body{padding:18px 20px 22px}
+.body h3{font:800 1.9rem/1 var(--f-display);text-transform:uppercase;margin:0 0 6px}
+.body .tag{font:500 .72rem var(--f-display);letter-spacing:.22em;text-transform:uppercase;color:var(--ochre);margin:0 0 12px}
+.body p{font:400 .98rem/1.55 var(--f-body);color:var(--chalk-dim);margin:0 0 10px}
+.body ul{margin:8px 0 0;padding:0 0 0 1.1em;font:400 .92rem/1.5 var(--f-body);color:var(--chalk-dim)}
+.body li{margin:3px 0}
+.body li b{color:var(--chalk);font-weight:500}
+.go{display:inline-block;margin-top:14px;font:700 .85rem var(--f-display);letter-spacing:.2em;text-transform:uppercase;color:#000;background:var(--chalk);padding:10px 18px}
+a.card:hover .go{background:var(--ochre)}
+.clues{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));gap:18px}
+.clue{border:1px solid var(--line);padding:0 0 14px}
+.clue img{width:100%;display:block;border-bottom:1px solid var(--line)}
+.clue p{font:400 .92rem/1.5 var(--f-body);color:var(--chalk-dim);margin:12px 16px 0}
+.clue p b{color:var(--chalk);font-weight:500}
+.chap{display:flex;flex-wrap:wrap;gap:10px}
+.chap a{font:700 .8rem var(--f-display);letter-spacing:.2em;text-transform:uppercase;color:var(--chalk);border:1px solid rgba(236,232,222,.35);padding:10px 14px;text-decoration:none}
+.chap a:hover{border-color:var(--ochre);color:var(--ochre)}
+.note{font:400 .8rem/1.6 var(--f-mono);color:rgba(236,232,222,.5);margin-top:40px;max-width:60em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eye">We All Breathe The Same Air · Like Dust deel 2</p>
+  <h1>De kamer</h1>
+  <p class="lead">De vier hoofdstukken bestaan al als film met interactie. Wat ontbrak, is <b>de kamer die het verhaal aan elkaar knoopt</b>: de plek waar Sam uiteindelijk terechtkomt, rustig en gewoon, terwijl het verhaal zwaar is. Hieronder vier richtingen in Three.js, allemaal met dezelfde stift- en inktlook, het palet van de hoofdstukken en dezelfde regel: <b>een ding in de kamer opent een hoofdstuk, en de kamer verandert als je terugkomt.</b></p>
+
+  <h2>Vier variaties</h2>
+  <div class="grid">
+    <a class="card" href="v1_herinneringskamer/index.html">
+      <div class="thumb" style="background-image:url(shared/img/v1.jpg)"><span>1</span></div>
+      <div class="body">
+        <p class="tag">2.5D · uit het After Effects-ontwerp</p>
+        <h3>Herinneringskamer</h3>
+        <p>De geschilderde kamer uit <i>room 2.psd</i>, laag voor laag op diepte gezet. Wat je nog niet zag, is een krijtschets; na het hoofdstuk loopt de kleur er als inkt in.</p>
+        <ul>
+          <li><b>Paspoort</b> → Schiphol · <b>foto van thuis</b> → The AZC · <b>fiets</b> → Amsterdam · <b>brief</b> → The Letter</li>
+          <li>Een stiftcirkel wijst het volgende ding aan. Het licht door het dakraam wordt per hoofdstuk warmer.</li>
+          <li>Einde: de duif vliegt weg, Sam staat op en de kamer loopt wit vol.</li>
+        </ul>
+        <span class="go">Open variatie 1</span>
+      </div>
+    </a>
+    <a class="card" href="v2_zolderkamer/index.html">
+      <div class="thumb" style="background-image:url(shared/img/v2.jpg)"><span>2</span></div>
+      <div class="body">
+        <p class="tag">3D · de kamer uit de briefing</p>
+        <h3>Zolderkamer</h3>
+        <p>De tienerkamer bij het pleeggezin (Room.png): blauwe schuine wand, bureau onder de dakkapel, bed. Toon-shaded met bevende stiftlijnen, arcering in de schaduw en kleur die net naast de lijn valt.</p>
+        <ul>
+          <li><b>Rugzak</b> → Schiphol · <b>telefoon</b> → The AZC · <b>duif in een schoenendoos</b> → Amsterdam · <b>brief</b> → The Letter</li>
+          <li>De tijd schuift per hoofdstuk op: avond, nacht, diepe nacht, dageraad, ochtend. Er komt een getekende pagina bij aan de muur.</li>
+          <li>Einde: je zet het raam open in het ochtendlicht.</li>
+        </ul>
+        <span class="go">Open variatie 2</span>
+      </div>
+    </a>
+    <a class="card" href="v3_adem/index.html">
+      <div class="thumb" style="background-image:url(shared/img/v3.jpg)"><span>3</span></div>
+      <div class="body">
+        <p class="tag">Abstract interactiemodel · transformatie</p>
+        <h3>Adem</h3>
+        <p>Geen kamer maar lucht: "We all breathe the same air" en "Like dust" letterlijk. Houd ingedrukt om in te ademen, laat los om uit te ademen. Wat je uitblaast, wordt het volgende beeld.</p>
+        <ul>
+          <li>Stof → <b>vliegtuig</b> → <b>Sam ineengedoken</b> → <b>fiets</b> → <b>brief</b> → Sam van achteren → <b>de kamer</b>.</li>
+          <li>Elk beeld opent zijn hoofdstuk; pas daarna kun je weer ademen. Na elk hoofdstuk blijft een inktvlek in de kleur van dat hoofdstuk op het papier.</li>
+          <li>De vormen zijn gestippeld uit de PSD-lagen en de green-screen-opnames.</li>
+        </ul>
+        <span class="go">Open variatie 3</span>
+      </div>
+    </a>
+    <a class="card" href="v4_popupboek/index.html">
+      <div class="thumb" style="background-image:url(shared/img/v4.jpg)"><span>4</span></div>
+      <div class="body">
+        <p class="tag">3D · papier en karton</p>
+        <h3>Pop-upboek</h3>
+        <p>De kamer als boek op tafel. Sla het open en de kamer vouwt omhoog uit het papier, met de spullen als uitgesneden karton. Elke spread is een hoofdstuk: links Sams zin, rechts wat omhoog klapt.</p>
+        <ul>
+          <li>Doorbladeren kan pas als je het hoofdstuk hebt gezien. Ongeziene dingen zijn een inktschets, daarna in kleur.</li>
+          <li>Laatste spread: dezelfde kamer in kleur, met Sam van achteren.</li>
+        </ul>
+        <span class="go">Open variatie 4</span>
+      </div>
+    </a>
+  </div>
+
+  <h2>Waar de kamer op gebaseerd is</h2>
+  <div class="clues">
+    <div class="clue"><img src="shared/img/ref_zolder.jpg" alt="Unity-schets van de zolderkamer"><p><b>Briefing (old/Brief Like Dust 2):</b> het verhaal wordt verteld vanuit de kamer bij het pleeggezin. Toon-shaded tienerkamer, dingen die hoofdstukken openen, licht van avond naar ochtend, oude foto's en links naar deel 1. Basis voor variatie 2.</p></div>
+    <div class="clue"><img src="shared/img/ref_ae.jpg" alt="Geschilderde kamer uit het After Effects-project"><p><b>After Effects-project (001):</b> een donkere geschilderde kamer met stapelbed, duif, fiets, brief, foto van thuis, paspoort en geld als losse lagen, plus green-screen-clips van Sam. Eindigt in witte mist. Basis voor variaties 1, 3 en 4.</p></div>
+  </div>
+
+  <h2>De hoofdstukken (filmversies met interactie)</h2>
+  <div class="chap">
+    <a href="../All%20hoofdstuken%20met%20interactie%201-4%20/We_All_Breathe_The_Same_Air_DEF_v1/Hoofdstuk_1_Schiphol/index.html">1 · Schiphol</a>
+    <a href="../All%20hoofdstuken%20met%20interactie%201-4%20/We_All_Breathe_The_Same_Air_DEF_v1/Hoofdstuk_2_The_AZC/index.html">2 · The AZC</a>
+    <a href="../All%20hoofdstuken%20met%20interactie%201-4%20/We_All_Breathe_The_Same_Air_DEF_v1/Hoofdstuk_3_Amsterdam/index.html">3 · Amsterdam</a>
+    <a href="../All%20hoofdstuken%20met%20interactie%201-4%20/We_All_Breathe_The_Same_Air_DEF_v1/Hoofdstuk_4_The_Letter/index.html">4 · The Letter</a>
+  </div>
+
+  <p class="note">Testen: toets 1 t/m 4 zet een hoofdstuk op "gezien", 0 of ↺ wist de voortgang. Elke variatie onthoudt zijn eigen voortgang in de browser.<br>
+  Werkt los vanaf schijf (dubbelklik index.html). Via een lokale webserver of Netlify ziet de kamer ook wanneer een hoofdstuk echt is afgelopen; via file:// telt een hoofdstuk als gezien na 15 seconden kijken.<br>
+  Deze map moet naast "All hoofdstuken met interactie 1-4" blijven staan, want de kamer opent de hoofdstukken daaruit.</p>
+</div>
+</body></html>
