@@ -1148,3 +1148,11 @@ photo(){
 }
 };
 </script>
+
+<script>/* vanuit de kamer (?autoplay=1): meteen starten, zonder startkaart. Blokkeert de browser het afspelen, dan komt de startkaart terug. */
+if(/[?&]autoplay\b/.test(location.search)){ $("go").click(); setTimeout(()=>{ if(!playing) $("cardStart").classList.remove("off"); },1500); }
+</script>
+<script>/* in de kamer (iframe): de kamer heeft zijn eigen terugknop bovenin; "Back to the room" op de eindkaart gaat terug naar de kamer. */
+if(window.parent!==window){ const top=$("toRoom"); if(top) top.style.display="none";
+  document.querySelectorAll("[data-room]").forEach(a=>{ const b=a.cloneNode(true); a.replaceWith(b); b.addEventListener("click",e=>{ e.preventDefault(); parent.postMessage("ld-room-back","*"); }); }); }
+</script>
