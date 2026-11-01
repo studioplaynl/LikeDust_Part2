@@ -1,7 +1,7 @@
 /* Like Dust 2 · gedeelde code voor de kamer-variaties.
    - hoofdstukken (alleen de filmversies met interactie) in een overlay openen
    - voortgang per variatie (localStorage, faalt stil)
-   - inkt-overgang (vlek die het scherm dichtloopt), geluid, HUD, hint, label
+   - overgang naar de film (omtrek van het voorwerp komt op je af), fade, geluid, HUD, hint, label
    - GLSL-bouwstenen voor de stift/inkt-look
    Klassiek script (geen modules) zodat alles ook vanaf file:// draait. */
 (function(){
@@ -60,33 +60,115 @@ function wipe(color="#000",dir="in",ms=1200){
   return new Promise(res=>setTimeout(res,ms));
 }
 
-/* ---------- hoofdstuk openen ---------- */
-let chapterOpen=false;
-function openChapter(n,{onClose,color}={}){
+/* ---------- hoofdstuk openen ----------
+   Het hoofdstuk staat al klaar in een verborgen iframe (prepareChapter), met het eerste filmbeeld geladen.
+   Bij de klik (openChapter) mag de film van de browser geluid maken: we "primen" hem op dat moment.
+   Dan rijdt de kamer-camera naar het voorwerp (approach ms), de omtrek van het voorwerp komt met het
+   eerste filmbeeld erin op je af tot hij het scherm vult, en de film speelt. Aan het eind: terug naar de kamer. */
+let chapterOpen=false; const frames={};
+function chapterWrap(){ return $(".ld-chapter")||document.body.appendChild(el("div","ld-chapter")); }
+function prepareChapter(n){
+  if(!n) return null; if(frames[n]) return frames[n];
+  // niet te veel films tegelijk laden: oude, ongebruikte weg
+  const keys=Object.keys(frames).filter(k=>!frames[k].active);
+  if(keys.length>=2) dropFrame(keys[0]);
+  const c=CHAPTERS[n-1], box=el("div","ld-fr"), fr=el("iframe");
+  fr.allow="autoplay; fullscreen"; fr.title="Hoofdstuk "+n+" · "+c.title; fr.src=c.src+"?embed=1";
+  box.appendChild(fr); chapterWrap().appendChild(box);
+  const o={n,box,fr,ready:false,active:false,waits:[]}; frames[n]=o; return o;
+}
+function dropFrame(n){ const o=frames[n]; if(!o) return; o.fr.src="about:blank"; o.box.remove(); delete frames[n]; }
+addEventListener("message",e=>{
+  for(const k in frames){ const o=frames[k]; if(e.source!==o.fr.contentWindow) continue;
+    if(e.data==="ld-ready"){ o.ready=true; o.waits.splice(0).forEach(f=>f()); }
+    if(e.data==="ld-room-back"&&o.close) o.close(true); }
+});
+function call(o,fn){ try{ const w=o.fr.contentWindow; if(w&&w[fn]){ w[fn](); return; } }catch(_){} try{ o.fr.contentWindow.postMessage(fn==="ldPrime"?"ld-prime":"ld-start","*"); }catch(_){} }
+const whenReady=(o,ms)=>new Promise(res=>{ if(o.ready) return res(); o.waits.push(res); setTimeout(res,ms); });
+
+/* Silhouet van één object zoals de camera het nu ziet: canvas ter grootte van het scherm (halve resolutie), wit waar het object is. */
+function silhouette(renderer,scene,camera,root,grow=0){
+  const size=renderer.getSize(new THREE.Vector2()), w=Math.max(2,Math.round(size.x/2)), h=Math.max(2,Math.round(size.y/2));
+  const rt=new THREE.WebGLRenderTarget(w,h), keep=new Set();
+  root.traverse(o=>keep.add(o));
+  const hidden=[]; scene.traverse(o=>{ if((o.isMesh||o.isSprite||o.isLine||o.isPoints)&&o.visible&&!keep.has(o)){ o.visible=false; hidden.push(o); } });
+  const bg=scene.background, fog=scene.fog; scene.background=null; scene.fog=null;
+  const cc=renderer.getClearColor(new THREE.Color()), ca=renderer.getClearAlpha(), prev=renderer.getRenderTarget();
+  renderer.setRenderTarget(rt); renderer.setClearColor(0x000000,0); renderer.clear(); renderer.render(scene,camera);
+  const px=new Uint8Array(w*h*4); renderer.readRenderTargetPixels(rt,0,0,w,h,px);
+  renderer.setRenderTarget(prev); renderer.setClearColor(cc,ca); scene.background=bg; scene.fog=fog; hidden.forEach(o=>o.visible=true); rt.dispose();
+  const cv=document.createElement("canvas"); cv.width=w; cv.height=h; const g=cv.getContext("2d"), im=g.createImageData(w,h);
+  let x0=w,y0=h,x1=-1,y1=-1;
+  for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const a=px[((h-1-y)*w+x)*4+3]; if(a>25){ const k=(y*w+x)*4; im.data[k]=im.data[k+1]=im.data[k+2]=255; im.data[k+3]=255; if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } }
+  g.putImageData(im,0,0);
+  if(x1<0) return null;
+  if(grow){ // losse punten (zoals stof) dichtsmeren tot één vorm: silhouet in een ring van richtingen over zichzelf tekenen
+    const t=document.createElement("canvas"); t.width=w; t.height=h; const tg=t.getContext("2d");
+    for(const r of [grow,grow/2]) for(let k=0;k<12;k++){ const a=k/12*Math.PI*2; tg.drawImage(cv,Math.cos(a)*r,Math.sin(a)*r); }
+    tg.drawImage(cv,0,0); g.clearRect(0,0,w,h); g.drawImage(t,0,0); x0=Math.max(0,x0-grow); y0=Math.max(0,y0-grow); x1=Math.min(w-1,x1+grow); y1=Math.min(h-1,y1+grow); }
+  const sx=size.x/w, sy=size.y/h;
+  return {canvas:cv,cx:(x0+x1)/2*sx,cy:(y0+y1)/2*sy,bw:(x1-x0+1)*sx,bh:(y1-y0+1)*sy};
+}
+/* stiftlijn rond het silhouet */
+function outlineOf(sil,color){
+  const m=sil.canvas, w=m.width, h=m.height, o=document.createElement("canvas"); o.width=w; o.height=h; const g=o.getContext("2d");
+  const tint=document.createElement("canvas"); tint.width=w; tint.height=h; const tg=tint.getContext("2d");
+  tg.drawImage(m,0,0); tg.globalCompositeOperation="source-in"; tg.fillStyle=color; tg.fillRect(0,0,w,h);
+  for(let i=0;i<14;i++){ const a=i/14*Math.PI*2, r=2.2+((i*7)%3)*.5; g.drawImage(tint,Math.cos(a)*r,Math.sin(a)*r); }
+  g.globalCompositeOperation="destination-out"; g.drawImage(m,0,0);
+  return o.toDataURL();
+}
+
+function openChapter(n,{onClose,approach=0,target}={}){
   if(chapterOpen) return; chapterOpen=true;
-  const c=CHAPTERS[n-1];
-  const wrap=$(".ld-chapter")||document.body.appendChild(el("div","ld-chapter"));
-  wrap.innerHTML=""; const fr=el("iframe"); fr.allow="autoplay; fullscreen"; fr.title="Hoofdstuk "+n+" · "+c.title;
-  const back=el("button","ghost back","← Terug naar de kamer"); back.type="button";
-  wrap.append(fr,back);
-  const t0=performance.now(); let ended=false, poll=null;
-  wipe("#000","in",1200).then(()=>{
-    fr.src=c.src+"?autoplay=1"; wrap.classList.add("on");
-    return wipe("#000","out",1200);
-  });
-  /* Bij een webserver (zelfde origin) zien we de eindkaart van het hoofdstuk; via file:// niet, dan telt 15 s kijken. */
-  poll=setInterval(()=>{ try{ const end=fr.contentDocument&&fr.contentDocument.getElementById("cardEnd"); if(end&&!end.classList.contains("off")&&!ended){ ended=true; back.textContent="Terug naar de kamer →"; back.style.borderColor="var(--ochre)"; back.style.color="var(--ochre)"; } }catch(_){} },800);
-  const onMsg=e=>{ if(e.data==="ld-room-back"&&e.source===fr.contentWindow){ ended=true; back.onclick(); } };
-  addEventListener("message",onMsg);
-  back.onclick=()=>{
-    clearInterval(poll); removeEventListener("message",onMsg); back.onclick=null;
+  const o=prepareChapter(n); o.active=true;
+  // de klik start de film meteen, met geluid (de browser staat dat alleen binnen de klik toe); de overgang loopt eroverheen
+  if(o.ready) call(o,"ldStart"); else whenReady(o,8000).then(()=>call(o,"ldStart"));
+  const wrap=chapterWrap(), vw=innerWidth, vh=innerHeight;
+  const back=el("button","ghost back","← Terug naar de kamer"); back.type="button"; back.style.opacity=0;
+  const t0=performance.now();
+  let sil=null, line=null, done=false;
+  // approach: ms, of een functie die true geeft zodra de camera bij het voorwerp is
+  const arrived=typeof approach==="function"?approach:(()=>performance.now()-t0>=approach);
+  const waitArrive=()=>{ if(arrived()||performance.now()-t0>5000) go(); else setTimeout(waitArrive,40); };
+  waitArrive();
+  function go(){
+    try{ const t=target&&target(); if(t) sil=silhouette(t.renderer,t.scene,t.camera,t.root,t.grow||0); }catch(err){ console.warn(err); }
+    whenReady(o,8000).then(()=>{
+      wrap.classList.add("on","reveal"); o.box.classList.add("on"); wrap.appendChild(back);
+      if(!sil){ wrap.classList.remove("reveal"); finish(); return; }
+      const mask=sil.canvas.toDataURL();
+      line=el("div","ld-outline"); line.style.backgroundImage=`url(${outlineOf(sil,"#ece8de")})`; wrap.appendChild(line);
+      const S=Math.max(vw/sil.bw,vh/sil.bh)*7, T=window.LD_REVEAL_MS||1300, s0=performance.now();
+      const step=()=>{
+        const p=Math.min(1,(performance.now()-s0)/T), e=p*p*(3-2*p), s=Math.pow(S,p*p);
+        const X=sil.cx+(vw/2-sil.cx)*e, Y=sil.cy+(vh/2-sil.cy)*e, a=Math.max(0,Math.min(1,(p-.55)/.4));
+        const sz=`${vw*s}px ${vh*s}px`, pos=`${X-sil.cx*s}px ${Y-sil.cy*s}px, 0 0`;
+        for(const st of [o.box.style]){ st.webkitMaskImage=st.maskImage=`url(${mask}), linear-gradient(rgba(0,0,0,${a}),rgba(0,0,0,${a}))`;
+          st.webkitMaskSize=st.maskSize=`${sz}, 100% 100%`; st.webkitMaskPosition=st.maskPosition=pos; st.webkitMaskRepeat=st.maskRepeat="no-repeat"; }
+        line.style.backgroundSize=sz; line.style.backgroundPosition=`${X-sil.cx*s}px ${Y-sil.cy*s}px`; line.style.opacity=String(1-a);
+        if(p<1) requestAnimationFrame(step); else finish();
+      };
+      step();
+    });
+  }
+  function finish(){
+    const st=o.box.style; st.webkitMaskImage=st.maskImage="none";
+    if(line){ line.remove(); line=null; } wrap.classList.remove("reveal");
+    back.style.transition="opacity .8s"; back.style.opacity=1;
+  }
+  /* Via een webserver zien we het einde ook zelf; via file:// telt 15 s kijken. */
+  const poll=setInterval(()=>{ try{ const end=o.fr.contentDocument&&o.fr.contentDocument.getElementById("cardEnd"); if(end&&!end.classList.contains("off")) close(true); }catch(_){} },800);
+  function close(ended){
+    if(done) return; done=true; clearInterval(poll); o.close=null;
     const seen=ended||performance.now()-t0>15000;
     wipe("#000","in",1200).then(()=>{
-      wrap.classList.remove("on"); fr.src="about:blank"; chapterOpen=false;
+      wrap.classList.remove("on","reveal"); back.remove(); dropFrame(n); chapterOpen=false;
       onClose&&onClose(n,seen);
       return wipe("#000","out",1200);
     });
-  };
+  }
+  o.close=close; back.onclick=()=>close(false);
 }
 
 /* ---------- HUD ---------- */
@@ -173,6 +255,6 @@ float granul(vec2 px,float seed){ return .78+.22*fbm(px*.22+seed)+.06*(h21(px)-.
 `
 };
 
-window.LD={CHAPTERS,state,sfx,wipe,openChapter,hud,hint,tag,tex,GLSL,get muted(){return muted;},
+window.LD={CHAPTERS,state,sfx,wipe,openChapter,prepareChapter,hud,hint,tag,tex,GLSL,get muted(){return muted;},
   get busy(){ return chapterOpen; }};
 })();

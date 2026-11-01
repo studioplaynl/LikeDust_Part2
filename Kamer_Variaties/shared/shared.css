@@ -54,7 +54,11 @@ canvas.gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-acti
 /* hoofdstuk-overlay */
 .ld-chapter{position:fixed;inset:0;z-index:60;background:#000;opacity:0;transition:opacity .6s;pointer-events:none}
 .ld-chapter.on{opacity:1;pointer-events:auto}
+.ld-chapter.reveal{background:transparent;transition:none}
+.ld-fr{position:absolute;inset:0;visibility:hidden}
+.ld-fr.on{visibility:visible}
 .ld-chapter iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+.ld-outline{position:absolute;inset:0;background-repeat:no-repeat;pointer-events:none;z-index:1;filter:drop-shadow(0 0 1px rgba(0,0,0,.6))}
 .ld-chapter .back{position:absolute;z-index:2;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px))}
 .ld-wipe{position:fixed;inset:0;z-index:70;pointer-events:none;width:100%;height:100%}
 

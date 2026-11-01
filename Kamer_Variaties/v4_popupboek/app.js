@@ -160,6 +160,7 @@ async function build(){
 
 /* ---------- voortgang ---------- */
 function applyProgress(instant){
+  LD.prepareChapter(st.next());
   for(const o of OBJ){ const v=st.has(o.ch)?1:0; const set=c=>{ const u=c.userData.mesh.material.uniforms.uColor; if(instant) u.value=v; else if(v&&u.value<1) colorIn(u); else if(!v) u.value=0; }; set(o.pop); set(roomPops[o.layer]); }
   updateNav();
 }
@@ -187,13 +188,13 @@ $("prev").onclick=()=>turn(-1); $("next").onclick=()=>turn(1);
 addEventListener("keydown",e=>{ if(e.key==="ArrowRight") turn(1); if(e.key==="ArrowLeft") turn(-1); });
 
 /* ---------- klikken ---------- */
-const ray=new THREE.Raycaster(), ndc=new THREE.Vector2(); let hover=null;
+const ray=new THREE.Raycaster(), ndc=new THREE.Vector2(); let hover=null, dive=null;
 function visibleClickables(){ return clickables.filter(c=>{ const L=leaves.find(l=>l.pops.includes(c)); return L&&leaves.indexOf(L)===spread&&c.userData.stand>.9&&shownPop(c); }).map(c=>c.userData.mesh); }
 function pickPop(){ ray.setFromCamera(ndc,camera); const h=ray.intersectObjects(visibleClickables(),false); for(const x of h){ const tu=x.uv; const p=x.object.parent; return p; } return null; }
 function chOf(p){ if(p.userData.ch) return p.userData.ch; const o=OBJ.find(o=>roomPops[o.layer]===p); return o&&o.ch; }
 cv.addEventListener("pointermove",e=>{
   ndc.set(e.clientX/innerWidth*2-1,-(e.clientY/innerHeight)*2+1); look.tx=ndc.x; look.ty=ndc.y;
-  const p=ready&&!LD.busy?pickPop():null; hover=p;
+  const p=ready&&!LD.busy?pickPop():null; hover=p; if(p&&st.has(chOf(p))) LD.prepareChapter(chOf(p));
   if(p){ const ch=chOf(p); const C=LD.CHAPTERS[ch-1]; const ok=st.has(ch)||ch===nextCh();
     LD.tag(ok?(st.has(ch)?`Opnieuw · ${C.title}`:`<em>Hoofdstuk ${ch}</em> · ${C.title}`):`${C.title} · <em>nog niet</em>`,e.clientX,e.clientY); cv.style.cursor="pointer"; }
   else { LD.tag(null); cv.style.cursor=ready?"pointer":"default"; }
@@ -207,7 +208,8 @@ cv.addEventListener("click",e=>{
   const p=pickPop();
   if(p){ const ch=chOf(p); if(!(st.has(ch)||ch===nextCh())){ LD.hint("Nog niet. Eerst "+LD.CHAPTERS[nextCh()-1].title+".",null,3000); return; }
     LD.tag(null);
-    LD.openChapter(ch,{onClose:(c,seen)=>{ if(seen&&!st.has(c)){ st.mark(c); hudUi.update(); applyProgress(false); setTimeout(()=>LD.hint("Blader verder.",null,3500),1500); } updateNav(); }});
+    const wp=new THREE.Vector3(); p.userData.mesh.getWorldPosition(wp); dive={t:0,p:wp};
+    LD.openChapter(ch,{approach:()=>dive&&dive.t>=1,target:()=>({renderer,scene,camera,root:p.userData.mesh}),onClose:(c,seen)=>{ dive=null; if(seen&&!st.has(c)){ st.mark(c); hudUi.update(); applyProgress(false); setTimeout(()=>LD.hint("Blader verder.",null,3500),1500); } updateNav(); }});
     return; }
   // anders: rechterhelft = verder, linkerhelft = terug
   if(spread===0) return turn(1);
@@ -242,6 +244,9 @@ function frame(){
   const cx=(open?0:PW/2)*(1)+look.x*.4, cz=lerp(5.6,7.2,open)*wide;
   camera.position.set(cx*(open?1:.9),lerp(10.5,8.2,open)*wide*.95+look.y*.3,cz);
   camTarget.lerp(new THREE.Vector3(open?0:PW/2,0,open?-.4:0),Math.min(1,dt*2.5)); camera.lookAt(camTarget);
+  // klik: de camera duikt naar het pop-up-ding
+  if(dive){ dive.t=Math.min(1,dive.t+dt*1.8); const e=dive.t*dive.t*(3-2*dive.t);
+    camera.position.lerp(dive.p.clone().add(new THREE.Vector3(0,1.6,2.6)),e); camera.lookAt(camTarget.clone().lerp(dive.p,e)); }
   renderer.render(scene,camera);
   requestAnimationFrame(frame);
 }

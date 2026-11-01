@@ -216,7 +216,7 @@ cv.addEventListener("pointermove",e=>{
   if(!coarse){ mouseX=ndc.x; look.tp=ndc.y*.22; }
   const it=busy?null:pick();
   if(hover&&hover!==it&&hover!==mirror) emiss(hover,0);
-  hover=it; cv.style.cursor=it?"pointer":"default";
+  hover=it; cv.style.cursor=it?"pointer":"default"; if(it&&it.userData.ch&&st.has(it.userData.ch)) LD.prepareChapter(it.userData.ch);
   if(it){ const u=it.userData, s=status(it); if(it!==mirror) emiss(it,s==="locked"?.0:.35);
     const C=u.ch&&LD.CHAPTERS[u.ch-1];
     LD.tag(u.extra?u.name:s==="next"?`<em>Hoofdstuk ${u.ch}</em> · ${C.title}`:s==="seen"?`Opnieuw · ${C.title}`:`${u.name} · <em>nog niet</em>`,e.clientX,e.clientY);
@@ -234,16 +234,17 @@ cv.addEventListener("click",e=>{
   if(s==="locked"){ LD.hint("Nog niet. Eerst iets anders in de kamer.",null,3000); return; }
   busy=true; LD.tag(null); emiss(it,0); LD.hint(u.line,"Hoofdstuk "+u.ch,2400);
   const p=new THREE.Vector3(); it.getWorldPosition(p); dive={t:0,p,from:camera.position.clone(),fromLook:lookAt.clone()};
-  setTimeout(()=>LD.openChapter(u.ch,{onClose:(ch,seen)=>{
+  LD.openChapter(u.ch,{approach:()=>dive&&dive.t>=1,target:()=>({renderer,scene,camera,root:it}),onClose:(ch,seen)=>{
     busy=false; dive=null;
     if(seen&&!st.has(ch)){ st.mark(ch); hudUi.update(); onProgress(true); }
-  }}),1000);
+  }});
 });
 
 /* ---------- voortgang ---------- */
 function onProgress(anim){
   const c=st.count; todTarget=c; if(!anim) tod=c;
   pages.forEach((m,i)=>{ const on=st.has(i+1); if(m.userData.on!==on){ m.userData.on=on; m.material.map=pageTex(i+1,on); m.material.needsUpdate=true; } });
+  LD.prepareChapter(st.next());
   const nx=st.next(); circFor=nx?items.find(i=>i.userData.ch===nx):(c===4?sky:null); circP=0;
   // alleen wat je kunt aanklikken staat in de kamer; na elk hoofdstuk komt er iets bij
   items.forEach(it=>{ const ch=it.userData.ch; if(!ch) return; const on=st.has(ch)||nx===ch;
@@ -264,6 +265,8 @@ onProgress(false);
 document.getElementById("go").onclick=()=>{ document.getElementById("start").classList.add("off");
   const nx=st.next(); setTimeout(()=>LD.hint(nx?"Iets in deze kamer hoort bij Sams verhaal. Zoek het omcirkelde ding.":"Het is ochtend. Doe het raam open.",nx?"Hoofdstuk "+nx:"Ochtend",5000),900); };
 
+document.getElementById("go").click(); // geen startpaneel: meteen de kamer in
+
 /* ---------- loop ---------- */
 const clock=new THREE.Clock(); const lookAt=new THREE.Vector3(0,1,-1.5); const camBase=new THREE.Vector3(-.1,1.5,2.25);
 function frame(){
@@ -275,7 +278,7 @@ function frame(){
   look.yaw+=(look.ty-look.yaw)*Math.min(1,dt*3); look.pitch+=(look.tp-look.pitch)*Math.min(1,dt*3);
   const L=new THREE.Vector3(camBase.x+Math.sin(look.yaw)*3.5,camBase.y-.5+look.pitch*3,camBase.z-Math.cos(look.yaw)*3.5);
   let P=camBase.clone(); P.y+=Math.sin(t*.5)*.01;
-  if(dive){ dive.t=Math.min(1,dive.t+dt*1.1); const e=dive.t*dive.t*(3-2*dive.t); const tp=dive.p.clone().add(new THREE.Vector3(0,.45,.85)); P.lerp(tp,e); L.lerp(dive.p,e); }
+  if(dive){ dive.t=Math.min(1,dive.t+dt*1.8); const e=dive.t*dive.t*(3-2*dive.t); const tp=dive.p.clone().add(new THREE.Vector3(0,.45,.85)); P.lerp(tp,e); L.lerp(dive.p,e); }
   lookAt.copy(L); camera.position.copy(P); camera.lookAt(L);
   // volgende ding: lichte puls + stiftcirkel
   items.forEach(it=>{ if(it===hover||it===mirror||it===sky) return; emiss(it,it===circFor&&!busy?(.12+.1*Math.sin(t*3)):0); });

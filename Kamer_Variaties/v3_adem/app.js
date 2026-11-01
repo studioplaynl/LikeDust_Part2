@@ -128,8 +128,9 @@ const mat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,
 const pts=new THREE.Points(geo,mat); pts.frustumCulled=false; scene.add(pts);
 function setShapes(a,b){ geo.setAttribute("aA",new THREE.BufferAttribute(SHAPES[a],3)); geo.setAttribute("aB",new THREE.BufferAttribute(SHAPES[b],3)); }
 
+let camZ=14, dive=null;
 function resize(){ const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false); camera.aspect=w/h;
-  const needW=9.2, needH=6; const vh=2*14*Math.tan(THREE.MathUtils.degToRad(17.5)); const z=Math.max(14,needW/(w/h)/vh*14,needH/vh*14); camera.position.z=z; camera.updateProjectionMatrix();
+  const needW=9.2, needH=6; const vh=2*14*Math.tan(THREE.MathUtils.degToRad(17.5)); const z=Math.max(14,needW/(w/h)/vh*14,needH/vh*14); camZ=z; camera.position.z=z; camera.updateProjectionMatrix();
   paper.material.uniforms.uRes.value.set(w,h); mat.uniforms.uSize.value=Math.min(devicePixelRatio,2)*Math.max(.8,Math.min(1.4,w/1100)); }
 addEventListener("resize",resize); resize();
 
@@ -138,6 +139,7 @@ let cur=0, morph=null, busy=true, holding=false, hold=0, breath=0, exhale=0;
 const $=id=>document.getElementById(id);
 function canBreathe(){ if(busy||morph) return false; if(cur===0||cur===5) return true; if(cur>=1&&cur<=4) return st.has(cur); return false; }
 function showLabel(){
+  if(META[cur].ch) LD.prepareChapter(META[cur].ch); // film alvast klaarzetten
   const m=META[cur], el=$("shape");
   $("shEye").textContent=m.eye; $("shTitle").textContent=m.title;
   $("shOpen").hidden=!m.ch; if(m.ch) $("shOpen").textContent=st.has(m.ch)?"Opnieuw kijken":"Open het hoofdstuk";
@@ -153,7 +155,8 @@ function goTo(n){
   $("shape").classList.remove("on"); LD.hint(null);
 }
 function openCur(){ const m=META[cur]; if(!m.ch||busy||morph) return; busy=true;
-  LD.openChapter(m.ch,{onClose:(ch,seen)=>{ busy=false; if(seen&&!st.has(ch)){ st.mark(ch); hudUi.update(); stainIn(ch); } showLabel(); }}); }
+  dive={t:0}; LD.hint(null);
+  LD.openChapter(m.ch,{approach:()=>dive&&dive.t>=1,target:()=>({renderer,scene,camera,root:pts,grow:5}),onClose:(ch,seen)=>{ busy=false; dive=null; camera.position.z=camZ; if(seen&&!st.has(ch)){ st.mark(ch); hudUi.update(); stainIn(ch); } showLabel(); }}); }
 $("shOpen").onclick=openCur;
 
 /* adem-meter */
@@ -191,7 +194,7 @@ const ready=buildShapes().then(()=>{
   // verder waar je was: het laatst geziene hoofdstuk staat er nog
   cur=Math.min(st.count,4); setShapes(cur,cur); mat.uniforms.uT.value=1;
 });
-$("go").onclick=()=>{ $("go").textContent="…"; ready.then(()=>{ $("start").classList.add("off"); busy=false; showLabel(); }); };
+$("go").onclick=()=>{ $("go").textContent="…"; ready.then(()=>{ $("start").classList.add("off"); busy=false; showLabel(); }); }; $("go").click(); // geen startpaneel: meteen de kamer in
 $("again").onclick=()=>{ $("end").classList.add("off"); busy=false; cur=6; goTo(0); };
 
 /* ---------- loop ---------- */
@@ -209,6 +212,8 @@ function frame(){
   mat.uniforms.uBreath.value=breath; mat.uniforms.uExhale.value=exhale; mat.uniforms.uTime.value=t;
   pts.rotation.y=Math.sin(t*.15)*.12; pts.rotation.x=Math.sin(t*.11)*.04;
   const P=paper.material.uniforms; P.uTime.value=t; for(let i=0;i<4;i++) P.uAmt.value[i]=stainAmt[i]; P.uEnd.value+=((cur===6?1:0)-P.uEnd.value)*dt;
+  // klik: de camera gaat naar de vorm toe
+  if(dive){ dive.t=Math.min(1,dive.t+dt*1.8); const e=dive.t*dive.t*(3-2*dive.t); camera.position.z=camZ*(1-.42*e); }
   if(SHAPES.length) renderer.render(scene,camera);
   requestAnimationFrame(frame);
 }

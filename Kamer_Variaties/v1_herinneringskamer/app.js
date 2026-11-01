@@ -220,6 +220,7 @@ cv.addEventListener("pointermove",e=>{
   if(dragging){ panTx=Math.max(-1,Math.min(1,panTx-(e.clientX-dragX)/innerWidth*3)); panTy=Math.max(-1,Math.min(1,panTy+(e.clientY-dragY)/innerHeight*3)); dragX=e.clientX; dragY=e.clientY; return; }
   if(!coarse){ look.tx=ndc.x; look.ty=ndc.y; }
   const n=busy?null:pick(); hover=n; cv.style.cursor=n&&n!=="sam"?"pointer":"default";
+  if(n&&OBJ[n].ch&&st.has(OBJ[n].ch)) LD.prepareChapter(OBJ[n].ch); // terugkijken: film alvast klaarzetten
   if(n) tagFor(n,e.clientX,e.clientY); else LD.tag(null);
   if(n==="sam") LD.hint(nextWhisper(),null,3500);
 });
@@ -247,11 +248,11 @@ function activate(n,x,y){
   // hoofdstuk openen: camera duikt naar het ding toe, dan inkt
   busy=true; LD.tag(null); LD.hint(o.line,"Hoofdstuk "+o.ch,2600);
   const l=layers[n]; dive={t:0,x:l.mesh.position.x,y:l.mesh.position.y,z:l.z};
-  setTimeout(()=>LD.openChapter(o.ch,{onClose:(ch,seen)=>{
+  LD.openChapter(o.ch,{approach:()=>dive&&dive.t>=1,target:()=>({renderer,scene,camera,root:l.mesh}),onClose:(ch,seen)=>{
     dive=null; busy=false;
     if(seen&&!st.has(ch)){ st.mark(ch); hudUi.update(); colorIn(n); }
-    afterReturn();
-  }}),900);
+    afterReturn(); LD.prepareChapter(st.next());
+  }});
 }
 let dive=null;
 
@@ -266,6 +267,7 @@ let flapT=0; function flap(s){ flapT=s; }
 
 let showInstant=true;
 function applyProgress(instant){
+  LD.prepareChapter(st.next());
   if(instant) showInstant=true;
   const c=st.count;
   for(const n in OBJ){ const o=OBJ[n]; if(!o.ch) continue; layers[n].mat.uniforms.uColor.value=st.has(o.ch)?1:0; }
@@ -321,6 +323,8 @@ document.getElementById("go").onclick=()=>{
   setTimeout(()=>LD.hint(nx?"Iets in de kamer wacht op je. Zoek de omcirkelde schets.":"Alles is gezien. De duif wil naar buiten.",nx?"Hoofdstuk "+nx:"Einde",5000),900);
 };
 
+document.getElementById("go").click(); // geen startpaneel: meteen de kamer in
+
 /* ---------- loop ---------- */
 const clock=new THREE.Clock();
 function frame(){
@@ -342,7 +346,7 @@ function frame(){
   look.x+=(look.tx-look.x)*Math.min(1,dt*3); look.y+=(look.ty-look.y)*Math.min(1,dt*3);
   if(coarse){ panTx+=panVx; }
   let cx=look.x*.35+panTx*panX*(coarse?1:0)+look.x*panX, cy=look.y*.2+panTy*panY*(coarse?1:0)+look.y*panY, cz=D;
-  if(dive){ dive.t=Math.min(1,dive.t+dt*1.2); const e=ease(dive.t); cx+= (dive.x-cx)*e*.8; cy+=(dive.y-cy)*e*.8; cz=D-(D-dive.z-2.5)*e; }
+  if(dive){ dive.t=Math.min(1,dive.t+dt*1.8); const e=ease(dive.t); cx+= (dive.x-cx)*e*.8; cy+=(dive.y-cy)*e*.8; cz=D-(D-dive.z-2.5)*e; }
   camera.position.set(cx,cy,cz); camera.lookAt(cx*.92,cy*.92,0);
 
   // stiftcirkel

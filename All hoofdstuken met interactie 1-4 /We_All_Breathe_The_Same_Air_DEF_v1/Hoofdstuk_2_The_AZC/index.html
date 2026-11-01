@@ -785,11 +785,44 @@ photo(){
 }
 };
 </script>
-
-<script>/* vanuit de kamer (?autoplay=1): meteen starten, zonder startkaart. Blokkeert de browser het afspelen, dan komt de startkaart terug. */
-if(/[?&]autoplay\b/.test(location.search)){ $("go").click(); setTimeout(()=>{ if(!playing) $("cardStart").classList.remove("off"); },1500); }
-</script>
-<script>/* in de kamer (iframe): de kamer heeft zijn eigen terugknop bovenin; "Back to the room" op de eindkaart gaat terug naar de kamer. */
-if(window.parent!==window){ const top=$("toRoom"); if(top) top.style.display="none";
-  document.querySelectorAll("[data-room]").forEach(a=>{ const b=a.cloneNode(true); a.replaceWith(b); b.addEventListener("click",e=>{ e.preventDefault(); parent.postMessage("ld-room-back","*"); }); }); }
+<script>/* ============================================================
+   VANUIT DE KAMER (iframe)
+   ?embed=1 : geen startkaart, het eerste filmbeeld staat klaar. De kamer roept
+     ldPrime() aan op het moment van de klik (dan mag de browser geluid afspelen)
+     en ldStart() zodra de overgang klaar is. Via file:// gaat het met postMessage.
+   ?autoplay=1 : meteen starten.
+   Los geopend gedraagt het hoofdstuk zich als vanouds.
+   ============================================================ */
+(function(){
+  const q=location.search, inRoom=window.parent!==window;
+  if(inRoom){ const tr=$("toRoom"); if(tr) tr.style.display="none";
+    document.querySelectorAll("[data-room]").forEach(a=>{ const b=a.cloneNode(true); a.replaceWith(b); b.addEventListener("click",e=>{ e.preventDefault(); parent.postMessage("ld-room-back","*"); }); });
+    // aan het eind geen eindkaart: meteen terug naar de kamer
+    const ce=$("cardEnd"); ce.style.display="none"; let back=false;
+    new MutationObserver(()=>{ if(!back&&!ce.classList.contains("off")){ back=true; parent.postMessage("ld-room-back","*"); } }).observe(ce,{attributes:true,attributeFilter:["class"]}); }
+  function unmuteChip(){ const b=document.createElement("button"); b.className="btn"; b.type="button"; b.textContent="Geluid aan";
+    b.style.cssText="position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:60";
+    b.onclick=()=>{ vids.forEach(v=>v.muted=false); try{ snd.unlock(); }catch(_){} b.remove(); }; document.body.appendChild(b); }
+  function start(){
+    $("cardStart").classList.add("off"); document.body.classList.remove("ld-wait");
+    vids[0].currentTime=0;
+    vids[0].play().then(()=>setPlaying(true)).catch(()=>{
+      // de browser wil geen geluid zonder klik: dan zonder geluid starten, met een knop om het aan te zetten
+      vids.forEach(v=>v.muted=true);
+      vids[0].play().then(()=>{ setPlaying(true); unmuteChip(); }).catch(()=>{ $("cardStart").classList.remove("off"); });
+    });
+    preload(1);
+  }
+  if(/[?&]embed\b/.test(q)){
+    $("cardStart").classList.add("off"); document.body.classList.add("ld-wait");
+    const st=document.createElement("style"); st.textContent=".ld-wait .top,.ld-wait .ctl{opacity:0;pointer-events:none}.top,.ctl{transition:opacity .8s}"; document.head.appendChild(st);
+    segI=0; cur=0; vids[0].preload="auto"; vids[0].src=SEGS[0].src; vids[0].classList.remove("hide"); vids[1].classList.add("hide");
+    let primed=false;
+    window.ldPrime=()=>{ if(primed) return; primed=true; try{ snd.unlock(); }catch(_){}
+      vids.forEach(v=>{ try{ const p=v.play(); if(p&&p.catch) p.catch(()=>{}); v.pause(); }catch(_){} }); };
+    window.ldStart=start;
+    addEventListener("message",e=>{ if(e.data==="ld-prime") ldPrime(); if(e.data==="ld-start") start(); });
+    parent.postMessage("ld-ready","*");
+  } else if(/[?&]autoplay\b/.test(q)){ try{ snd.unlock(); }catch(_){} vids[0].src=SEGS[0].src; segI=0; cur=0; vids[0].classList.remove("hide"); vids[1].classList.add("hide"); start(); }
+})();
 </script>
