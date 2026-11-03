@@ -1,0 +1,990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Auto Panel Segmenter</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; background: #101218; color: #ecf2ff; font-family: system-ui, sans-serif; padding: 20px; }
+    canvas { display: block; max-width: 100%; margin: 10px 0; }
+    pre { background: #1e2430; padding: 16px; border-radius: 10px; overflow: auto; font-size: 13px; white-space: pre-wrap; }
+    .panel-info { margin: 8px 0; padding: 8px 12px; background: #1e2430; border-radius: 8px; border-left: 3px solid #6cb8ff; }
+    h2 { color: #6cb8ff; }
+    #status { color: #93a0b9; margin: 12px 0; }
+    .zoom-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin: 16px 0; }
+    .zoom-cell { background: #1e2430; border-radius: 10px; padding: 12px; }
+    .zoom-cell h4 { margin: 0 0 8px; color: #8cffc1; }
+    .zoom-cell canvas { image-rendering: pixelated; }
+  </style>
+</head>
+<body>
+  <h2>Panel Edge Detector for image-0012.png</h2>
+  <div id="status">Loading image...</div>
+  <canvas id="main-canvas"></canvas>
+  <div id="zoom-views" class="zoom-grid"></div>
+  <h2>Detected Panels</h2>
+  <pre id="output">Analyzing...</pre>
+  <h2>Panel Segmenter Integration</h2>
+  <div id="integration-info"></div>
+
+  <script>
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = "/images/Images%20from%20PDF%20-%20large/image-0012.png";
+
+    img.onload = () => {
+      document.getElementById("status").textContent = 
+        `Image loaded: ${img.naturalWidth} x ${img.naturalHeight}px`;
+      refinedDetection(img);
+    };
+    
+    function refinedDetection(img) {
+      const W = img.naturalWidth;
+      const H = img.naturalHeight;
+
+      const canvas = document.getElementById("main-canvas");
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, W, H);
+      const d = imageData.data;
+
+      function bright(x, y) {
+        if (x < 0 || x >= W || y < 0 || y >= H) return 255;
+        const i = (y * W + x) * 4;
+        return (d[i] + d[i+1] + d[i+2]) / 3;
+      }
+
+      // Strategy: the page has clear white gutters between panels.
+      // We use the known structure from examining the image:
+      // - Row 1 (top): 2 panels side by side
+      // - Row 2 (mid): 2 panels side by side  
+      // - Row 3 (bot): 1 wide panel
+      // The outer page margins contain corner registration marks.
+      //
+      // For each panel, we need to find the INSIDE edge of the dark border.
+      // We'll use a two-phase approach:
+      // Phase 1: Find approximate gutter locations using the center strip
+      // Phase 2: For each panel, precisely locate each edge by scanning 
+      //          from the gutter center toward the panel
+
+      // Phase 1: Horizontal gutter detection
+      // Use center 60% of image width to avoid corner marks
+      const cx1 = Math.floor(W * 0.25), cx2 = Math.floor(W * 0.75);
+      
+      function rowBrightness(y) {
+        let s = 0, n = 0;
+        for (let x = cx1; x < cx2; x += 3) { s += bright(x, y); n++; }
+        return s / n;
+      }
+
+      // Build brightness profile
+      const rowProfile = [];
+      for (let y = 0; y < H; y++) rowProfile.push(rowBrightness(y));
+
+      // Find white bands (gutter zones) using run-length encoding
+      const whiteRuns = [];
+      let runStart = -1;
+      for (let y = 0; y < H; y++) {
+        if (rowProfile[y] > 180) {
+          if (runStart < 0) runStart = y;
+        } else {
+          if (runStart >= 0 && y - runStart > 20) {
+            whiteRuns.push([runStart, y]);
+          }
+          runStart = -1;
+        }
+      }
+      if (runStart >= 0) whiteRuns.push([runStart, H]);
+
+      console.log("White horizontal runs:", whiteRuns);
+
+      // The content rows are between consecutive white runs
+      const rows = [];
+      for (let i = 0; i < whiteRuns.length - 1; i++) {
+        const t = whiteRuns[i][1];
+        const b = whiteRuns[i+1][0];
+        if (b - t > 100) rows.push({ top: t, bottom: b });
+      }
+      console.log("Content rows:", rows);
+
+      // For each content row, detect vertical white gutter
+      function colBrightness(x, y1, y2) {
+        let s = 0, n = 0;
+        for (let y = y1 + 40; y < y2 - 40; y += 3) { s += bright(x, y); n++; }
+        return n > 0 ? s / n : 0;
+      }
+
+      const panelDefs = [];
+
+      for (let ri = 0; ri < rows.length; ri++) {
+        const row = rows[ri];
+        // Scan for vertical gutter in center 60% of width
+        const vx1 = Math.floor(W * 0.25), vx2 = Math.floor(W * 0.75);
+        const vWhiteRuns = [];
+        let vStart = -1;
+        for (let x = vx1; x < vx2; x++) {
+          const cb = colBrightness(x, row.top, row.bottom);
+          if (cb > 180) {
+            if (vStart < 0) vStart = x;
+          } else {
+            if (vStart >= 0 && x - vStart > 10) {
+              vWhiteRuns.push([vStart, x]);
+            }
+            vStart = -1;
+          }
+        }
+        console.log(`Row ${ri} vertical gutters:`, vWhiteRuns);
+
+        if (vWhiteRuns.length === 0) {
+          // Single panel
+          panelDefs.push({ rowTop: row.top, rowBottom: row.bottom, colLeft: 0, colRight: W, gutterMidH: whiteRuns });
+        } else {
+          // Multiple panels
+          const vMids = vWhiteRuns.map(r => Math.floor((r[0] + r[1]) / 2));
+          panelDefs.push({ rowTop: row.top, rowBottom: row.bottom, colLeft: 0, colRight: vWhiteRuns[0][0], gutterMidH: whiteRuns });
+          for (let j = 0; j < vWhiteRuns.length - 1; j++) {
+            panelDefs.push({ rowTop: row.top, rowBottom: row.bottom, colLeft: vWhiteRuns[j][1], colRight: vWhiteRuns[j+1][0], gutterMidH: whiteRuns });
+          }
+          panelDefs.push({ rowTop: row.top, rowBottom: row.bottom, colLeft: vWhiteRuns[vWhiteRuns.length-1][1], colRight: W, gutterMidH: whiteRuns });
+        }
+      }
+
+      console.log("Panel definitions:", panelDefs);
+
+      // Phase 2: Precisely find each edge of each panel
+      // For each edge, scan from the gutter CENTER toward the panel.
+      // The scan crosses: white gutter -> dark border -> panel content.
+      // We want the LAST dark pixel of the border (inside edge).
+      
+      function findEdgePrecise(scanDir, panelDef) {
+        // scanDir: "left" means finding the left edge (scan rightward from left gutter)
+        //          "right" means finding right edge (scan leftward from right gutter)
+        //          "top" means finding top edge (scan downward from top gutter)  
+        //          "bottom" means finding bottom edge (scan upward from bottom gutter)
+        
+        const { rowTop, rowBottom, colLeft, colRight } = panelDef;
+        const samples = 40;
+        const edgeValues = [];
+        const borderDark = 75;
+
+        if (scanDir === "left" || scanDir === "right") {
+          const yRange = rowBottom - rowTop;
+          const margin = Math.floor(yRange * 0.08);
+          const yStep = Math.max(1, Math.floor((yRange - 2 * margin) / samples));
+          
+          for (let si = 0; si < samples; si++) {
+            const y = rowTop + margin + si * yStep;
+            if (y >= rowBottom - margin) break;
+
+            if (scanDir === "left") {
+              // Scan from colLeft rightward
+              let x = colLeft;
+              let inBorder = false;
+              let borderStart = -1;
+              while (x < colLeft + 300 && x < colRight) {
+                const b = bright(x, y);
+                if (!inBorder && b < borderDark) {
+                  inBorder = true;
+                  borderStart = x;
+                }
+                if (inBorder && b >= borderDark) {
+                  // Found end of border - inner edge
+                  edgeValues.push(x);
+                  break;
+                }
+                x++;
+              }
+            } else {
+              let x = colRight;
+              let inBorder = false;
+              while (x > colRight - 300 && x > colLeft) {
+                const b = bright(x, y);
+                if (!inBorder && b < borderDark) {
+                  inBorder = true;
+                }
+                if (inBorder && b >= borderDark) {
+                  edgeValues.push(x);
+                  break;
+                }
+                x--;
+              }
+            }
+          }
+        } else {
+          // top or bottom
+          const xRange = colRight - colLeft;
+          const margin = Math.floor(xRange * 0.08);
+          const xStep = Math.max(1, Math.floor((xRange - 2 * margin) / samples));
+
+          for (let si = 0; si < samples; si++) {
+            const x = colLeft + margin + si * xStep;
+            if (x >= colRight - margin) break;
+
+            if (scanDir === "top") {
+              let y = rowTop;
+              let inBorder = false;
+              while (y < rowTop + 200 && y < rowBottom) {
+                const b = bright(x, y);
+                if (!inBorder && b < borderDark) inBorder = true;
+                if (inBorder && b >= borderDark) {
+                  edgeValues.push(y);
+                  break;
+                }
+                y++;
+              }
+            } else {
+              let y = rowBottom;
+              let inBorder = false;
+              while (y > rowBottom - 200 && y > rowTop) {
+                const b = bright(x, y);
+                if (!inBorder && b < borderDark) inBorder = true;
+                if (inBorder && b >= borderDark) {
+                  edgeValues.push(y);
+                  break;
+                }
+                y--;
+              }
+            }
+          }
+        }
+
+        if (edgeValues.length === 0) return null;
+        edgeValues.sort((a, b) => a - b);
+        return edgeValues[Math.floor(edgeValues.length * 0.5)];
+      }
+
+      const panels = panelDefs.map(pd => {
+        const left = findEdgePrecise("left", pd);
+        const right = findEdgePrecise("right", pd);
+        const top = findEdgePrecise("top", pd);
+        const bottom = findEdgePrecise("bottom", pd);
+        
+        const l = left ?? pd.colLeft;
+        const r = right ?? pd.colRight;
+        const t = top ?? pd.rowTop;
+        const b = bottom ?? pd.rowBottom;
+
+        console.log(`Panel: L=${l} T=${t} R=${r} B=${b} (${r-l} x ${b-t})`);
+        return { x: l, y: t, w: r - l, h: b - t };
+      });
+
+      // Draw
+      ctx.strokeStyle = "#6cb8ff";
+      ctx.lineWidth = 4;
+      panels.forEach(p => ctx.strokeRect(p.x, p.y, p.w, p.h));
+
+      // Zoom views
+      const zoomContainer = document.getElementById("zoom-views");
+      zoomContainer.innerHTML = "";
+      panels.forEach((p, idx) => {
+        [
+          { name: "Top-Left", cx: p.x, cy: p.y },
+          { name: "Top-Right", cx: p.x + p.w, cy: p.y },
+          { name: "Bottom-Left", cx: p.x, cy: p.y + p.h },
+          { name: "Bottom-Right", cx: p.x + p.w, cy: p.y + p.h },
+        ].forEach(corner => {
+          const cell = document.createElement("div");
+          cell.className = "zoom-cell";
+          const title = document.createElement("h4");
+          title.textContent = `Panel ${idx + 1} - ${corner.name} (${corner.cx}, ${corner.cy})`;
+          cell.appendChild(title);
+          const zc = document.createElement("canvas");
+          const zs = 80, sc = 4;
+          zc.width = zs * sc; zc.height = zs * sc;
+          zc.style.width = `${zs * sc}px`;
+          const zx = zc.getContext("2d");
+          zx.imageSmoothingEnabled = false;
+          zx.drawImage(img, corner.cx - zs/2, corner.cy - zs/2, zs, zs, 0, 0, zs*sc, zs*sc);
+          zx.strokeStyle = "#ff4444"; zx.lineWidth = 2;
+          const c = zs * sc / 2;
+          zx.beginPath(); zx.moveTo(c-20,c); zx.lineTo(c+20,c); zx.moveTo(c,c-20); zx.lineTo(c,c+20); zx.stroke();
+          cell.appendChild(zc);
+          zoomContainer.appendChild(cell);
+        });
+      });
+
+      // JSON
+      const output = {
+        source_image: "image-0012.png",
+        image_width: W,
+        image_height: H,
+        panels: panels.map((p, i) => ({
+          id: i + 1,
+          u0: Number((p.x / W).toFixed(6)),
+          v0: Number((1 - (p.y + p.h) / H).toFixed(6)),
+          u1: Number(((p.x + p.w) / W).toFixed(6)),
+          v1: Number((1 - p.y / H).toFixed(6)),
+          px: { x: Math.round(p.x), y: Math.round(p.y), w: Math.round(p.w), h: Math.round(p.h) }
+        }))
+      };
+      document.getElementById("output").textContent = JSON.stringify(output, null, 2);
+      document.getElementById("integration-info").innerHTML = `
+        <div class="panel-info">
+          <strong>Panel coordinates detected:</strong><br>
+          ${panels.map((p, i) => `Panel ${i+1}: x=${Math.round(p.x)}, y=${Math.round(p.y)}, w=${Math.round(p.w)}, h=${Math.round(p.h)}`).join("<br>")}
+        </div>`;
+      window._detectedPanels = output;
+    }
+
+    img.onerror = () => {
+      document.getElementById("status").textContent = "Failed to load image.";
+    };
+
+    function preciseEdgeDetection(img) {
+      const W = img.naturalWidth;
+      const H = img.naturalHeight;
+
+      const canvas = document.getElementById("main-canvas");
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, W, H);
+      const data = imageData.data;
+
+      function getBrightness(x, y) {
+        if (x < 0 || x >= W || y < 0 || y >= H) return 255;
+        const i = (y * W + x) * 4;
+        return (data[i] + data[i + 1] + data[i + 2]) / 3;
+      }
+
+      // Step 1: Find panel regions using a robust approach.
+      // Sample along the center column and center row to find white gaps.
+      // The panels are separated by white gutters.
+
+      // Use a wider sampling strip (average over several columns/rows) for robustness
+      function getStripBrightness(y, x1, x2) {
+        let sum = 0, count = 0;
+        const step = Math.max(1, Math.floor((x2 - x1) / 50));
+        for (let x = x1; x < x2; x += step) {
+          sum += getBrightness(x, y);
+          count++;
+        }
+        return sum / count;
+      }
+
+      function getVStripBrightness(x, y1, y2) {
+        let sum = 0, count = 0;
+        const step = Math.max(1, Math.floor((y2 - y1) / 50));
+        for (let y = y1; y < y2; y += step) {
+          sum += getBrightness(x, y);
+          count++;
+        }
+        return sum / count;
+      }
+
+      // Find horizontal gutters (white rows separating panel rows)
+      const contentLeft = Math.floor(W * 0.2);
+      const contentRight = Math.floor(W * 0.8);
+      const hGutters = [];
+      let inGutter = false;
+      let gStart = 0;
+      for (let y = 0; y < H; y++) {
+        const b = getStripBrightness(y, contentLeft, contentRight);
+        const isWhite = b > 190;
+        if (isWhite && !inGutter) { gStart = y; inGutter = true; }
+        if (!isWhite && inGutter) { 
+          if (y - gStart > 15) hGutters.push({ start: gStart, end: y }); 
+          inGutter = false; 
+        }
+      }
+      if (inGutter) hGutters.push({ start: gStart, end: H });
+
+      console.log("H gutters:", hGutters);
+
+      // Content rows between gutters
+      const contentRows = [];
+      for (let i = 0; i < hGutters.length - 1; i++) {
+        const top = hGutters[i].end;
+        const bottom = hGutters[i + 1].start;
+        if (bottom - top > 80) contentRows.push({ top, bottom });
+      }
+      console.log("Content rows:", contentRows);
+
+      // For each content row, find vertical gutters
+      const panelRegions = [];
+      for (const row of contentRows) {
+        const vGutters = [];
+        let inVG = false;
+        let vgStart = 0;
+        for (let x = Math.floor(W * 0.15); x < Math.floor(W * 0.85); x++) {
+          const b = getVStripBrightness(x, row.top + 30, row.bottom - 30);
+          const isWhite = b > 190;
+          if (isWhite && !inVG) { vgStart = x; inVG = true; }
+          if (!isWhite && inVG) { 
+            if (x - vgStart > 10) vGutters.push({ start: vgStart, end: x }); 
+            inVG = false; 
+          }
+        }
+
+        if (vGutters.length === 0) {
+          panelRegions.push({ top: row.top, bottom: row.bottom, left: 0, right: W });
+        } else {
+          panelRegions.push({ top: row.top, bottom: row.bottom, left: 0, right: vGutters[0].start });
+          for (let i = 0; i < vGutters.length - 1; i++) {
+            panelRegions.push({ top: row.top, bottom: row.bottom, left: vGutters[i].end, right: vGutters[i + 1].start });
+          }
+          panelRegions.push({ top: row.top, bottom: row.bottom, left: vGutters[vGutters.length - 1].end, right: W });
+        }
+      }
+
+      console.log("Panel regions:", panelRegions);
+
+      // Step 2: For each panel region, find the precise inner edge of the dark border.
+      // Approach: from outside each edge, scan inward. Find the steepest negative gradient
+      // (the transition from white/bright gutter to dark border). Then find where the 
+      // dark border ends (steepest positive gradient or where brightness rises back up).
+      // The "inside of the black edge" means the last dark pixel before content.
+
+      function findPreciseEdge(region) {
+        const { top, bottom, left, right } = region;
+        const sampleCount = 50;
+
+        function scanForBorderEdge(positions, dir) {
+          // dir: "right" | "left" | "down" | "up"
+          // For each sample position, find the outer edge of the border
+          // (where brightness first drops to < borderThresh after being in bright gutter)
+          // Then the inner edge (where brightness rises after the dark band OR 
+          // after the dark band is ~8-12px thick).
+          const borderThresh = 80;
+          const results = [];
+
+          for (const { fixedCoord, startCoord, maxScan } of positions) {
+            const step = (dir === "right" || dir === "down") ? 1 : -1;
+            let pos = startCoord;
+            let seenBright = false;
+            let outerEdge = -1;
+            let borderPixels = 0;
+
+            for (let i = 0; i < maxScan; i++) {
+              const [x, y] = (dir === "right" || dir === "left") 
+                ? [pos, fixedCoord] : [fixedCoord, pos];
+              const b = getBrightness(x, y);
+
+              if (b >= 150) seenBright = true;
+
+              if (seenBright && b < borderThresh && outerEdge < 0) {
+                outerEdge = pos;
+              }
+
+              if (outerEdge >= 0) {
+                if (b < borderThresh) {
+                  borderPixels++;
+                } else {
+                  // Found end of dark border
+                  // "inside the black edge" = the last dark pixel
+                  results.push(pos - step);
+                  break;
+                }
+                // Safety: if border seems too thick (>25px), it's probably content
+                if (borderPixels > 25) {
+                  results.push(outerEdge + 8 * step);
+                  break;
+                }
+              }
+              pos += step;
+            }
+          }
+          return results;
+        }
+
+        const yStep = Math.max(1, Math.floor((bottom - top) / (sampleCount + 1)));
+        const xStep = Math.max(1, Math.floor((right - left) / (sampleCount + 1)));
+
+        // Left edge
+        const leftPositions = [];
+        for (let si = 2; si < sampleCount - 1; si++) {
+          leftPositions.push({ fixedCoord: top + si * yStep, startCoord: left, maxScan: 200 });
+        }
+        const leftEdges = scanForBorderEdge(leftPositions, "right");
+        leftEdges.sort((a, b) => a - b);
+
+        // Right edge
+        const rightPositions = [];
+        for (let si = 2; si < sampleCount - 1; si++) {
+          rightPositions.push({ fixedCoord: top + si * yStep, startCoord: right, maxScan: 200 });
+        }
+        const rightEdges = scanForBorderEdge(rightPositions, "left");
+        rightEdges.sort((a, b) => a - b);
+
+        const medLeft = leftEdges.length > 0 ? leftEdges[Math.floor(leftEdges.length * 0.5)] : left;
+        const medRight = rightEdges.length > 0 ? rightEdges[Math.floor(rightEdges.length * 0.5)] : right;
+
+        // Top edge (using horizontal bounds found above)
+        const topPositions = [];
+        const effXStep = Math.max(1, Math.floor((medRight - medLeft) / (sampleCount + 1)));
+        for (let si = 2; si < sampleCount - 1; si++) {
+          topPositions.push({ fixedCoord: medLeft + si * effXStep, startCoord: top, maxScan: 200 });
+        }
+        const topEdges = scanForBorderEdge(topPositions, "down");
+        topEdges.sort((a, b) => a - b);
+
+        // Bottom edge
+        const bottomPositions = [];
+        for (let si = 2; si < sampleCount - 1; si++) {
+          bottomPositions.push({ fixedCoord: medLeft + si * effXStep, startCoord: bottom, maxScan: 200 });
+        }
+        const bottomEdges = scanForBorderEdge(bottomPositions, "up");
+        bottomEdges.sort((a, b) => a - b);
+
+        const medTop = topEdges.length > 0 ? topEdges[Math.floor(topEdges.length * 0.5)] : top;
+        const medBottom = bottomEdges.length > 0 ? bottomEdges[Math.floor(bottomEdges.length * 0.5)] : bottom;
+
+        console.log(`Panel precise: L=${medLeft} T=${medTop} R=${medRight} B=${medBottom}`);
+        console.log(`  L samples:`, leftEdges.slice(0, 10), `R:`, rightEdges.slice(0, 10));
+        console.log(`  T samples:`, topEdges.slice(0, 10), `B:`, bottomEdges.slice(0, 10));
+
+        return {
+          x: medLeft,
+          y: medTop,
+          w: medRight - medLeft,
+          h: medBottom - medTop
+        };
+      }
+
+      const panels = panelRegions.map(r => findPreciseEdge(r));
+
+      // Draw results
+      ctx.strokeStyle = "#6cb8ff";
+      ctx.lineWidth = 4;
+      for (const p of panels) {
+        ctx.strokeRect(p.x, p.y, p.w, p.h);
+      }
+
+      // Zoom views
+      const zoomContainer = document.getElementById("zoom-views");
+      zoomContainer.innerHTML = "";
+      panels.forEach((p, idx) => {
+        const corners = [
+          { name: "Top-Left", cx: p.x, cy: p.y },
+          { name: "Top-Right", cx: p.x + p.w, cy: p.y },
+          { name: "Bottom-Left", cx: p.x, cy: p.y + p.h },
+          { name: "Bottom-Right", cx: p.x + p.w, cy: p.y + p.h },
+        ];
+        corners.forEach(corner => {
+          const cell = document.createElement("div");
+          cell.className = "zoom-cell";
+          const title = document.createElement("h4");
+          title.textContent = `Panel ${idx + 1} - ${corner.name} (${corner.cx}, ${corner.cy})`;
+          cell.appendChild(title);
+
+          const zoomCanvas = document.createElement("canvas");
+          const zoomSize = 80;
+          const scale = 4;
+          zoomCanvas.width = zoomSize * scale;
+          zoomCanvas.height = zoomSize * scale;
+          zoomCanvas.style.width = `${zoomSize * scale}px`;
+          const zctx = zoomCanvas.getContext("2d");
+          zctx.imageSmoothingEnabled = false;
+          zctx.drawImage(img,
+            corner.cx - zoomSize / 2, corner.cy - zoomSize / 2, zoomSize, zoomSize,
+            0, 0, zoomSize * scale, zoomSize * scale
+          );
+          zctx.strokeStyle = "#ff4444";
+          zctx.lineWidth = 2;
+          const centerX = zoomSize * scale / 2;
+          const centerY = zoomSize * scale / 2;
+          zctx.beginPath();
+          zctx.moveTo(centerX - 20, centerY);
+          zctx.lineTo(centerX + 20, centerY);
+          zctx.moveTo(centerX, centerY - 20);
+          zctx.lineTo(centerX, centerY + 20);
+          zctx.stroke();
+
+          cell.appendChild(zoomCanvas);
+          zoomContainer.appendChild(cell);
+        });
+      });
+
+      // JSON output
+      const output = {
+        source_image: "image-0012.png",
+        image_width: W,
+        image_height: H,
+        panels: panels.map((p, i) => ({
+          id: i + 1,
+          u0: Number((p.x / W).toFixed(6)),
+          v0: Number((1 - (p.y + p.h) / H).toFixed(6)),
+          u1: Number(((p.x + p.w) / W).toFixed(6)),
+          v1: Number((1 - p.y / H).toFixed(6)),
+          px: { x: Math.round(p.x), y: Math.round(p.y), w: Math.round(p.w), h: Math.round(p.h) }
+        }))
+      };
+
+      document.getElementById("output").textContent = JSON.stringify(output, null, 2);
+
+      const integrationEl = document.getElementById("integration-info");
+      integrationEl.innerHTML = `
+        <div class="panel-info">
+          <strong>Panel coordinates detected:</strong><br>
+          ${panels.map((p, i) => `Panel ${i+1}: x=${Math.round(p.x)}, y=${Math.round(p.y)}, w=${Math.round(p.w)}, h=${Math.round(p.h)}`).join("<br>")}
+        </div>
+      `;
+
+      // Store globally for loading into panel-segmenter
+      window._detectedPanels = output;
+    }
+
+    function analyzeImage_UNUSED(img) {
+      const W = img.naturalWidth;
+      const H = img.naturalHeight;
+
+      const canvas = document.getElementById("main-canvas");
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(img, 0, 0);
+      const imageData = ctx.getImageData(0, 0, W, H);
+      const data = imageData.data;
+
+      function getBrightness(x, y) {
+        if (x < 0 || x >= W || y < 0 || y >= H) return 255;
+        const i = (y * W + x) * 4;
+        return (data[i] + data[i + 1] + data[i + 2]) / 3;
+      }
+
+      function isWhitish(x, y, threshold = 200) {
+        return getBrightness(x, y) >= threshold;
+      }
+
+      function isDark(x, y, threshold = 80) {
+        return getBrightness(x, y) <= threshold;
+      }
+
+      // Scan for row boundaries by looking at horizontal white gaps
+      // The page has white gutters between panel rows
+      // Strategy: For each row of pixels, count how many pixels are "white" (gutter/margin)
+      // Rows that are mostly white are gutter rows
+
+      const rowWhiteness = new Float32Array(H);
+      for (let y = 0; y < H; y++) {
+        let whiteCount = 0;
+        const sampleStep = 2;
+        const xStart = Math.floor(W * 0.1);
+        const xEnd = Math.floor(W * 0.9);
+        for (let x = xStart; x < xEnd; x += sampleStep) {
+          if (isWhitish(x, y, 190)) whiteCount++;
+        }
+        rowWhiteness[y] = whiteCount / ((xEnd - xStart) / sampleStep);
+      }
+
+      // Find gutter rows (mostly white horizontal bands)
+      const gutterThreshold = 0.7;
+      const gutterRows = [];
+      let inGutter = false;
+      let gutterStart = 0;
+      for (let y = 0; y < H; y++) {
+        if (rowWhiteness[y] >= gutterThreshold) {
+          if (!inGutter) { gutterStart = y; inGutter = true; }
+        } else {
+          if (inGutter) {
+            gutterRows.push({ start: gutterStart, end: y - 1, mid: Math.floor((gutterStart + y - 1) / 2) });
+            inGutter = false;
+          }
+        }
+      }
+      if (inGutter) gutterRows.push({ start: gutterStart, end: H - 1, mid: Math.floor((gutterStart + H - 1) / 2) });
+
+      console.log("Gutter rows:", gutterRows);
+
+      // Similarly for columns - find vertical white gaps 
+      const colWhiteness = new Float32Array(W);
+      for (let x = 0; x < W; x++) {
+        let whiteCount = 0;
+        const sampleStep = 2;
+        const yStart = Math.floor(H * 0.05);
+        const yEnd = Math.floor(H * 0.95);
+        for (let y = yStart; y < yEnd; y += sampleStep) {
+          if (isWhitish(x, y, 190)) whiteCount++;
+        }
+        colWhiteness[x] = whiteCount / ((yEnd - yStart) / sampleStep);
+      }
+
+      // Now let's define the approach:
+      // From the reference image-0006 (3 stacked panels, same width page), 
+      // panels were at roughly x=535..3006, so margins ~15% on each side.
+      // For image-0012, I can see from the image:
+      // Row 1: 2 panels side by side (top)
+      // Row 2: 2 panels side by side (middle) 
+      // Row 3: 1 wide panel (bottom)
+
+      // Let me find edges precisely by scanning from the gutters inward
+      // to find where the dark panel border starts.
+
+      // First, identify the major row bands (content rows between gutters)
+      // Gutters include: top margin, gap between row1 and row2, gap between row2 and row3, bottom margin
+      
+      // Let's filter significant gutters (at least 15px wide)
+      const significantGutters = gutterRows.filter(g => (g.end - g.start) >= 10);
+      console.log("Significant gutters:", significantGutters);
+
+      // The content rows are between consecutive gutters
+      const contentRows = [];
+      for (let i = 0; i < significantGutters.length - 1; i++) {
+        contentRows.push({
+          top: significantGutters[i].end + 1,
+          bottom: significantGutters[i + 1].start - 1
+        });
+      }
+      console.log("Content rows:", contentRows);
+
+      // For each content row, find if there's a vertical gutter splitting it into columns
+      const panels = [];
+
+      for (let ri = 0; ri < contentRows.length; ri++) {
+        const row = contentRows[ri];
+        const rowHeight = row.bottom - row.top;
+        if (rowHeight < 50) continue;
+
+        // Check for vertical gutter within this row
+        const vertGutters = [];
+        const checkYStart = row.top + Math.floor(rowHeight * 0.1);
+        const checkYEnd = row.bottom - Math.floor(rowHeight * 0.1);
+
+        for (let x = Math.floor(W * 0.2); x < Math.floor(W * 0.8); x++) {
+          let whiteCount = 0;
+          let total = 0;
+          for (let y = checkYStart; y < checkYEnd; y += 2) {
+            if (isWhitish(x, y, 190)) whiteCount++;
+            total++;
+          }
+          if (total > 0 && (whiteCount / total) >= 0.7) {
+            if (vertGutters.length === 0 || x - vertGutters[vertGutters.length - 1].end > 5) {
+              vertGutters.push({ start: x, end: x });
+            } else {
+              vertGutters[vertGutters.length - 1].end = x;
+            }
+          }
+        }
+
+        // Filter to significant vertical gutters (at least 8px wide)
+        const sigVertGutters = vertGutters.filter(g => (g.end - g.start) >= 6);
+        console.log(`Row ${ri}: vertical gutters:`, sigVertGutters);
+
+        if (sigVertGutters.length === 0) {
+          // Single panel spanning full width
+          panels.push(findPanelEdges(ctx, data, W, H, 
+            Math.floor(W * 0.05), row.top, Math.floor(W * 0.95), row.bottom));
+        } else {
+          // Multiple panels in this row
+          let leftBound = Math.floor(W * 0.05);
+          for (const vg of sigVertGutters) {
+            panels.push(findPanelEdges(ctx, data, W, H, leftBound, row.top, vg.start, row.bottom));
+            leftBound = vg.end;
+          }
+          panels.push(findPanelEdges(ctx, data, W, H, leftBound, row.top, Math.floor(W * 0.95), row.bottom));
+        }
+      }
+
+      // Draw results on canvas
+      ctx.strokeStyle = "#6cb8ff";
+      ctx.lineWidth = 4;
+      for (const p of panels) {
+        ctx.strokeRect(p.x, p.y, p.w, p.h);
+      }
+
+      // Create zoom views for each panel's corners
+      const zoomContainer = document.getElementById("zoom-views");
+      panels.forEach((p, idx) => {
+        const corners = [
+          { name: "Top-Left", cx: p.x, cy: p.y },
+          { name: "Top-Right", cx: p.x + p.w, cy: p.y },
+          { name: "Bottom-Left", cx: p.x, cy: p.y + p.h },
+          { name: "Bottom-Right", cx: p.x + p.w, cy: p.y + p.h },
+        ];
+        corners.forEach(corner => {
+          const cell = document.createElement("div");
+          cell.className = "zoom-cell";
+          const title = document.createElement("h4");
+          title.textContent = `Panel ${idx + 1} - ${corner.name} (${corner.cx}, ${corner.cy})`;
+          cell.appendChild(title);
+
+          const zoomCanvas = document.createElement("canvas");
+          const zoomSize = 80;
+          const scale = 4;
+          zoomCanvas.width = zoomSize * scale;
+          zoomCanvas.height = zoomSize * scale;
+          zoomCanvas.style.width = `${zoomSize * scale}px`;
+          const zctx = zoomCanvas.getContext("2d");
+          zctx.imageSmoothingEnabled = false;
+          zctx.drawImage(img,
+            corner.cx - zoomSize / 2, corner.cy - zoomSize / 2, zoomSize, zoomSize,
+            0, 0, zoomSize * scale, zoomSize * scale
+          );
+          // Draw crosshair at the detected edge point
+          zctx.strokeStyle = "#ff4444";
+          zctx.lineWidth = 2;
+          const centerX = zoomSize * scale / 2;
+          const centerY = zoomSize * scale / 2;
+          zctx.beginPath();
+          zctx.moveTo(centerX - 20, centerY);
+          zctx.lineTo(centerX + 20, centerY);
+          zctx.moveTo(centerX, centerY - 20);
+          zctx.lineTo(centerX, centerY + 20);
+          zctx.stroke();
+
+          cell.appendChild(zoomCanvas);
+          zoomContainer.appendChild(cell);
+        });
+      });
+
+      // Generate JSON output
+      const output = {
+        source_image: "image-0012.png",
+        image_width: W,
+        image_height: H,
+        panels: panels.map((p, i) => ({
+          id: i + 1,
+          u0: Number((p.x / W).toFixed(6)),
+          v0: Number((1 - (p.y + p.h) / H).toFixed(6)),
+          u1: Number(((p.x + p.w) / W).toFixed(6)),
+          v1: Number((1 - p.y / H).toFixed(6)),
+          px: { x: Math.round(p.x), y: Math.round(p.y), w: Math.round(p.w), h: Math.round(p.h) }
+        }))
+      };
+
+      document.getElementById("output").textContent = JSON.stringify(output, null, 2);
+
+      // Integration link
+      const integrationEl = document.getElementById("integration-info");
+      integrationEl.innerHTML = `
+        <div class="panel-info">
+          <strong>Panel coordinates detected:</strong><br>
+          ${panels.map((p, i) => `Panel ${i+1}: x=${Math.round(p.x)}, y=${Math.round(p.y)}, w=${Math.round(p.w)}, h=${Math.round(p.h)}`).join("<br>")}
+        </div>
+      `;
+    }
+
+    function findPanelEdges(ctx, data, W, H, searchLeft, searchTop, searchRight, searchBottom) {
+      function getBrightness(x, y) {
+        if (x < 0 || x >= W || y < 0 || y >= H) return 255;
+        const i = (y * W + x) * 4;
+        return (data[i] + data[i + 1] + data[i + 2]) / 3;
+      }
+
+      // Strategy: find the OUTER edge of the dark border (where white gutter meets dark border),
+      // then measure the border thickness and place the edge at outer + thickness.
+      // 
+      // We scan from the gutter inward. The gutter is bright (>180). The border is dark (<70).
+      // We find where brightness first drops below 70 = outer edge.
+      // Then we measure how many consecutive dark pixels = border width.
+      // Inner edge = outer edge + border width.
+
+      const sampleCount = 40;
+      const gutterBright = 160;
+      const borderDark = 70;
+
+      function findInnerEdge(scanLines, direction, inward) {
+        const outerEdges = [];
+        const innerEdges = [];
+        const borderWidths = [];
+
+        for (const { fixed, scanStart } of scanLines) {
+          const step = inward;
+          let pos = scanStart;
+          let foundGutter = false;
+          let outerEdge = -1;
+          let darkRunLength = 0;
+
+          // First, confirm we're in the gutter (bright area)
+          for (let i = 0; i < 100; i++) {
+            const [x, y] = direction === "h" ? [pos, fixed] : [fixed, pos];
+            if (getBrightness(x, y) >= gutterBright) {
+              foundGutter = true;
+              break;
+            }
+            pos += step;
+          }
+
+          if (!foundGutter) continue;
+
+          // Now scan inward to find where brightness drops (outer edge of border)
+          for (let i = 0; i < 300; i++) {
+            const [x, y] = direction === "h" ? [pos, fixed] : [fixed, pos];
+            const b = getBrightness(x, y);
+            
+            if (b < borderDark) {
+              if (outerEdge < 0) outerEdge = pos;
+              darkRunLength++;
+            } else if (outerEdge >= 0) {
+              // We've passed through the dark border
+              // The inner edge is at pos (first non-dark pixel after the border)
+              if (darkRunLength >= 3) {
+                outerEdges.push(outerEdge);
+                innerEdges.push(pos);
+                borderWidths.push(darkRunLength);
+              }
+              break;
+            }
+            pos += step;
+          }
+        }
+
+        if (innerEdges.length === 0) return null;
+
+        // Use median of outer edges + a consistent border offset
+        // The "inside of the black edge" = the outer edge of the border
+        // because the user traces on the inside, which means the box boundary
+        // sits where the dark border IS, not past it.
+        outerEdges.sort((a, b) => (a - b) * inward);
+        innerEdges.sort((a, b) => (a - b) * inward);
+        borderWidths.sort((a, b) => a - b);
+
+        const medianOuter = outerEdges[Math.floor(outerEdges.length * 0.5)];
+        const medianBorderWidth = borderWidths[Math.floor(borderWidths.length * 0.5)];
+        const medianInner = innerEdges[Math.floor(innerEdges.length * 0.5)];
+
+        console.log(`  ${direction} edge: outer=${medianOuter}, borderW=${medianBorderWidth}, inner=${medianInner}, samples=${innerEdges.length}`);
+
+        // Place the edge at the inner side of the border (where artwork starts)
+        // but pull back 1-2 px so the line is ON the last border pixel
+        return medianOuter + (medianBorderWidth - 1) * inward;
+      }
+
+      const yStep = Math.floor((searchBottom - searchTop) / (sampleCount + 1));
+      const xMid = Math.floor((searchLeft + searchRight) / 2);
+      const yMid = Math.floor((searchTop + searchBottom) / 2);
+
+      // LEFT edge
+      const leftScans = [];
+      for (let si = 1; si <= sampleCount; si++) {
+        leftScans.push({ fixed: searchTop + si * yStep, scanStart: searchLeft });
+      }
+      let leftEdge = findInnerEdge(leftScans, "h", 1) ?? searchLeft;
+
+      // RIGHT edge  
+      const rightScans = [];
+      for (let si = 1; si <= sampleCount; si++) {
+        rightScans.push({ fixed: searchTop + si * yStep, scanStart: searchRight });
+      }
+      let rightEdge = findInnerEdge(rightScans, "h", -1) ?? searchRight;
+
+      // TOP edge
+      const xStep = Math.floor((rightEdge - leftEdge) / (sampleCount + 1));
+      const topScans = [];
+      for (let si = 1; si <= sampleCount; si++) {
+        topScans.push({ fixed: leftEdge + si * xStep, scanStart: searchTop });
+      }
+      let topEdge = findInnerEdge(topScans, "v", 1) ?? searchTop;
+
+      // BOTTOM edge
+      const bottomScans = [];
+      for (let si = 1; si <= sampleCount; si++) {
+        bottomScans.push({ fixed: leftEdge + si * xStep, scanStart: searchBottom });
+      }
+      let bottomEdge = findInnerEdge(bottomScans, "v", -1) ?? searchBottom;
+
+      console.log(`Panel: (${leftEdge}, ${topEdge}) to (${rightEdge}, ${bottomEdge}) = ${rightEdge-leftEdge}x${bottomEdge-topEdge}`);
+
+      return {
+        x: leftEdge,
+        y: topEdge,
+        w: rightEdge - leftEdge,
+        h: bottomEdge - topEdge
+      };
+    }
+  </script>
+</body>
+</html>
