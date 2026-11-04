@@ -131,6 +131,24 @@ DASHBOARD_HTML = """<!doctype html>
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
     .status-meta { font-size: 13px; color: var(--muted); }
     .controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .mode-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      background: #14120f;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      padding: 10px 14px;
+      margin-bottom: 18px;
+      font-size: 13px;
+    }
+    .mode-left { display: flex; align-items: center; gap: 10px; }
+    .mode-toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; font-weight: 500; }
+    .mode-toggle input { cursor: pointer; width: 16px; height: 16px; accent-color: var(--accent); }
+    .mode-tip { color: var(--muted); font-size: 12px; }
+    .mode-tip code { background: rgba(255, 255, 255, 0.06); padding: 1px 5px; border-radius: 4px; color: #cfc7b8; }
     button, .btn-link {
       appearance: none;
       border: 1px solid var(--border);
@@ -205,6 +223,16 @@ DASHBOARD_HTML = """<!doctype html>
     .copy-btn { padding: 4px 9px; font-size: 11.5px; border-radius: 6px; flex-shrink: 0; }
     .room-actions { display: flex; gap: 10px; }
     .room-actions .btn-link { flex: 1; justify-content: center; }
+    .btn-secondary { background: #1c1a16; border-color: var(--border); color: var(--muted); }
+    .btn-secondary:hover:not(:disabled) { color: #f87171; border-color: rgba(248, 113, 113, 0.4); background: rgba(248, 113, 113, 0.08); }
+    .reset-feedback {
+      font-size: 11.5px;
+      color: var(--green);
+      margin-top: -6px;
+      margin-bottom: 2px;
+      text-align: right;
+      display: none;
+    }
     footer {
       margin-top: 26px;
       padding-top: 16px;
@@ -248,6 +276,18 @@ DASHBOARD_HTML = """<!doctype html>
       </div>
     </section>
 
+    <div class="mode-bar">
+      <div class="mode-left">
+        <label class="mode-toggle">
+          <input type="checkbox" id="devToggle">
+          <span>Hide Dev Mode (<code>?dev=0</code> · Production UI)</span>
+        </label>
+      </div>
+      <div class="mode-tip">
+        Adds <code>?dev=0</code> to room links to preview chapter icons and hide debug overlays.
+      </div>
+    </div>
+
     <section class="grid">
       <article class="room-card" id="card-v1">
         <div>
@@ -263,14 +303,18 @@ DASHBOARD_HTML = """<!doctype html>
 
         <div class="url-box">
           <a href="http://localhost:8771/" target="_blank" rel="noopener" id="url-v1">http://localhost:8771/</a>
-          <button type="button" class="copy-btn" data-copy="http://localhost:8771/">Copy</button>
+          <button type="button" class="copy-btn" data-room="v1" data-copy="http://localhost:8771/">Copy</button>
         </div>
 
         <div class="room-actions">
           <a href="http://localhost:8771/" target="_blank" rel="noopener" class="btn-link btn-primary" id="open-v1">
             Open Herinneringskamer ↗
           </a>
+          <button type="button" class="btn-secondary reset-prog-btn" data-room="v1" title="Delete chapter progression and reset saved state for Herinneringskamer">
+            ↺ Reset Progress
+          </button>
         </div>
+        <div class="reset-feedback" id="feedback-v1">✓ Progress reset!</div>
       </article>
 
       <article class="room-card" id="card-v2">
@@ -287,14 +331,18 @@ DASHBOARD_HTML = """<!doctype html>
 
         <div class="url-box">
           <a href="http://localhost:8772/" target="_blank" rel="noopener" id="url-v2">http://localhost:8772/</a>
-          <button type="button" class="copy-btn" data-copy="http://localhost:8772/">Copy</button>
+          <button type="button" class="copy-btn" data-room="v2" data-copy="http://localhost:8772/">Copy</button>
         </div>
 
         <div class="room-actions">
           <a href="http://localhost:8772/" target="_blank" rel="noopener" class="btn-link btn-primary" id="open-v2">
             Open Zolderkamer ↗
           </a>
+          <button type="button" class="btn-secondary reset-prog-btn" data-room="v2" title="Delete chapter progression and reset saved state for Zolderkamer">
+            ↺ Reset Progress
+          </button>
         </div>
+        <div class="reset-feedback" id="feedback-v2">✓ Progress reset!</div>
       </article>
     </section>
 
@@ -317,9 +365,35 @@ DASHBOARD_HTML = """<!doctype html>
       const stopBtn = document.getElementById("stopBtn");
       const offlineBanner = document.getElementById("offlineBanner");
       const lastChecked = document.getElementById("lastChecked");
+      const devToggle = document.getElementById("devToggle");
 
       let currentRunning = false;
       let busy = false;
+      let lastRoomsData = null;
+
+      // Check URL param first (?dev=0 on dashboard page), fallback to localStorage
+      const urlParams = new URLSearchParams(location.search);
+      let hideDev = urlParams.get("dev") === "0" || (!urlParams.has("dev") && localStorage.getItem("dashboard_dev0") === "1");
+      devToggle.checked = hideDev;
+
+      devToggle.addEventListener("change", function () {
+        hideDev = devToggle.checked;
+        try {
+          if (hideDev) localStorage.setItem("dashboard_dev0", "1");
+          else localStorage.removeItem("dashboard_dev0");
+        } catch (_) {}
+
+        // Keep dashboard URL parameter in sync if desired without reloading
+        const url = new URL(location.href);
+        if (hideDev) {
+          url.searchParams.set("dev", "0");
+        } else {
+          url.searchParams.delete("dev");
+        }
+        history.replaceState(null, "", url.toString());
+
+        updateRoomUrls();
+      });
 
       function formatUptime(sec) {
         if (sec == null) return "";
@@ -331,26 +405,67 @@ DASHBOARD_HTML = """<!doctype html>
         return h + "h " + (m % 60) + "m";
       }
 
+      function buildRoomUrl(baseUrl) {
+        const u = new URL(baseUrl);
+        if (hideDev) {
+          u.searchParams.set("dev", "0");
+        } else {
+          u.searchParams.delete("dev");
+        }
+        return u.toString();
+      }
+
+      function updateRoomUrls() {
+        const ids = ["v1", "v2"];
+        ids.forEach(function (id) {
+          const room = lastRoomsData && lastRoomsData[id];
+          const running = !!(room && room.running);
+          const rawUrl = (room && room.url) || (id === "v1" ? "http://localhost:8771/" : "http://localhost:8772/");
+          const finalUrl = buildRoomUrl(rawUrl);
+
+          const urlEl = document.getElementById("url-" + id);
+          const openEl = document.getElementById("open-" + id);
+          const copyBtn = document.querySelector('.copy-btn[data-room="' + id + '"]');
+
+          if (urlEl) {
+            urlEl.href = finalUrl;
+            urlEl.textContent = finalUrl;
+          }
+          if (openEl) {
+            openEl.href = finalUrl;
+          }
+          if (copyBtn) {
+            copyBtn.setAttribute("data-copy", finalUrl);
+          }
+        });
+      }
+
       function setRoomState(id, room) {
         const card = document.getElementById("card-" + id);
         const pill = document.getElementById("pill-" + id);
         const urlEl = document.getElementById("url-" + id);
         const openEl = document.getElementById("open-" + id);
+        const copyBtn = document.querySelector('.copy-btn[data-room="' + id + '"]');
 
         const running = !!(room && room.running);
-        const url = (room && room.url) || (id === "v1" ? "http://localhost:8771/" : "http://localhost:8772/");
+        const rawUrl = (room && room.url) || (id === "v1" ? "http://localhost:8771/" : "http://localhost:8772/");
+        const finalUrl = buildRoomUrl(rawUrl);
         const port = (room && room.port) || (id === "v1" ? 8771 : 8772);
 
         card.classList.toggle("online", running);
         pill.className = "port-pill " + (running ? "online" : "offline");
         pill.textContent = "Port " + port + " · " + (running ? "Online" : "Offline");
 
-        urlEl.href = url;
-        urlEl.textContent = url;
+        urlEl.href = finalUrl;
+        urlEl.textContent = finalUrl;
         urlEl.classList.toggle("disabled", !running);
 
-        openEl.href = url;
+        openEl.href = finalUrl;
         openEl.classList.toggle("disabled", !running);
+
+        if (copyBtn) {
+          copyBtn.setAttribute("data-copy", finalUrl);
+        }
       }
 
       function renderStatus(data) {
@@ -379,6 +494,7 @@ DASHBOARD_HTML = """<!doctype html>
 
         const byId = {};
         (data.rooms || []).forEach(function (r) { byId[r.id] = r; });
+        lastRoomsData = byId;
         setRoomState("v1", byId.v1);
         setRoomState("v2", byId.v2);
 
@@ -446,6 +562,64 @@ DASHBOARD_HTML = """<!doctype html>
         });
       });
 
+      // Clear progression state for a room (both via hidden origin iframe and API call)
+      function clearRoomProgress(roomId, port) {
+        const btn = document.querySelector('.reset-prog-btn[data-room="' + roomId + '"]');
+        const feedback = document.getElementById("feedback-" + roomId);
+        if (!btn) return;
+        const prevText = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = "Resetting…";
+
+        const roomOrigin = "http://localhost:" + port;
+
+        // Try API endpoint first (applies Clear-Site-Data: "storage")
+        fetch(roomOrigin + "/__reset_storage", { method: "POST", mode: "cors" }).catch(function () {});
+
+        // Also load an invisible iframe under that origin to wipe localStorage directly in browser
+        const ifr = document.createElement("iframe");
+        ifr.style.display = "none";
+        ifr.src = roomOrigin + "/__reset_storage.html?t=" + Date.now();
+
+        const timeout = setTimeout(function () {
+          cleanup();
+          done();
+        }, 1200);
+
+        function onMsg(e) {
+          if (e.data && e.data.type === "ld-storage-cleared") {
+            cleanup();
+            done();
+          }
+        }
+
+        function cleanup() {
+          clearTimeout(timeout);
+          window.removeEventListener("message", onMsg);
+          if (ifr.parentNode) ifr.parentNode.removeChild(ifr);
+        }
+
+        function done() {
+          btn.disabled = false;
+          btn.textContent = prevText;
+          if (feedback) {
+            feedback.style.display = "block";
+            setTimeout(function () { feedback.style.display = "none"; }, 2500);
+          }
+        }
+
+        window.addEventListener("message", onMsg);
+        document.body.appendChild(ifr);
+      }
+
+      document.querySelectorAll(".reset-prog-btn").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          const roomId = btn.getAttribute("data-room");
+          const port = roomId === "v1" ? 8771 : 8772;
+          clearRoomProgress(roomId, port);
+        });
+      });
+
       fetchStatus();
       setInterval(fetchStatus, 2000);
     })();
@@ -474,6 +648,68 @@ class RangeHTTPRequestHandler(SimpleHTTPRequestHandler):
         if path_lower.endswith((".html", ".js", ".css", ".json")) or path_lower.endswith("/"):
             self.send_header("Cache-Control", "no-cache, must-revalidate")
         super().end_headers()
+
+    def do_OPTIONS(self):
+        self.send_response(HTTPStatus.NO_CONTENT)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Content-Length", "0")
+        self.end_headers()
+
+    def do_GET(self):
+        route = self.path.split("?", 1)[0]
+        if route == "/__reset_storage.html":
+            html = """<!doctype html>
+<html>
+<head><meta charset="utf-8"></head>
+<body>
+<script>
+(function() {
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const k = localStorage.key(i);
+      if (k && (k.startsWith("ld2-room-") || k.startsWith("wabtsa-"))) {
+        localStorage.removeItem(k);
+      }
+    }
+    // Also clear completely as backup
+    localStorage.clear();
+    window.parent.postMessage({ type: "ld-storage-cleared", origin: location.origin, ok: true }, "*");
+  } catch (err) {
+    window.parent.postMessage({ type: "ld-storage-cleared", origin: location.origin, ok: false, error: String(err) }, "*");
+  }
+})();
+</script>
+</body>
+</html>"""
+            body = html.encode("utf-8")
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Clear-Site-Data", '"cache", "storage"')
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(body)
+            return
+
+        super().do_GET()
+
+    def do_POST(self):
+        route = self.path.split("?", 1)[0]
+        if route == "/__reset_storage":
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.send_header("Clear-Site-Data", '"storage"')
+            self.send_header("Cache-Control", "no-store")
+            body = b'{"ok":true}'
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        self.send_error(HTTPStatus.NOT_FOUND, "Not found")
 
     def send_head(self):
         range_header = self.headers.get("Range")
@@ -585,9 +821,17 @@ def run_worker():
         while not stop_event.is_set():
             stop_event.wait(0.5)
     finally:
+        # Shut down all room servers in parallel so both ports release immediately
+        shutdown_threads = []
+        for s in servers:
+            t = threading.Thread(target=s.shutdown, daemon=True)
+            t.start()
+            shutdown_threads.append(t)
+        for t in shutdown_threads:
+            t.join(timeout=1.5)
+
         for s in servers:
             try:
-                s.shutdown()
                 s.server_close()
             except Exception:
                 pass

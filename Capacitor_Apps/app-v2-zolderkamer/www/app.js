@@ -438,7 +438,17 @@ document.getElementById("go").click();
 
 /* ---------- loop ---------- */
 const clock=new THREE.Clock();
+let running=true;
+window.addEventListener("ld:pause",()=>{ running=false; });
+window.addEventListener("ld:resume",()=>{
+  if(!running){
+    running=true;
+    clock.getDelta();
+    requestAnimationFrame(frame);
+  }
+});
 function frame(){
+  if(!running) return;
   const dt=Math.min(clock.getDelta(),.05), t=clock.elapsedTime;
   tod+=(todTarget-tod)*Math.min(1,dt*.65); applyTod(tod);
   skyMat.uniforms.uTime.value=t;

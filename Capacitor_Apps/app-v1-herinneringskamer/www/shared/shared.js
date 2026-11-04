@@ -91,7 +91,9 @@ function dropFrame(n){ const o=frames[n]; if(!o) return; o.fr.src="about:blank";
 addEventListener("message",e=>{
   for(const k in frames){ const o=frames[k]; if(e.source!==o.fr.contentWindow) continue;
     if(e.data==="ld-ready"){ o.ready=true; o.waits.splice(0).forEach(f=>f()); }
-    if(e.data==="ld-room-back"&&o.close) o.close(true); }
+    if(e.data==="ld-room-back"&&o.close) o.close(true);
+    if(e.data==="ld-ctl-on"&&o.setBack) o.setBack(true);
+    if(e.data==="ld-ctl-off"&&o.setBack) o.setBack(false); }
 });
 function call(o,fn){ try{ const w=o.fr.contentWindow; if(w&&w[fn]){ w[fn](); return; } }catch(_){} try{ o.fr.contentWindow.postMessage(fn==="ldPrime"?"ld-prime":"ld-start","*"); }catch(_){} }
 const whenReady=(o,ms)=>new Promise(res=>{ if(o.ready) return res(); o.waits.push(res); setTimeout(res,ms); });
@@ -133,9 +135,10 @@ function openChapter(n,{onClose,approach=0,target}={}){
   call(o,"ldPrime");
   if(o.ready) call(o,"ldStart"); else whenReady(o,8000).then(()=>call(o,"ldStart"));
   const wrap=chapterWrap(), vw=innerWidth, vh=innerHeight;
-  /* "← Terug naar de kamer" alleen in DEV_MODE */
+  /* "← Terug naar de kamer" alleen in DEV_MODE (toont mee bij klik op videovlak + verbergt automatisch) */
   const back=DEV_MODE?el("button","ghost back","← Terug naar de kamer"):null;
-  if(back){ back.type="button"; back.style.opacity=0; }
+  if(back){ back.type="button"; back.style.opacity=0; back.style.pointerEvents="none"; back.style.transition="opacity .35s ease"; }
+  o.setBack=on=>{ if(!back) return; back.style.opacity=on?1:0; back.style.pointerEvents=on?"auto":"none"; };
   const t0=performance.now();
   let sil=null, line=null, done=false;
   const arrived=typeof approach==="function"?approach:(()=>performance.now()-t0>=approach);
@@ -165,20 +168,29 @@ function openChapter(n,{onClose,approach=0,target}={}){
   function finish(){
     const st=o.box.style; st.webkitMaskImage=st.maskImage="none";
     if(line){ line.remove(); line=null; } wrap.classList.remove("reveal");
-    if(back){ back.style.transition="opacity .8s"; back.style.opacity=1; }
+    window.dispatchEvent(new CustomEvent("ld:pause"));
   }
   const poll=setInterval(()=>{ try{ const end=o.fr.contentDocument&&o.fr.contentDocument.getElementById("cardEnd"); if(end&&!end.classList.contains("off")) close(true); }catch(_){} },800);
   function close(ended){
-    if(done) return; done=true; clearInterval(poll); o.close=null;
+    if(done) return; done=true; clearInterval(poll); o.close=null; o.setBack=null;
     const seen=ended||performance.now()-t0>15000;
     wipe("#000","in",1200).then(()=>{
       wrap.classList.remove("on","reveal"); if(back) back.remove(); dropFrame(n); chapterOpen=false;
+      window.dispatchEvent(new CustomEvent("ld:resume"));
       onClose&&onClose(n,seen);
       return wipe("#000","out",1200);
     });
   }
   o.close=close; if(back) back.onclick=()=>close(false);
 }
+
+document.addEventListener("visibilitychange", ()=>{
+  if(document.hidden){
+    window.dispatchEvent(new CustomEvent("ld:pause"));
+  } else if(!chapterOpen){
+    window.dispatchEvent(new CustomEvent("ld:resume"));
+  }
+});
 
 /* ---------- HUD (DEV_MODE = balk + dots + reset + 1–4 toetsen; anders = 4 hoofdstuk-icoontjes) ---------- */
 function hud({name,st,onReset,onDev}){

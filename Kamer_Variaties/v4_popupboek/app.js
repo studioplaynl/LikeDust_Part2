@@ -228,7 +228,17 @@ const hudUi=LD.hud({name:"Pop-upboek",st,onReset:()=>{ applyProgress(true); whil
 
 /* ---------- loop ---------- */
 const clock=new THREE.Clock();
+let running=true;
+window.addEventListener("ld:pause",()=>{ running=false; });
+window.addEventListener("ld:resume",()=>{
+  if(!running){
+    running=true;
+    clock.getDelta();
+    requestAnimationFrame(frame);
+  }
+});
 function frame(){
+  if(!running) return;
   const dt=Math.min(clock.getDelta(),.05), t=clock.elapsedTime, now=performance.now();
   for(let i=tweens.length-1;i>=0;i--){ const w=tweens[i]; const p=Math.min(1,(now-w.t0)/w.ms); w.fn(p); if(p>=1){ tweens.splice(i,1); w.done&&w.done(); } }
   // bladen draaien om de rug, met een beetje doorbuiging

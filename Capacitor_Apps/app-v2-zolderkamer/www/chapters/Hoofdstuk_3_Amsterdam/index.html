@@ -1,8 +1,15 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#000000"><style>html,body{margin:0;background:#000}[hidden]{display:none!important}/* Video controls hidden; only CC toggle remains */
-#play,#tl,#time,#lang,#restart,a[href="comic.html"]{display:none!important}
-.ctl{justify-content:flex-end;pointer-events:none}
-.ctl .cc{pointer-events:auto;min-width:44px;text-align:center}
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#000000"><style>html,body{margin:0;background:#000}[hidden]{display:none!important}/* Video controls auto-hide; show on video pane click/tap; no chapter number top-left */
+.chap,#lang,#restart,a[href="comic.html"]{display:none!important}
+.top{justify-content:flex-end!important}
+.ctl,.top{opacity:0!important;pointer-events:none!important;transition:opacity .35s ease!important}
+body.show-ctl:not(.inter):not(.ld-wait) .ctl,
+body.show-ctl:not(.inter):not(.ld-wait) .top{opacity:1!important;pointer-events:auto!important}
+.ctl{background:linear-gradient(to top,rgba(0,0,0,.82),rgba(0,0,0,0))}
+.ctl .cc{display:inline-flex;align-items:center;justify-content:center;padding:5px 7px;border:0;background:transparent;color:var(--chalk);opacity:.86;transition:color .2s,opacity .2s,filter .2s}
+.ctl .cc:hover,.ctl .cc[aria-pressed="true"]{color:var(--ochre);opacity:1}
+.ctl .cc[aria-pressed="true"]{filter:drop-shadow(0 0 6px rgba(214,169,62,.45))}
+.ctl .cc svg{width:30px;height:22px;display:block}
 </style>
 <title>Amsterdam Chapter Three</title>
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -301,18 +308,16 @@ body.inter .ctl{opacity:0;pointer-events:none;transition:opacity .4s}
 </div>
 
 <div class="top">
-  <span class="chap"><span class="long">We All Breathe The Same Air · </span><span data-t="chap">Hoofdstuk</span> <b id="chn">one</b></span>
   <span class="tools"><a class="ghost" id="toRoom" href="#" data-room>← Back to the room</a><button class="ghost" id="fs" type="button" hidden>⛶ Full screen</button></span>
 </div>
 
 <div class="turn" id="turn" role="note" data-t="turn">↻ Draai je telefoon</div>
-<div class="ctl">
-  <button class="play" id="play" type="button" aria-label="Pause" hidden>❚❚</button>
-  <div class="tl" id="tl" hidden><div class="rail"></div><div class="fill" id="fill"></div></div>
-  <span class="time" id="time" hidden>0:00 / 4:16</span>
-  <button class="ghost cc" id="cc" type="button" aria-pressed="false" data-t="cc" aria-label="Ondertiteling (CC)">CC</button>
+<div class="ctl" id="ctl">
+  <button class="play" id="play" type="button" aria-label="Pause">❚❚</button>
+  <div class="tl" id="tl"><div class="rail"></div><div class="fill" id="fill"></div></div>
+  <span class="time" id="time">0:00 / 4:16</span>
+  <button class="ghost cc" id="cc" type="button" aria-pressed="false" aria-label="Ondertiteling"><svg viewBox="0 0 32 24" aria-hidden="true"><rect x="2" y="2" width="28" height="20" rx="2.8" fill="none" stroke="currentColor" stroke-width="2.4"/><rect x="6" y="14.8" width="6.6" height="1.85" rx=".35" fill="currentColor"/><rect x="14.4" y="14.8" width="3.2" height="1.85" rx=".35" fill="currentColor"/><rect x="19.4" y="14.8" width="6.6" height="1.85" rx=".35" fill="currentColor"/><rect x="8.8" y="17.6" width="5.8" height="1.85" rx=".35" fill="currentColor"/><rect x="17.4" y="17.6" width="5.8" height="1.85" rx=".35" fill="currentColor"/></svg></button>
 </div>
-
 <div class="card" id="cardStart">
   <p class="eyebrow" id="s_eye">We All Breathe The Same Air · Chapter one</p>
   <h1 class="h-title" id="s_title">Schiphol</h1>
@@ -522,10 +527,9 @@ SEGS.forEach((s,i)=>{ if(!s.after) return; const at=SEGS[i+1].start; const b=doc
   b.style.left=(at/TOTAL*100)+"%"; b.innerHTML=`<span></span>`;
   b.onclick=()=>{ snd.unlock(); $("cardStart").classList.add("off"); loadSeg(i,true); }; $("tl").appendChild(b); }); }
 function fillChapter(){ const c=CHAPTERS[CHN];
-  $("chn").textContent=c.word; $("s_eye").textContent="We All Breathe The Same Air · Chapter "+c.word; $("s_title").textContent=c.title; $("s_place").textContent=c.place; $("s_note").textContent=c.note;
+  $("s_eye").textContent="We All Breathe The Same Air · Chapter "+c.word; $("s_title").textContent=c.title; $("s_place").textContent=c.place; $("s_note").textContent=c.note;
   $("e_eye").textContent=c.endEye; $("e_title").innerHTML=c.endTitle; $("e_next").textContent=c.endNext;
   $("nextch").hidden=!c.next; if(c.next) $("nextch").textContent=t("next2");
-  $("topcomic").hidden=!c.comic; $("endcomic").hidden=!c.comic;
 
 }
 function setChapter(n, autoplay){ CHN=n; const c=CHAPTERS[n]; TOTAL=c.total; SEGS=c.segs; CUES=c.cues; lastCue=-1;
@@ -567,7 +571,7 @@ function loadSeg(i, jumpToEndFrame){
   else { nv.src=SEGS[i].src; nv.load(); nv.addEventListener("loadeddata",swap,{once:true}); }
 }
 vids.forEach(el=>el.addEventListener("ended",()=>{ if(el===v()) onSegEnd(); }));
-function onSegEnd(){ setPlaying(false); const a=SEGS[segI].after; if(a){ inInteraction=true; document.body.classList.add("inter"); INTERACT[a](); } else end(); }
+function onSegEnd(){ setPlaying(false); hideControls(); const a=SEGS[segI].after; if(a){ inInteraction=true; document.body.classList.add("inter"); INTERACT[a](); } else end(); }
 function next(){ const done=SEGS[segI].after; if(done) $("mk-"+done).classList.add("done"); loadSeg(segI+1); }
 function end(){ const n=myNumber(false); if(n){ $("endnumv").textContent=n; $("endnum").hidden=false; } $("cardEnd").classList.remove("off"); }
 function endInteraction(){ timers.forEach(clearTimeout); timers.clear(); if(cleanup){ cleanup(); cleanup=null; } ui.innerHTML=""; frame.classList.remove("gray"); inInteraction=false; document.body.classList.remove("inter"); }
@@ -642,9 +646,46 @@ document.addEventListener("visibilitychange",()=>{ if(!document.hidden) snd.unlo
   }).observe(ui,{childList:true,subtree:true});
 })();
 /* DEV_MODE & native detection */
-const DEV_MODE = /[?&]dev=1/.test(location.search) || !!(window.parent && window.parent !== window && window.parent.LD && window.parent.LD.DEV);
+const DEV_MODE = /[?&]dev=1\b/.test(location.search) || !!(window.parent && window.parent !== window && window.parent.LD && window.parent.LD.DEV);
 const IS_NATIVE_APP = !!((window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) || (window.top && window.top !== window && window.top.Capacitor && window.top.Capacitor.isNativePlatform && window.top.Capacitor.isNativePlatform()) || location.protocol === "capacitor:" || /; wv\)/.test(navigator.userAgent));
 if(!DEV_MODE){ const tr=$("toRoom"); if(tr) tr.style.display="none"; }
+/* Auto-show video controls on video pane click/tap, auto-hide after delay */
+let ctlTimer=null, lastPaneTap=0;
+function notifyCtl(on){ try{ if(window.parent&&window.parent!==window) window.parent.postMessage(on?"ld-ctl-on":"ld-ctl-off","*"); }catch(_){} }
+function hideControls(){
+  clearTimeout(ctlTimer); ctlTimer=null;
+  document.body.classList.remove("show-ctl");
+  notifyCtl(false);
+}
+function showControls(){
+  if(inInteraction || document.body.classList.contains("ld-wait") || !$("cardStart").classList.contains("off") || !$("cardEnd").classList.contains("off")) return;
+  document.body.classList.add("show-ctl");
+  notifyCtl(true);
+  clearTimeout(ctlTimer);
+  ctlTimer=setTimeout(hideControls,3000);
+}
+(()=>{
+  const stg=document.querySelector(".stage");
+  function paneTap(e){
+    if(inInteraction) return;
+    if(e.target.closest(".ctl,.top,.card,button,a,input,textarea")) return;
+    const now=Date.now(); if(now-lastPaneTap<420) return; lastPaneTap=now;
+    if(document.body.classList.contains("show-ctl")) hideControls(); else showControls();
+  }
+  if(stg){
+    stg.addEventListener("pointerup",e=>{ if(e.pointerType==="mouse"&&e.button!==0) return; paneTap(e); });
+    stg.addEventListener("click",paneTap);
+  }
+  document.querySelectorAll(".ctl,.top").forEach(bar=>{
+    bar.addEventListener("pointerdown",()=>{ if(document.body.classList.contains("show-ctl")) showControls(); });
+    bar.addEventListener("click",()=>{ if(document.body.classList.contains("show-ctl")) showControls(); });
+  });
+  addEventListener("keydown",e=>{
+    if(e.code==="Space" && !inInteraction && !/INPUT|TEXTAREA/.test((e.target&&e.target.tagName)||"") && $("cardStart").classList.contains("off") && $("cardEnd").classList.contains("off")){
+      e.preventDefault(); $("play").click(); showControls();
+    }
+  });
+})();
 /* full screen: only offered on www (never in native Capacitor iOS/Android app) */
 (()=>{ const b=document.getElementById("fs"); if(!b||IS_NATIVE_APP) return;
   let d=document, el=d.documentElement;

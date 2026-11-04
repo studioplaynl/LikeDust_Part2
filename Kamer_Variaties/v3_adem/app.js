@@ -202,7 +202,17 @@ $("again").onclick=()=>{ $("end").classList.add("off"); busy=false; cur=6; goTo(
 
 /* ---------- loop ---------- */
 const clock=new THREE.Clock();
+let running=true;
+window.addEventListener("ld:pause",()=>{ running=false; });
+window.addEventListener("ld:resume",()=>{
+  if(!running){
+    running=true;
+    clock.getDelta();
+    requestAnimationFrame(frame);
+  }
+});
 function frame(){
+  if(!running) return;
   const dt=Math.min(clock.getDelta(),.05), t=clock.elapsedTime;
   if(holding){ hold=Math.min(1.2,(performance.now()-holdT0)/1400); arc(hold); if(hold>=1) $("breathLbl").textContent="laat los"; }
   const bTarget=holding?Math.min(1,hold):0; breath+=(bTarget-breath)*Math.min(1,dt*(holding?4:5));
