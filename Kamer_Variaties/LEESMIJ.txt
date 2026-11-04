@@ -14,6 +14,9 @@ shared/                Three.js r160, assets.js (PSD-lagen + uitgekeyde green-sc
 - Werkt vanaf schijf. Via een webserver (of Netlify) ziet de kamer ook de eindkaart van een hoofdstuk;
   vanaf schijf telt een hoofdstuk als gezien na 15 seconden kijken.
 - In elke kamer staat alleen het voorwerp dat je nu kunt aanklikken; na elk hoofdstuk komt er iets bij.
+- Safari: dubbelklik Start_Kamer.command. Dat start een kleine webserver en opent de kamer in Safari.
+  Alleen dan mag de film meteen met geluid starten; vanaf schijf (file://) blokkeert Safari het geluid.
+  (Zegt de Mac dat het bestand niet geopend mag worden: rechtsklik > Open.)
 - Geen startpaneel: je bent meteen in de kamer.
 - Klik op het voorwerp: de film start meteen met geluid (de browser staat geluid alleen toe binnen een klik).
   De camera gaat naar het voorwerp, de omtrek van het voorwerp komt met de film erin op je af tot hij het scherm vult.
