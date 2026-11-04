@@ -1,5 +1,9 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#000000"><style>html,body{margin:0;background:#000}[hidden]{display:none!important}</style>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#000000"><style>html,body{margin:0;background:#000}[hidden]{display:none!important}/* Video controls hidden; only CC toggle remains */
+#play,#tl,#time,#lang,#restart,a[href="comic.html"]{display:none!important}
+.ctl{justify-content:flex-end;pointer-events:none}
+.ctl .cc{pointer-events:auto;min-width:44px;text-align:center}
+</style>
 <title>The AZC Chapter Two</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -258,15 +262,15 @@ body.inter .ctl{opacity:0;pointer-events:none;transition:opacity .4s}
 
 <div class="top">
   <span class="chap"><span class="long">We All Breathe The Same Air · </span><span data-t="chap">Hoofdstuk</span> <b id="chn">one</b></span>
-  <span class="tools"><a class="ghost" id="toRoom" href="#" data-room>← Back to the room</a><button class="ghost" id="lang" type="button" aria-label="Switch subtitle language between Dutch and English">Subtitles: NL</button><a class="ghost" id="topcomic" href="comic.html" data-t="comic">Lees als strip</a><button class="ghost" id="fs" type="button" hidden>⛶ Full screen</button><button class="ghost" id="restart" type="button" data-t="restart">↺ Opnieuw</button></span>
+  <span class="tools"><a class="ghost" id="toRoom" href="#" data-room>← Back to the room</a><button class="ghost" id="fs" type="button" hidden>⛶ Full screen</button></span>
 </div>
 
 <div class="turn" id="turn" role="note" data-t="turn">↻ Draai je telefoon</div>
 <div class="ctl">
-  <button class="play" id="play" type="button" aria-label="Pause">❚❚</button>
-  <div class="tl" id="tl"><div class="rail"></div><div class="fill" id="fill"></div></div>
-  <span class="time" id="time">0:00 / 4:16</span>
-  <button class="ghost cc" id="cc" type="button" aria-pressed="false" data-t="cc">Aa Grote tekst</button>
+  <button class="play" id="play" type="button" aria-label="Pause" hidden>❚❚</button>
+  <div class="tl" id="tl" hidden><div class="rail"></div><div class="fill" id="fill"></div></div>
+  <span class="time" id="time" hidden>0:00 / 4:16</span>
+  <button class="ghost cc" id="cc" type="button" aria-pressed="false" data-t="cc" aria-label="Ondertiteling (CC)">CC</button>
 </div>
 
 <div class="card" id="cardStart">
@@ -282,7 +286,7 @@ body.inter .ctl{opacity:0;pointer-events:none;transition:opacity .4s}
   <h2 class="h-title" id="e_title"></h2>
   <p class="endnum" id="endnum" hidden><span data-t="e_num">Jouw nummer:</span> <b id="endnumv"></b></p>
   <p class="place" id="e_next"></p>
-  <div class="row"><a class="ghost" href="#" data-room>← Back to the room</a><button class="btn" id="nextch" type="button" hidden></button><button class="ghost" id="again" type="button" data-t="again">↺ Watch again</button><a class="ghost" id="endcomic" href="comic.html" data-t="comic">Read as comic</a></div>
+  <div class="row"><a class="ghost" href="#" data-room>← Back to the room</a><button class="btn" id="nextch" type="button" hidden></button><button class="ghost" id="again" type="button" data-t="again">↺ Watch again</button></div>
 </div>
 
 <script>
@@ -328,9 +332,9 @@ const CUES2=[
    wherever the film follows it; lines that exist only in the film are translated. */
 /* Interface and Sam's lines at the pauses: English. Subtitles: Dutch by default (switchable). */
 const LANG="en";
-let SUBLANG="nl"; try{ const l=localStorage.getItem("wabtsa-sub"); if(l==="en"||l==="nl") SUBLANG=l; }catch(_){}
+const SUBLANG="nl";
 const T={
- nl:{chap:"Hoofdstuk",one:"één",comic:"Lees als strip",restart:"↺ Opnieuw",turn:"↻ Draai je telefoon",cc:"Aa Grote tekst",
+ nl:{chap:"Hoofdstuk",one:"één",comic:"Lees als strip",restart:"↺ Opnieuw",turn:"↻ Draai je telefoon",cc:"CC",
   s_eye:"We All Breathe The Same Air · Hoofdstuk één",s_play:"▶ Speel het hoofdstuk",s_note:"Geluid aan · 4 minuten · de film stopt vijf keer en wacht op jou",
   e_eye:"Einde van hoofdstuk één",e_title:"Een nummer<br>voor een naam.",e_num:"Jouw nummer:",e_next:"Hoofdstuk twee: het AZC",again:"↺ Opnieuw kijken",
   m_breath:"Adem inhouden",m_silence:"Het verhoor",m_wall:"De celmuur",m_mother:"Moeder",m_photo:"De foto",jump:"Ga naar: ",skip:"Overslaan ›",
@@ -344,7 +348,7 @@ const T={
   f_ask:"Jij staat nu achter de camera · klik om zijn foto te maken",f_aria:"Maak zijn foto",y_name:"Naam",y_num:"Nummer",y_aria:n=>`Een geel pasje met Sams foto en het nummer ${n} in plaats van zijn naam`,
   f_v:"Mijn gezicht gevangen in een flits. Een foto voor op een geel pasje. Met een nummer dat vanaf nu mijn identiteit zou zijn.",
   play:"Afspelen",pause:"Pauze"},
- en:{chap:"Chapter",one:"one",comic:"Read as comic",restart:"↺ Restart",turn:"↻ Turn your phone sideways",cc:"Aa Subtitles",
+ en:{chap:"Chapter",one:"one",comic:"Read as comic",restart:"↺ Restart",turn:"↻ Turn your phone sideways",cc:"CC",
   s_eye:"We All Breathe The Same Air · Chapter one",s_play:"▶ Play the chapter",s_note:"Sound on · 4 minutes · the film stops five times and waits for you",
   e_eye:"End of chapter one",e_title:"A number<br>for a name.",e_num:"Your number:",e_next:"Chapter two: the AZC",again:"↺ Watch again",
   m_breath:"Hold your breath",m_silence:"The interrogation",m_wall:"The cell wall",m_mother:"Mother",m_photo:"The photo",jump:"Jump to: ",skip:"Skip ›",
@@ -450,10 +454,8 @@ function applyLang(){
   document.documentElement.lang=LANG;
   document.querySelectorAll("[data-t]").forEach(el=>{ const v=t(el.dataset.t); if(el.dataset.html) el.innerHTML=v; else el.textContent=v; });
   document.querySelectorAll(".mk").forEach(b=>{ const k=MOMENTS[b.id.slice(3)]; b.querySelector("span").textContent=t(k); b.setAttribute("aria-label",t("jump")+t(k)); });
-  $("lang").textContent= SUBLANG==="nl"? "Subtitles: NL":"Subtitles: EN";
   lastCue=-1; setPlaying(playing);
 }
-function toggleLang(){ SUBLANG= SUBLANG==="nl"?"en":"nl"; try{ localStorage.setItem("wabtsa-sub",SUBLANG); }catch(_){} applyLang(); fillChapter(); }
 function fmt(t){ t=Math.max(0,Math.floor(t)); return `${Math.floor(t/60)}:${String(t%60).padStart(2,"0")}`; }
 function v(){ return vids[cur]; }
 function gtime(){ return SEGS[segI].start+(v().currentTime||0); }
@@ -484,13 +486,11 @@ function end(){ const n=myNumber(false); if(n){ $("endnumv").textContent=n; $("e
 function endInteraction(){ timers.forEach(clearTimeout); timers.clear(); if(cleanup){ cleanup(); cleanup=null; } ui.innerHTML=""; frame.classList.remove("gray"); inInteraction=false; document.body.classList.remove("inter"); }
 
 $("play").onclick=()=>{ if(inInteraction) return; snd.unlock(); if(v().paused){ v().play().then(()=>setPlaying(true)).catch(()=>{}); } else { v().pause(); setPlaying(false); } };
-document.addEventListener("keydown",e=>{ if(e.target.tagName==="INPUT") return; if(e.code==="Space"&&!inInteraction){ e.preventDefault(); $("play").click(); } });
 $("go").onclick=()=>{ snd.unlock(); $("cardStart").classList.add("off"); segI=0; cur=0; vids[0].src=SEGS[0].src; vids[0].classList.remove("hide"); vids[1].classList.add("hide");
   vids[0].currentTime=0; vids[0].play().then(()=>setPlaying(true)).catch(()=>setPlaying(false)); preload(1); };
-$("lang").onclick=toggleLang;
 applyLang(); fillChapter();
 $("nextch").onclick=()=>{ snd.unlock(); setChapter(CHAPTERS[CHN].next,true); };
-$("restart").onclick=$("again").onclick=()=>{ $("cardStart").classList.add("off"); $("cardEnd").classList.add("off"); document.querySelectorAll(".mk").forEach(m=>m.classList.remove("done")); snd.unlock(); loadSeg(0); };
+if($("again")) $("again").onclick=()=>{ $("cardStart").classList.add("off"); $("cardEnd").classList.add("off"); document.querySelectorAll(".mk").forEach(m=>m.classList.remove("done")); snd.unlock(); loadSeg(0); };
 
 /* ---------- sounds for the moments (synthesised) ---------- */
 const snd=(()=>{
@@ -554,8 +554,14 @@ document.addEventListener("visibilitychange",()=>{ if(!document.hidden) snd.unlo
     const off=()=>{ h.remove(); }; t.addEventListener("pointerdown",off,{once:true}); t.addEventListener("touchstart",off,{once:true,passive:true}); t.addEventListener("click",off,{once:true});
   }).observe(ui,{childList:true,subtree:true});
 })();
-/* full screen: offered where the browser allows it (computer, Android, iPad); iPhone does not allow it for a web page */
-(()=>{ const b=document.getElementById("fs"), d=document, el=d.documentElement; if(!b) return;
+/* DEV_MODE & native detection */
+const DEV_MODE = /[?&]dev=1/.test(location.search) || !!(window.parent && window.parent !== window && window.parent.LD && window.parent.LD.DEV);
+const IS_NATIVE_APP = !!((window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) || (window.top && window.top !== window && window.top.Capacitor && window.top.Capacitor.isNativePlatform && window.top.Capacitor.isNativePlatform()) || location.protocol === "capacitor:" || /; wv\)/.test(navigator.userAgent));
+if(!DEV_MODE){ const tr=$("toRoom"); if(tr) tr.style.display="none"; }
+/* full screen: only offered on www (never in native Capacitor iOS/Android app) */
+(()=>{ const b=document.getElementById("fs"); if(!b||IS_NATIVE_APP) return;
+  let d=document, el=d.documentElement;
+  try{ if(window.top&&window.top.document){ d=window.top.document; el=d.documentElement; } }catch(_){}
   const req=el.requestFullscreen||el.webkitRequestFullscreen, ext=d.exitFullscreen||d.webkitExitFullscreen;
   if(!(d.fullscreenEnabled||d.webkitFullscreenEnabled)||!req) return; b.hidden=false;
   const isFs=()=>d.fullscreenElement||d.webkitFullscreenElement, upd=()=>{ b.textContent=isFs()?"✕ Exit full screen":"⛶ Full screen"; };
@@ -573,7 +579,7 @@ function voice(lines, fa){
   step();
   return words.length*380+(fa?1200:0);
 }
-function skipBtn(){ const b=document.createElement("button"); b.className="skip"; b.type="button"; b.textContent=t("skip"); onTap(b,()=>next()); ui.appendChild(b); }
+function skipBtn(){ if(!DEV_MODE) return; const b=document.createElement("button"); b.className="skip"; b.type="button"; b.textContent=t("skip"); onTap(b,()=>next()); ui.appendChild(b); }
 
 /* ---------- viewer's number for the yellow card (kept per viewer for chapter two) ---------- */
 function myNumber(make){ let n=null; try{ n=localStorage.getItem("wabtsa-number"); if(n&&n.startsWith("V-1999-")){ n=n.replace("V-1999-","V-1997-"); localStorage.setItem("wabtsa-number",n); } }catch(_){}
@@ -821,7 +827,7 @@ photo(){
     window.ldPrime=()=>{ if(primed) return; primed=true; try{ snd.unlock(); }catch(_){}
       vids.forEach(v=>{ try{ const p=v.play(); if(p&&p.catch) p.catch(()=>{}); v.pause(); }catch(_){} }); };
     window.ldStart=start;
-    addEventListener("message",e=>{ if(e.data==="ld-prime") ldPrime(); if(e.data==="ld-start") start(); });
+    addEventListener("message",e=>{ if(e.data==="ld-prime") ldPrime(); if(e.data==="ld-start") start(); if(e.data==="ld-pause") vids.forEach(v=>v.pause()); });
     parent.postMessage("ld-ready","*");
   } else if(/[?&]autoplay\b/.test(q)){ try{ snd.unlock(); }catch(_){} vids[0].src=SEGS[0].src; segI=0; cur=0; vids[0].classList.remove("hide"); vids[1].classList.add("hide"); start(); }
 })();

@@ -52,3 +52,12 @@ Unity/Assets/Unity.VisualScripting.Generated/
 Unity/Assets/SceneDependencyCache*
 Unity/Assets/sceneDependencyCache*
 Unity/Assets/Plugins/Editor/JetBrains*
+
+# Node / JavaScript dependencies
+node_modules/
+**/node_modules/
+package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+

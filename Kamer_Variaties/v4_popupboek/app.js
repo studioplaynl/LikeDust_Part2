@@ -170,6 +170,7 @@ function colorIn(u){ tween(6500,p=>u.value=Math.max(u.value,1-Math.pow(1-p,2.2))
 /* ---------- bladeren ---------- */
 let spread=0, ready=false;   // spread = aantal omgeslagen bladen
 function canForward(){ if(spread>=NL-1) return false; if(spread>=2&&spread<=5) return st.has(spread-1); return true; }
+function flipTo(target){ if(spread>=target||LD.busy) return; const before=spread; turn(1); if(spread>before) setTimeout(()=>flipTo(target),1100); }
 function turn(dir){
   if(LD.busy||!ready) return;
   if(dir>0&&!canForward()){ LD.hint(spread>=2&&spread<=5?"Kijk eerst het hoofdstuk. Klik op het ding dat omhoog staat.":"",null,3000); return; }
@@ -209,7 +210,9 @@ cv.addEventListener("click",e=>{
   if(p){ const ch=chOf(p); if(!(st.has(ch)||ch===nextCh())){ LD.hint("Nog niet. Eerst "+LD.CHAPTERS[nextCh()-1].title+".",null,3000); return; }
     LD.tag(null);
     const wp=new THREE.Vector3(); p.userData.mesh.getWorldPosition(wp); dive={t:0,p:wp};
-    LD.openChapter(ch,{approach:()=>dive&&dive.t>=1,target:()=>({renderer,scene,camera,root:p.userData.mesh}),onClose:(c,seen)=>{ dive=null; if(seen&&!st.has(c)){ st.mark(c); hudUi.update(); applyProgress(false); setTimeout(()=>LD.hint("Blader verder.",null,3500),1500); } updateNav(); }});
+    LD.openChapter(ch,{approach:()=>dive&&dive.t>=1,target:()=>({renderer,scene,camera,root:p.userData.mesh}),onClose:(c,seen)=>{ if(dive) dive.back=true; if(seen&&!st.has(c)){ st.mark(c); hudUi.update(); applyProgress(false); } updateNav();
+      // na het hoofdstuk slaat het boek vanzelf om naar het volgende hoofdstuk (na hoofdstuk 4: de kamer in kleur)
+      if(seen) setTimeout(()=>flipTo(c+2),1500); }});
     return; }
   // anders: rechterhelft = verder, linkerhelft = terug
   if(spread===0) return turn(1);
@@ -245,7 +248,8 @@ function frame(){
   camera.position.set(cx*(open?1:.9),lerp(10.5,8.2,open)*wide*.95+look.y*.3,cz);
   camTarget.lerp(new THREE.Vector3(open?0:PW/2,0,open?-.4:0),Math.min(1,dt*2.5)); camera.lookAt(camTarget);
   // klik: de camera duikt naar het pop-up-ding
-  if(dive){ dive.t=Math.min(1,dive.t+dt*1.8); const e=dive.t*dive.t*(3-2*dive.t);
+  if(dive&&dive.back&&dive.t<=0) dive=null;
+  if(dive){ dive.t=Math.max(0,Math.min(1,dive.t+dt*(dive.back?-1.3:1.8))); const e=dive.t*dive.t*(3-2*dive.t);
     camera.position.lerp(dive.p.clone().add(new THREE.Vector3(0,1.6,2.6)),e); camera.lookAt(camTarget.clone().lerp(dive.p,e)); }
   renderer.render(scene,camera);
   requestAnimationFrame(frame);

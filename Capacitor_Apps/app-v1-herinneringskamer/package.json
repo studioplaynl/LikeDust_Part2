@@ -1,0 +1,20 @@
+{
+  "name": "likedust-herinneringskamer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "We All Breathe The Same Air - De Kamer (Variatie 1: Herinneringskamer)",
+  "scripts": {
+    "sync": "npx cap sync",
+    "open:ios": "npx cap open ios",
+    "open:android": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0"
+  }
+}
+

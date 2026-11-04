@@ -1,0 +1,15 @@
+{
+  "appId": "com.likedust.herinneringskamer",
+  "appName": "Herinneringskamer",
+  "webDir": "www",
+  "backgroundColor": "#000000",
+  "ios": {
+    "contentInset": "never",
+    "allowsLinkPreview": false
+  },
+  "android": {
+    "backgroundColor": "#000000",
+    "allowMixedContent": true
+  }
+}
+

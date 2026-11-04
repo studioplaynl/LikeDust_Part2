@@ -21,6 +21,9 @@ shared/                Three.js r160, assets.js (PSD-lagen + uitgekeyde green-sc
 - Klik op het voorwerp: de film start meteen met geluid (de browser staat geluid alleen toe binnen een klik).
   De camera gaat naar het voorwerp, de omtrek van het voorwerp komt met de film erin op je af tot hij het scherm vult.
   Aan het eind van de film ga je vanzelf terug naar de kamer (de eindkaart wordt overgeslagen).
+  Terug gaat zoals je binnenkwam: de film krimpt terug in het voorwerp en de camera rijdt terug.
+  Adem: daarna wordt het stof vanzelf de vorm van het volgende hoofdstuk.
+  Pop-upboek: daarna slaat het boek vanzelf om naar het volgende hoofdstuk (na hoofdstuk 4: de kamer in kleur).
   De film van het volgende voorwerp staat al klaar in een verborgen iframe (hoofdstuk-index.html?embed=1).
   Daarvoor staat onderaan elke hoofdstuk-index.html een klein extra script. Los geopend gedraagt het hoofdstuk zich als vanouds.
   Blokkeert een browser het geluid toch, dan start de film zonder geluid met een knop "Geluid aan".

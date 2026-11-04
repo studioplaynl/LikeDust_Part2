@@ -156,7 +156,10 @@ function goTo(n){
 }
 function openCur(){ const m=META[cur]; if(!m.ch||busy||morph) return; busy=true;
   dive={t:0}; LD.hint(null);
-  LD.openChapter(m.ch,{approach:()=>dive&&dive.t>=1,target:()=>({renderer,scene,camera,root:pts,grow:5}),onClose:(ch,seen)=>{ busy=false; dive=null; camera.position.z=camZ; if(seen&&!st.has(ch)){ st.mark(ch); hudUi.update(); stainIn(ch); } showLabel(); }}); }
+  LD.openChapter(m.ch,{approach:()=>dive&&dive.t>=1,target:()=>({renderer,scene,camera,root:pts,grow:5}),onClose:(ch,seen)=>{ busy=false; if(dive) dive.back=true; if(seen&&!st.has(ch)){ st.mark(ch); hudUi.update(); stainIn(ch); }
+    showLabel();
+    // na het hoofdstuk blaast de kamer vanzelf uit: het stof wordt de volgende vorm
+    if(seen){ const at=cur; setTimeout(()=>{ if(cur===at&&!busy&&!morph&&!holding){ exhale=1; goTo(cur+1); } },1800); } }}); }
 $("shOpen").onclick=openCur;
 
 /* adem-meter */
@@ -213,7 +216,8 @@ function frame(){
   pts.rotation.y=Math.sin(t*.15)*.12; pts.rotation.x=Math.sin(t*.11)*.04;
   const P=paper.material.uniforms; P.uTime.value=t; for(let i=0;i<4;i++) P.uAmt.value[i]=stainAmt[i]; P.uEnd.value+=((cur===6?1:0)-P.uEnd.value)*dt;
   // klik: de camera gaat naar de vorm toe
-  if(dive){ dive.t=Math.min(1,dive.t+dt*1.8); const e=dive.t*dive.t*(3-2*dive.t); camera.position.z=camZ*(1-.42*e); }
+  if(dive&&dive.back&&dive.t<=0) dive=null;
+  if(dive){ dive.t=Math.max(0,Math.min(1,dive.t+dt*(dive.back?-1.3:1.8))); const e=dive.t*dive.t*(3-2*dive.t); camera.position.z=camZ*(1-.42*e); }
   if(SHAPES.length) renderer.render(scene,camera);
   requestAnimationFrame(frame);
 }

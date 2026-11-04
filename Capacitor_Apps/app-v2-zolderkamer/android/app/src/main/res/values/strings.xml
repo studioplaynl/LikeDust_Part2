@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Zolderkamer</string>
+    <string name="title_activity_main">Zolderkamer</string>
+    <string name="package_name">com.likedust.zolderkamer</string>
+    <string name="custom_url_scheme">com.likedust.zolderkamer</string>
+</resources>
