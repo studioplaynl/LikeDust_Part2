@@ -225,6 +225,29 @@ DASHBOARD_HTML = """<!doctype html>
     .room-actions .btn-link { flex: 1; justify-content: center; }
     .btn-secondary { background: #1c1a16; border-color: var(--border); color: var(--muted); }
     .btn-secondary:hover:not(:disabled) { color: #f87171; border-color: rgba(248, 113, 113, 0.4); background: rgba(248, 113, 113, 0.08); }
+    .btn-cloud { background: #1c1a16; border-color: #3b3529; color: var(--accent); }
+    .btn-cloud:hover:not(:disabled) { background: #2b261d; border-color: var(--accent); color: #fff; }
+    .cloud-card {
+      margin-top: 18px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .cloud-info h3 { margin: 0; font-size: 15px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .cloud-info p { margin: 4px 0 0; font-size: 13px; color: var(--muted); }
+    .cloud-info a { color: var(--accent); text-decoration: none; word-break: break-all; }
+    .cloud-info a:hover { text-decoration: underline; }
+    .cloud-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .cloud-msg { font-size: 12.5px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; display: none; margin-top: 6px; }
+    .cloud-msg.success { color: var(--green); display: block; }
+    .cloud-msg.error { color: var(--red); display: block; }
+    .cloud-msg.running { color: var(--accent); display: block; }
     .reset-feedback {
       font-size: 11.5px;
       color: var(--green);
@@ -344,6 +367,22 @@ DASHBOARD_HTML = """<!doctype html>
         </div>
         <div class="reset-feedback" id="feedback-v2">✓ Progress reset!</div>
       </article>
+    </section>
+
+    <section class="cloud-card">
+      <div class="cloud-info">
+        <h3>☁️ Cloudflare Pages Review Site</h3>
+        <p>Live review URL: <a href="https://maartenvanderglas-com-2hv.pages.dev" target="_blank" rel="noopener" id="cloudLink">https://maartenvanderglas-com-2hv.pages.dev</a></p>
+        <div class="cloud-msg" id="cloudMsg"></div>
+      </div>
+      <div class="cloud-actions">
+        <a href="https://maartenvanderglas-com-2hv.pages.dev" target="_blank" rel="noopener" class="btn-link btn-secondary" style="flex:none; text-decoration:none;">
+          Open Cloudflare Site ↗
+        </a>
+        <button type="button" class="btn-cloud" id="deployCloudBtn">
+          🚀 Update Cloudflare Pages
+        </button>
+      </div>
     </section>
 
     <footer>
@@ -618,6 +657,37 @@ DASHBOARD_HTML = """<!doctype html>
           const port = roomId === "v1" ? 8771 : 8772;
           clearRoomProgress(roomId, port);
         });
+      });
+
+      // Deploy to Cloudflare Pages trigger
+      const deployCloudBtn = document.getElementById("deployCloudBtn");
+      const cloudMsg = document.getElementById("cloudMsg");
+      let deploying = false;
+
+      deployCloudBtn.addEventListener("click", async function () {
+        if (deploying) return;
+        deploying = true;
+        deployCloudBtn.disabled = true;
+        deployCloudBtn.textContent = "⏳ Deploying...";
+        cloudMsg.className = "cloud-msg running";
+        cloudMsg.textContent = "Building package and publishing to Cloudflare Pages...";
+
+        try {
+          const res = await fetch(API_BASE + "/api/deploy_cloudflare", { method: "POST" });
+          const data = await res.json();
+          if (!res.ok || !data.ok) {
+            throw new Error(data.error || "Deployment failed");
+          }
+          cloudMsg.className = "cloud-msg success";
+          cloudMsg.textContent = "✓ Successfully deployed to Cloudflare Pages! (" + (data.url || "https://maartenvanderglas-com-2hv.pages.dev") + ")";
+        } catch (err) {
+          cloudMsg.className = "cloud-msg error";
+          cloudMsg.textContent = "✗ Error: " + err.message;
+        } finally {
+          deploying = false;
+          deployCloudBtn.disabled = false;
+          deployCloudBtn.textContent = "🚀 Update Cloudflare Pages";
+        }
       });
 
       fetchStatus();
@@ -1053,6 +1123,24 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             return
         if route == "/api/stop":
             self._send_json(MANAGER.stop())
+            return
+        if route == "/api/deploy_cloudflare":
+            cmd_path = ROOT_DIR / "Deploy_Cloudflare_Pages.command"
+            try:
+                res = subprocess.run(
+                    ["/bin/bash", str(cmd_path)],
+                    cwd=str(ROOT_DIR),
+                    capture_output=True,
+                    text=True,
+                    timeout=180,
+                )
+                if res.returncode == 0:
+                    self._send_json({"ok": True, "url": "https://maartenvanderglas-com-2hv.pages.dev"})
+                else:
+                    err_msg = (res.stderr or res.stdout or "Deployment failed").strip()
+                    self._send_json({"ok": False, "error": err_msg[:300]}, status=HTTPStatus.INTERNAL_SERVER_ERROR)
+            except Exception as e:
+                self._send_json({"ok": False, "error": str(e)}, status=HTTPStatus.INTERNAL_SERVER_ERROR)
             return
 
         self._send_json({"error": "Unknown endpoint"}, status=HTTPStatus.NOT_FOUND)

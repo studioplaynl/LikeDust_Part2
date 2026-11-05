@@ -58,6 +58,17 @@ npm run open:android  # Android Studio
 # Room 2: Zolderkamer
 cd Capacitor_Apps/app-v2-zolderkamer
 npm run sync
+
+---
+
+## Documentation
+
+Full technical, architectural, and design documentation is available in the [`docs/`](docs/) directory:
+
+- [**docs/ARCHITECTURE.md**](docs/ARCHITECTURE.md): Multi-platform strategy, Capacitor 7 native bridges, and directory layout.
+- [**docs/FEATURES_AND_HIGHLIGHTS.md**](docs/FEATURES_AND_HIGHLIGHTS.md): Detailed breakdown of both rooms, 3D lighting, chapter player, and Dev Mode.
+- [**docs/URL_ROUTING_AND_SUBPAGES.md**](docs/URL_ROUTING_AND_SUBPAGES.md): How to share URLs (`#ch=1..4`), deep links, and future subpages.
+- [**docs/STORE_RELEASE_CHECKLIST.md**](docs/STORE_RELEASE_CHECKLIST.md): Production release instructions for iOS, Android, and Web.
 npm run open:ios
 npm run open:android
 ```

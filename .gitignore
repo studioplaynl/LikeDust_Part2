@@ -61,3 +61,10 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
+# Local build and review artifacts
+dist_pages/
+.www_worker.pid
+.wrangler/
+
+
+

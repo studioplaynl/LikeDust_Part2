@@ -74,3 +74,14 @@ canvas.gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-acti
 .ld-dev{position:fixed;z-index:30;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(12px + env(safe-area-inset-bottom,0px));font:400 .68rem var(--f-mono);color:rgba(236,232,222,.4)}
 @media (hover:none){.ld-dev{display:none}}
 @media (max-width:560px){.ld-dev{display:none}.ld-top .ld-chap{display:none}.ld-top .ghost{padding:8px 10px;font-size:.68rem;letter-spacing:.14em}.ld-dots{gap:5px;padding:0 2px}.ld-dots i{width:8px;height:8px}.ld-icons{gap:9px}.ld-ico{width:20px;height:20px}}
+
+/* subpagina-modal (#page=... of #about, #credits, #info etc.) */
+.ld-modal{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:24px;background:rgba(0,0,0,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;visibility:hidden;pointer-events:none;transition:opacity .35s ease,visibility .35s ease}
+.ld-modal.on{opacity:1;visibility:visible;pointer-events:auto}
+.ld-modal-box{position:relative;width:min(90vw,620px);max-height:86vh;background:#14120e;border:1px solid rgba(214,169,62,.35);box-shadow:0 20px 60px rgba(0,0,0,.85);padding:36px 30px 28px;overflow-y:auto;box-sizing:border-box}
+.ld-modal-close{position:absolute;top:14px;right:14px;padding:6px 10px;cursor:pointer;font-size:.85rem}
+.ld-modal-title{font:800 1.8rem var(--f-display);letter-spacing:.08em;text-transform:uppercase;color:var(--ochre);margin:0 0 16px}
+.ld-modal-content{font:400 1.02rem/1.65 var(--f-body);color:var(--chalk-dim)}
+.ld-modal-content p{margin:0 0 14px}
+.ld-modal-content a{color:var(--ochre);text-decoration:none}
+.ld-modal-content a:hover{text-decoration:underline}

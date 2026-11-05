@@ -129,8 +129,149 @@ function outlineOf(sil,color){
   return o.toDataURL();
 }
 
+/* ---------- URL routing & deelbare links (hoofdstukken #ch=1..4 & subpagina's #page=about) ---------- */
+let currentChapter = null;
+const pageHandlers = new Map();
+let activeModal = null;
+
+function parseRoute(){
+  const h = (location.hash || "").replace(/^#\/?/, "").trim();
+  const search = new URLSearchParams(location.search);
+
+  // 1. Hoofdstuk via query parameter: ?ch=1 of ?chapter=1
+  const qCh = search.get("ch") || search.get("chapter");
+  if(qCh && /^[1-4]$/.test(qCh)){
+    return { type: "chapter", ch: parseInt(qCh, 10), raw: qCh };
+  }
+
+  // 2. Subpagina via query parameter: ?page=about of ?p=about
+  const qPage = search.get("page") || search.get("p");
+  if(qPage && !/^(?:dev=?[01]|v\d+|room)$/i.test(qPage)){
+    return { type: "page", page: qPage.toLowerCase().trim(), raw: qPage };
+  }
+
+  // 3. Hoofdstuk via hash: #ch=1, #ch1, #chapter=1, #chapter1, #1..4
+  if(h){
+    const chMatch = h.match(/^(?:ch(?:apter)?[-_=]?|c[-_=]?)([1-4])$/i) || h.match(/^([1-4])$/);
+    if(chMatch){
+      return { type: "chapter", ch: parseInt(chMatch[1], 10), raw: h };
+    }
+
+    // 4. Subpagina via hash: #page=about, #p=about, of #about, #credits, #colophon, #info
+    const pageMatch = h.match(/^(?:page[-_=]|p[-_=])?([a-z0-9_-]+)$/i);
+    if(pageMatch){
+      const name = pageMatch[1].toLowerCase();
+      if(!/^(?:dev=?[01]|v\d+|room|gl|start|top|ctl|again|end)$/i.test(name)){
+        return { type: "page", page: name, raw: h };
+      }
+    }
+  }
+
+  return { type: "room", raw: "" };
+}
+
+function setUrlRoute(route, replace = true){
+  try {
+    const url = new URL(location.href);
+    if(route.type === "chapter"){
+      url.hash = `ch=${route.ch}`;
+    } else if(route.type === "page"){
+      url.hash = `page=${route.page}`;
+    } else {
+      const h = (url.hash || "").replace(/^#\/?/, "");
+      if(/^(?:ch|chapter|[1-4]|page|p=)/i.test(h)){
+        url.hash = "";
+      }
+    }
+    const target = url.pathname + (url.search || "") + (url.hash || "");
+    if(replace){
+      history.replaceState(null, "", target);
+    } else {
+      history.pushState(null, "", target);
+    }
+  } catch(_){}
+}
+
+function openPage(name, htmlContent){
+  closePage(false);
+  const pageName = (name || "").toLowerCase().trim();
+  setUrlRoute({ type: "page", page: pageName });
+  window.dispatchEvent(new CustomEvent("ld:route", { detail: { type: "page", page: pageName } }));
+
+  const handler = pageHandlers.get(pageName);
+  if(handler){
+    handler({ page: pageName, close: () => closePage(true) });
+    return;
+  }
+
+  // Standaard modal voor subpagina's
+  const modal = el("div", "ld-modal");
+  const titleFormatted = pageName.charAt(0).toUpperCase() + pageName.slice(1);
+  const defaultBody = htmlContent || `<p>Subpagina <b>${titleFormatted}</b> is in voorbereiding.</p>`;
+  modal.innerHTML = `
+    <div class="ld-modal-box">
+      <button class="ghost ld-modal-close" type="button" aria-label="Sluiten">✕</button>
+      <h2 class="ld-modal-title">${titleFormatted}</h2>
+      <div class="ld-modal-content">${defaultBody}</div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  requestAnimationFrame(() => modal.classList.add("on"));
+  activeModal = modal;
+
+  const doClose = () => closePage(true);
+  modal.querySelector(".ld-modal-close").onclick = doClose;
+  modal.onclick = e => { if(e.target === modal) doClose(); };
+}
+
+function closePage(updateUrl = true){
+  if(activeModal){
+    activeModal.classList.remove("on");
+    const m = activeModal;
+    setTimeout(() => m.remove(), 350);
+    activeModal = null;
+  }
+  if(updateUrl){
+    setUrlRoute({ type: "room" });
+    window.dispatchEvent(new CustomEvent("ld:route", { detail: { type: "room" } }));
+  }
+}
+
+function onPage(name, fn){
+  pageHandlers.set(name.toLowerCase().trim(), fn);
+}
+
+function getShareUrl(opts = {}){
+  const u = new URL(location.href);
+  if(opts.ch){
+    u.hash = `ch=${opts.ch}`;
+  } else if(opts.page){
+    u.hash = `page=${opts.page}`;
+  } else {
+    u.hash = "";
+  }
+  return u.toString();
+}
+
+function copyShareUrl(opts = {}){
+  const link = getShareUrl(opts);
+  try {
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(link).then(() => {
+        hint(`Link gekopieerd: ${opts.ch ? "Hoofdstuk " + opts.ch : opts.page || "Kamer"}`, "Delen", 2800);
+      }).catch(() => {
+        prompt("Deelbare link:", link);
+      });
+      return;
+    }
+  } catch(_){}
+  prompt("Deelbare link:", link);
+}
+
 function openChapter(n,{onClose,approach=0,target}={}){
-  if(chapterOpen) return; chapterOpen=true;
+  if(chapterOpen) return; chapterOpen=true; currentChapter=n;
+  setUrlRoute({ type: "chapter", ch: n });
+  window.dispatchEvent(new CustomEvent("ld:route", { detail: { type: "chapter", ch: n } }));
   const o=prepareChapter(n); o.active=true;
   call(o,"ldPrime");
   if(o.ready) call(o,"ldStart"); else whenReady(o,8000).then(()=>call(o,"ldStart"));
@@ -172,7 +313,9 @@ function openChapter(n,{onClose,approach=0,target}={}){
   }
   const poll=setInterval(()=>{ try{ const end=o.fr.contentDocument&&o.fr.contentDocument.getElementById("cardEnd"); if(end&&!end.classList.contains("off")) close(true); }catch(_){} },800);
   function close(ended){
-    if(done) return; done=true; clearInterval(poll); o.close=null; o.setBack=null;
+    if(done) return; done=true; clearInterval(poll); o.close=null; o.setBack=null; currentChapter=null;
+    setUrlRoute({ type: "room" });
+    window.dispatchEvent(new CustomEvent("ld:route", { detail: { type: "room" } }));
     const seen=ended||performance.now()-t0>15000;
     wipe("#000","in",1200).then(()=>{
       wrap.classList.remove("on","reveal"); if(back) back.remove(); dropFrame(n); chapterOpen=false;
@@ -182,6 +325,61 @@ function openChapter(n,{onClose,approach=0,target}={}){
     });
   }
   o.close=close; if(back) back.onclick=()=>close(false);
+}
+
+function closeChapter(){
+  if(currentChapter && frames[currentChapter] && frames[currentChapter].close){
+    frames[currentChapter].close(false);
+  }
+}
+
+// Browser Back/Forward navigatie
+window.addEventListener("hashchange", ()=>{
+  const route = parseRoute();
+  window.dispatchEvent(new CustomEvent("ld:route", { detail: route }));
+
+  if(route.type === "chapter"){
+    if(activeModal) closePage(false);
+    if(!chapterOpen || currentChapter !== route.ch){
+      if(chapterOpen && currentChapter){
+        const prev = frames[currentChapter];
+        if(prev && prev.close) prev.close(false);
+      }
+      openChapter(route.ch);
+    }
+  } else if(route.type === "page"){
+    if(chapterOpen && currentChapter){
+      const prev = frames[currentChapter];
+      if(prev && prev.close) prev.close(false);
+    }
+    openPage(route.page);
+  } else {
+    if(activeModal) closePage(false);
+    if(chapterOpen && currentChapter){
+      const prev = frames[currentChapter];
+      if(prev && prev.close) prev.close(false);
+    }
+  }
+});
+
+// Automatisch openen bij laden als de URL een hoofdstuk of pagina bevat
+function checkInitialRoute(){
+  const route = parseRoute();
+  if(route.type === "chapter"){
+    setTimeout(()=>{
+      if(!chapterOpen) openChapter(route.ch);
+    }, 450);
+  } else if(route.type === "page"){
+    setTimeout(()=>{
+      openPage(route.page);
+    }, 350);
+  }
+}
+
+if(document.readyState === "loading"){
+  document.addEventListener("DOMContentLoaded", checkInitialRoute);
+} else {
+  setTimeout(checkInitialRoute, 250);
 }
 
 document.addEventListener("visibilitychange", ()=>{
@@ -282,6 +480,29 @@ float granul(vec2 px,float seed){ return .78+.22*fbm(px*.22+seed)+.06*(h21(px)-.
 `
 };
 
-window.LD={DEV:DEV_MODE,CHAPTERS,state,sfx,wipe,openChapter,prepareChapter,hud,hint,tag,tex,GLSL,muted:false,
-  get busy(){ return chapterOpen; }};
+window.LD={
+  DEV:DEV_MODE,
+  CHAPTERS,
+  state,
+  sfx,
+  wipe,
+  openChapter,
+  closeChapter,
+  prepareChapter,
+  hud,
+  hint,
+  tag,
+  tex,
+  GLSL,
+  muted:false,
+  get busy(){ return chapterOpen; },
+  get currentChapter(){ return currentChapter; },
+  getRoute: parseRoute,
+  setRoute: setUrlRoute,
+  getShareUrl,
+  copyShareUrl,
+  openPage,
+  closePage,
+  onPage
+};
 })();
