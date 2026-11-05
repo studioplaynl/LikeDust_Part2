@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>We All Breathe The Same Air</title>
+<meta name="description" content="We All Breathe The Same Air: interactive intro to the graphic novel by Sam Yazdanpanna.">
+<meta property="og:title" content="We All Breathe The Same Air">
+<meta property="og:description" content="We All Breathe The Same Air: interactive intro to the graphic novel by Sam Yazdanpanna.">
+<meta property="og:image" content="img/reflect.jpg">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="stylesheet" href="../fonts/fonts.css">
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;padding:0;-webkit-text-size-adjust:100%}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<style>
+/* Layout: one full-screen cinema stage. Black start → title on black → intro video → the airport window, where clicking young Sam's silhouette begins the story (the next scene is added later; for now a quiet black end screen). Single dark look by choice. */
+:root{
+  --ink:#000;
+  --steel:#151a1e;
+  --chalk:#ece8de;
+  --chalk-dim:#a3a59e;
+  --amber:#D6A93E;
+  --ochre:#D6A93E;     /* broken yellow for titles and subtitles */
+  --ochre-dim:#a8873a;      /* runway lights, Sam's jacket */
+  --amber-glow:rgba(214,169,62,.5);
+  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"Literata",Georgia,serif;
+  color-scheme:dark;
+}
+html,body{height:100%;background:var(--ink);color:var(--chalk)}
+body{overflow:hidden;font-family:var(--f-body)}
+.stage{position:fixed;inset:0;overflow:hidden;background:var(--ink)}
+.screen{position:absolute;inset:0;transition:opacity 1.2s ease}
+.screen.off{opacity:0;pointer-events:none}
+.btn{font-family:var(--f-display);font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:1rem;color:#000;background:var(--chalk);border:0;padding:14px 30px;cursor:pointer;transition:background .2s,transform .2s}
+.btn:hover{background:var(--amber);transform:translateY(-1px)}
+.ghost{font-family:var(--f-display);font-weight:700;letter-spacing:.2em;text-transform:uppercase;font-size:.85rem;color:var(--chalk);background:rgba(0,0,0,.5);border:1px solid rgba(236,232,222,.35);padding:10px 16px;cursor:pointer;backdrop-filter:blur(4px)}
+.ghost:hover{border-color:var(--amber);color:var(--amber)}
+.btn:focus-visible,.ghost:focus-visible{outline:2px solid var(--amber);outline-offset:4px}
+#young,#young:focus,#young:focus-visible{outline:none;-webkit-tap-highlight-color:transparent}
+.eyebrow{margin:0;font-family:var(--f-display);font-weight:500;letter-spacing:.24em;text-transform:uppercase;font-size:.85rem;color:var(--ochre-dim)}
+.h-title{color:var(--ochre);font-family:var(--f-display);font-weight:800;font-size:clamp(2.6rem,9vw,6.5rem);line-height:.9;text-transform:uppercase;margin:0;text-wrap:balance}
+
+/* start */
+#start{display:grid;place-items:center}
+.center{position:relative;display:grid;gap:26px;justify-items:center;text-align:center;padding-inline:16px}
+
+/* intro */
+#intro video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0;transition:opacity 1.6s ease}
+#intro video.on{opacity:1}
+.titlecard{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:22px;background:#000;text-align:center;padding-inline:16px;opacity:0;transition:opacity 1.6s ease;z-index:2;pointer-events:none}
+.titlecard.on{opacity:1}
+.titlecard .h-title span{display:block;opacity:0;transform:translateY(10px);transition:opacity 1.4s ease,transform 1.4s ease}
+.titlecard.on .h-title span{opacity:1;transform:none}
+.titlecard.on .h-title span:nth-child(2){transition-delay:.7s}
+.titlecard .eyebrow{opacity:0;transition:opacity 1.4s ease 1.8s}
+.titlecard.on .eyebrow{opacity:1}
+
+.progress{position:absolute;left:0;top:0;height:2px;background:var(--amber);width:0;z-index:5}
+.subs{position:absolute;left:0;right:0;bottom:calc(7vh + env(safe-area-inset-bottom,0px));z-index:3;display:flex;justify-content:center;padding-inline:16px;pointer-events:none}
+.subs span{font-family:Arial,Helvetica,"Helvetica Neue",sans-serif;font-weight:700;font-size:clamp(1.2rem,2.8vw,2rem);line-height:1.3;color:var(--ochre);text-align:center;max-width:42ch;text-wrap:balance;text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,0 2px 0 #000,0 -2px 0 #000,0 0 8px rgba(0,0,0,.9);opacity:0;transition:opacity .2s linear}
+.subs span.on{opacity:1}
+.endcard{position:absolute;inset:0;display:grid;place-items:center;background:#000;z-index:4;padding-inline:16px;opacity:0;pointer-events:none;transition:opacity 1.2s ease}
+.endcard.on{opacity:1}
+.endcard p{margin:0;font-family:Arial,Helvetica,"Helvetica Neue",sans-serif;font-size:clamp(1.15rem,2.8vw,1.8rem);color:var(--ochre);text-align:center;opacity:0;transition:opacity 1.4s ease .6s}
+.endcard.on p{opacity:1}
+.vtools{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:16px;z-index:6;display:flex;gap:10px}
+
+/* window scene */
+#scene{display:grid;place-items:center}
+.wrap{position:relative;width:min(100vw,calc(100vh * 16 / 9));aspect-ratio:16/9;max-width:100%;overflow:hidden}
+.zoom{position:absolute;inset:0;animation:breathe 12s ease-in-out infinite;transform-origin:68% 40%}
+.zoom > img.bgimg{width:100%;height:100%;object-fit:cover;display:block}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+.rain{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#young{position:absolute;left:48%;top:0;width:46%;height:96%;border:0;background:transparent;cursor:pointer;border-radius:45% 45% 10% 10%}
+.sil{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:0;animation:silBreathe 5s ease-in-out 1.5s infinite;transition:opacity 1.4s ease}
+@keyframes silBreathe{0%,100%{opacity:0}40%,60%{opacity:1}}
+.wrap.hover .sil{animation:none;opacity:1}
+.wrap.chosen .sil{animation:none;opacity:1}
+.hint{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));font-family:var(--f-display);letter-spacing:.24em;text-transform:uppercase;font-size:.85rem;color:var(--chalk);text-shadow:0 2px 12px #000;white-space:nowrap}
+.hint b{color:var(--amber);font-weight:700}
+.tools{position:absolute;top:calc(16px + env(safe-area-inset-top,0px));right:16px;display:flex;gap:10px;z-index:4}
+
+
+/* begin */
+#begin{display:grid;place-items:center;background:#000}
+
+/* paper + film grain laid over the picture, so the film itself stays light to load.
+   Pure black stays black under both blend modes, so letterboxing and title cards are untouched. */
+.fx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.fx .paper{position:absolute;inset:0;z-index:40;background:url(img/paper.jpg) center/cover;mix-blend-mode:soft-light;opacity:.6}
+.fx .grain{position:absolute;inset:-120px;z-index:40;background:url(img/grain.png);mix-blend-mode:overlay;opacity:.18;animation:grain .5s steps(1) infinite}
+@keyframes grain{0%{transform:translate(0,0)}17%{transform:translate(-37px,22px)}33%{transform:translate(29px,-41px)}50%{transform:translate(-18px,-9px)}67%{transform:translate(44px,31px)}83%{transform:translate(-50px,48px)}100%{transform:translate(12px,-26px)}}
+@media (prefers-reduced-motion:reduce){.fx .grain{animation:none}}
+/* phones and tablets: blend layers over moving video make iOS/Android stutter, so the texture is desktop-only */
+@media (hover:none),(pointer:coarse){.fx{display:none}}
+@media (max-width:600px){.hint{font-size:.72rem}}
+@media (prefers-reduced-motion:reduce){.zoom,.sil{animation:none}.sil{opacity:1}}
+</style>
+
+<div class="stage">
+  <section class="screen" id="start">
+    <div class="center">
+      <p class="eyebrow">A graphic novel · Based on a true story</p>
+      <h1 class="h-title">We All Breathe<br>The Same Air.</h1>
+      <button class="btn" id="play" type="button">▶ Start the intro</button>
+      <p class="eyebrow" style="font-size:.75rem">Story by Sam Yazdanpanna · Sound on</p>
+    </div>
+  </section>
+
+  <section class="screen off" id="intro">
+    <div class="progress" id="bar"></div>
+    <video id="iv" playsinline webkit-playsinline preload="auto" disablepictureinpicture src="../vid/intro.mp4"></video>
+    <div class="titlecard" id="tc">
+      <h2 class="h-title"><span>We All Breathe</span><span>The Same Air.</span></h2>
+      <p class="eyebrow">A graphic novel based on the true story of Sam Yazdanpanna</p>
+    </div>
+    <div class="endcard" id="ec"><p>…but not all of us are equally free.</p></div>
+    <div class="subs" aria-live="polite"><span id="sub"></span></div>
+    <div class="vtools">
+      <button class="ghost" id="unmute" type="button" hidden>Tap for sound</button>
+      <button class="ghost" id="cc" type="button" aria-pressed="false" hidden>Subtitles on</button>
+      <button class="ghost" id="skip" type="button">Skip intro</button>
+    </div>
+  </section>
+
+  <section class="screen off" id="scene">
+    <div class="wrap" id="wrap">
+      <div class="zoom"><img class="bgimg" src="img/reflect.jpg" alt="Grown-up Sam looks out of an airport window and sees his seventeen-year-old self reflected in the glass, with the control tower and a plane behind.">
+      <img class="sil" src="img/young-silhouette.png" alt=""></div>
+      <button id="young" type="button" aria-label="Click young Sam to begin the story"></button>
+      <div class="hint">Click <b>young Sam</b> to begin</div>
+    </div>
+    <div class="tools">
+      <button class="ghost" id="mute" type="button" aria-pressed="false">Sound on</button>
+      <button class="ghost" id="again" type="button">↺ Intro</button>
+    </div>
+  </section>
+
+
+  <section class="screen off" id="begin">
+    <div class="center">
+      <button class="ghost" id="back" type="button">↺ Back to the window</button>
+      <a class="ghost" href="../index.html" style="text-decoration:none">← Website</a>
+    </div>
+  </section>
+  <div class="fx" aria-hidden="true"><i class="paper"></i><i class="grain"></i></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const TITLE_SECONDS=6;   // how long the title stays on black
+const iv=$("iv"), tc=$("tc"); let running=false, tTimer=null, t0=0;
+
+function show(n){ ["start","intro","scene","begin"].forEach(s=>$(s).classList.toggle("off",s!==n)); }
+
+/* ---------- subtitles (start, end in seconds of the video) ---------- */
+const CUES=[
+  [0.8,2.3,"My name is Sam."],
+  [3.1,4.5,"I was born in Iran."],
+  [6.2,9.0,"I was seventeen when I had to leave Iran."],
+  [9.85,12.1,"My mother came with me as far as Istanbul…"],
+  [13.2,14.9,"…and then she went back to Iran."],
+  [16.4,21.1,"There, a smuggler named Yilmaz handed me a fake passport…"],
+  [21.55,23.5,"…and put me on a plane."],
+  [23.8,25.8,"Destination: the Netherlands."],
+  [27.0,29.4,"And that's when it all began."],
+  [30.3,32.3,"Interrogations… admission…"],
+  [32.45,34.2,"…and a wait that never seemed to end."],
+  [34.3,36.8,"In the refugee camp, I fell in love."],
+  [37.35,39.4,"I took care of a little bird."],
+  [40.05,42.3,"And it was there that a letter reached me…"],
+  [42.4,44.1,"…one that changed everything."],
+  [46.05,50.5,"When I turned eighteen, my life in Amsterdam began…"],
+  [51.95,53.8,"…undocumented and illegal."],
+  [54.3,57.0,"This story is the story of what came before…"],
+  [57.7,59.4,"…how I became illegal."],
+  [60.9,63.6,"We all breathe the same air…"]
+];
+let ccOn=false, lastCue=-1;
+function updateSub(){
+  const t=iv.currentTime; const i=CUES.findIndex(c=>t>=c[0]&&t<c[1]); const el=$("sub");
+  if(i!==lastCue){ lastCue=i; if(i>=0){ el.textContent=CUES[i][2]; } }
+  el.classList.toggle("on", ccOn && i>=0 && !iv.ended && !iv.paused);
+}
+
+/* ---------- intro ---------- */
+function tick(){
+  if(!running) return;
+  const total=TITLE_SECONDS+(iv.duration||63);
+  const el=iv.classList.contains("on") ? TITLE_SECONDS+iv.currentTime : (performance.now()-t0)/1000;
+  $("bar").style.width=Math.min(100,el/total*100)+"%";
+  updateSub();
+  requestAnimationFrame(tick);
+}
+/* iPhone/Safari only allow sound when playback starts inside a tap.
+   So we start the video (with sound) right in the tap, pause it at once,
+   and let it play for real after the title. */
+function unlockVideo(){
+  // play + pause in the same tap: unlocks sound on iPhone/Android without any audio leaking under the title
+  iv.muted=false;
+  const p=iv.play(); if(p&&p.catch) p.catch(()=>{});
+  iv.pause(); try{ iv.currentTime=0; }catch(e){}
+}
+function playVideo(){
+  iv.classList.add("on"); iv.muted=false;
+  iv.play().then(()=>{ $("unmute").hidden=true; }).catch(()=>{
+    iv.muted=true; iv.play().catch(()=>{}); $("unmute").hidden=false;
+  });
+}
+function startIntro(){
+  ambience.stop(); ambience.unlock(); clearTimeout(tTimer);
+  running=true; iv.pause(); iv.currentTime=0; iv.classList.remove("on"); $("ec").classList.remove("on"); $("unmute").hidden=true;
+  unlockVideo();
+  show("intro"); t0=performance.now();
+  requestAnimationFrame(()=>tc.classList.add("on"));
+  tTimer=setTimeout(()=>{
+    tc.classList.remove("on");
+    tTimer=setTimeout(()=>{ if(running) playVideo(); },1200);
+  },TITLE_SECONDS*1000);
+  requestAnimationFrame(tick);
+}
+iv.addEventListener("timeupdate",updateSub);
+iv.addEventListener("playing",updateSub);
+iv.onended=()=>{
+  if(!running) return;
+  toWindow();
+};
+function stopIntro(){
+  running=false; clearTimeout(tTimer); iv.pause(); $("unmute").hidden=true; tc.classList.remove("on"); $("sub").classList.remove("on"); $("ec").classList.remove("on");
+}
+/* after the intro: the airport window. Young Sam's silhouette breathes in the glass; clicking him begins. */
+function toWindow(){ stopIntro(); $("wrap").classList.remove("chosen","hover"); show("scene"); ambience.start(); }
+
+/* ---------- ambience: empty terminal room tone, strip-light hum, rain on glass, a distant jet ---------- */
+const ambience=(()=>{
+  let ctx=null, master=null, jetTimer=null, muted=false;
+  function noise(seconds,brown){
+    const b=ctx.createBuffer(1,ctx.sampleRate*seconds,ctx.sampleRate), d=b.getChannelData(0); let last=0;
+    for(let i=0;i<d.length;i++){ const w=Math.random()*2-1; if(brown){ last=(last+.02*w)/1.02; d[i]=last*3.5; } else d[i]=w; }
+    return b;
+  }
+  function loop(buf){ const s=ctx.createBufferSource(); s.buffer=buf; s.loop=true; return s; }
+  function build(){
+    ctx=new (window.AudioContext||window.webkitAudioContext)();
+    master=ctx.createGain(); master.gain.value=0; master.connect(ctx.destination);
+    // room tone
+    const room=loop(noise(6,true)), lp=ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=380;
+    const rg=ctx.createGain(); rg.gain.value=.55; room.connect(lp).connect(rg).connect(master); room.start();
+    // fluorescent hum
+    [100,200,300].forEach((f,i)=>{ const o=ctx.createOscillator(); o.frequency.value=f; const g=ctx.createGain(); g.gain.value=[.012,.006,.003][i]; o.connect(g).connect(master); o.start(); });
+    // rain on the window
+    const rain=loop(noise(4,false)), bp=ctx.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=2600; bp.Q.value=.6;
+    const rgn=ctx.createGain(); rgn.gain.value=.05; rain.connect(bp).connect(rgn).connect(master); rain.start();
+    const lfo=ctx.createOscillator(); lfo.frequency.value=.07; const lg=ctx.createGain(); lg.gain.value=.02; lfo.connect(lg).connect(rgn.gain); lfo.start();
+  }
+  function jet(){
+    if(!ctx) return;
+    const s=ctx.createBufferSource(); s.buffer=noise(10,true);
+    const f=ctx.createBiquadFilter(); f.type="lowpass"; f.frequency.value=200;
+    const g=ctx.createGain(); const t=ctx.currentTime;
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.9,t+4); g.gain.linearRampToValueAtTime(0,t+9.5);
+    f.frequency.setValueAtTime(140,t); f.frequency.linearRampToValueAtTime(420,t+4); f.frequency.linearRampToValueAtTime(160,t+9.5);
+    s.connect(f).connect(g).connect(master); s.start(); s.stop(t+10);
+    jetTimer=setTimeout(jet,22000+Math.random()*14000);
+  }
+  return {
+    unlock(){
+      try{ if(!ctx) build(); ctx.resume(); }catch(e){}
+    },
+    start(){
+      try{ if(!ctx) build(); ctx.resume(); }catch(e){ return; }
+      const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t);
+      master.gain.linearRampToValueAtTime(muted?0:.8,t+2.5);
+      clearTimeout(jetTimer); jetTimer=setTimeout(jet,6000);
+    },
+    stop(){
+      clearTimeout(jetTimer); if(!ctx) return;
+      const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t); master.gain.linearRampToValueAtTime(0,t+1.2);
+    },
+    toggle(){ muted=!muted; if(ctx){ const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.linearRampToValueAtTime(muted?0:.8,t+.4);} return muted; }
+  };
+})();
+
+
+
+/* ---------- controls ---------- */
+$("play").onclick=startIntro;
+$("unmute").onclick=()=>{ iv.muted=false; iv.play().catch(()=>{}); $("unmute").hidden=true; };
+$("skip").onclick=toWindow;
+$("again").onclick=startIntro;
+const yb=$("young"), wr=$("wrap");
+yb.addEventListener("pointerenter",()=>wr.classList.add("hover"));
+yb.addEventListener("pointerleave",()=>wr.classList.remove("hover"));
+yb.addEventListener("focus",()=>wr.classList.add("hover"));
+yb.addEventListener("blur",()=>wr.classList.remove("hover"));
+/* Click on young Sam = the start of the story.
+   >>> Add the next scene here later (for example the camp room): replace show("begin") with your own screen. <<< */
+function afterYoungSam(){ show("begin"); }
+yb.onclick=()=>{ wr.classList.add("chosen"); ambience.stop(); setTimeout(afterYoungSam,900); };
+$("cc").onclick=e=>{ ccOn=!ccOn; e.currentTarget.textContent=ccOn?"Subtitles on":"Subtitles off"; e.currentTarget.setAttribute("aria-pressed",ccOn); updateSub(); };
+$("back").onclick=toWindow;
+$("mute").onclick=e=>{ const m=ambience.toggle(); e.currentTarget.textContent=m?"Sound off":"Sound on"; e.currentTarget.setAttribute("aria-pressed",m); };
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && running) toWindow(); });
+</script>
+</body>
+</html>

@@ -1,0 +1,42 @@
+WE ALL BREATHE THE SAME AIR · LIKE DUST — website van Sam Yazdanpanna
+Definitieve versie, 22 oktober 2026
+====================================================================
+
+WAT ZIT ERIN
+index.html            Hoofdpagina. We All Breathe The Same Air (Part 2) staat voorop ("New"),
+                      Like Dust (Part 1) ernaast, daaronder de boeken, de fondsen
+                      en de credits.
+intro/index.html      De interactieve intro van We All Breathe The Same Air:
+                      titel, film, en het raam waar je op het silhouet van de
+                      jonge Sam klikt om te beginnen. Daarna wordt het zwart;
+                      hier komt later de volgende scène (zie afterYoungSam in de code).
+vid/intro.mp4         Intro-film met voice-over; Engelse ondertitels in een zwarte strook onder het volledige beeld (1:12)
+vid/ld-trailer.mp4    Trailer van Like Dust, zonder Scenery-logo (0:17)
+vid/wa-intro-bg.mp4   Stille achtergrond: de intro zonder geluid en zonder ondertitels (0:63, loop)
+vid/ld-loop.mp4       Stille achtergrondfilm Like Dust
+img/                  Beelden, posters en de zes fondslogo's (wit)
+                      (paper.jpg en grain.png: papier- en filmkorrel-laag over de intro)
+fonts/                Lettertypes (Big Shoulders Display, Literata, IBM Plex Mono),
+                      vrij te gebruiken onder de SIL Open Font License
+
+GETEST OP
+iPhone SE, iPhone 15 (staand en liggend), kleine Android, Pixel,
+iPad (staand en liggend), iPad Pro, laptop en groot desktopscherm.
+Op alle formaten: niets schuift van het scherm, beide films spelen,
+de intro werkt van begin tot eind, terugknop werkt, lettertypes laden.
+
+GELUID
+Beide films staan op hetzelfde volume en blijven onder het maximum
+(geen kraken). Films met geluid starten na een tik of klik, zoals
+iPhone, Android en alle browsers dat vereisen.
+
+PRIVACY
+De site haalt niets op bij andere bedrijven: geen Google Fonts,
+geen tracking, geen cookies. Er is dus geen cookiemelding nodig.
+
+ONLINE ZETTEN
+1. Pak de zip uit.
+2. Upload de HELE map naar je webhosting (bijv. via FTP of het
+   bestandsbeheer van je hostingpartij), of sleep de map naar
+   app.netlify.com/drop voor een gratis werkende link.
+3. Laat img/, vid/, fonts/ en intro/ naast index.html staan.
