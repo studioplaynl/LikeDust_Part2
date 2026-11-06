@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 """
-Like Dust Part 2 · Rooms www Server & Dashboard Launcher
+We All Breathe the Same Air · Like Dust Part 2 — www Server & Dashboard Launcher
 
 Run directly (`python3 start_dashboard.py`) or double-click `Start_Dashboard.command`:
-  1. Starts the local HTTP server for both Capacitor `www` room builds:
-     - Room 1 (Herinneringskamer): http://localhost:8771/
-     - Room 2 (Zolderkamer):       http://localhost:8772/
+  1. Starts the local HTTP server for the unified Capacitor `www` room build:
+     - We All Breathe the Same Air (Flat 2D Three.js Room + Video Chapters): http://localhost:8771/
   2. Starts the local Dashboard controller on http://localhost:8770/
-     (needed because browsers block static file:// pages from starting/restarting OS processes)
   3. Automatically opens http://localhost:8770/ in your default browser.
 """
 
@@ -39,20 +37,12 @@ DASHBOARD_PORT = 8770
 
 ROOMS = [
     {
-        "id": "v1",
-        "name": "Herinneringskamer",
-        "appId": "com.likedust.herinneringskamer",
-        "description": "Variatie 1 · 2.5D painted room (Capacitor_Apps/app-v1-herinneringskamer/www)",
+        "id": "main",
+        "name": "We All Breathe the Same Air",
+        "appId": "com.likedust.wabtsa",
+        "description": "Flat 2D room in Three.js integrated with the 4 interactive video chapters (Capacitor_Apps/app-room/www)",
         "port": 8771,
-        "wwwDir": CAPACITOR_DIR / "app-v1-herinneringskamer" / "www",
-    },
-    {
-        "id": "v2",
-        "name": "Zolderkamer",
-        "appId": "com.likedust.zolderkamer",
-        "description": "Variatie 2 · 3D toon-shaded attic room (Capacitor_Apps/app-v2-zolderkamer/www)",
-        "port": 8772,
-        "wwwDir": CAPACITOR_DIR / "app-v2-zolderkamer" / "www",
+        "wwwDir": CAPACITOR_DIR / "app-room" / "www",
     },
 ]
 
@@ -61,7 +51,7 @@ DASHBOARD_HTML = """<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Like Dust Part 2 · www Server Dashboard</title>
+  <title>We All Breathe the Same Air · www Server Dashboard</title>
   <style>
     :root {
       --bg: #0f0e0c;
@@ -88,7 +78,7 @@ DASHBOARD_HTML = """<!doctype html>
       line-height: 1.5;
       padding: 40px 20px;
     }
-    .wrap { max-width: 780px; margin: 0 auto; }
+    .wrap { max-width: 740px; margin: 0 auto; }
     header { margin-bottom: 28px; }
     .eyebrow {
       margin: 0 0 6px;
@@ -188,7 +178,6 @@ DASHBOARD_HTML = """<!doctype html>
       border-radius: 5px;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
     .room-card {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -201,7 +190,7 @@ DASHBOARD_HTML = """<!doctype html>
     }
     .room-card.online { border-color: #3a342a; }
     .room-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    .room-title { margin: 0; font-size: 19px; font-weight: 700; }
+    .room-title { margin: 0; font-size: 20px; font-weight: 700; }
     .room-appid { margin: 3px 0 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; color: var(--muted); }
     .port-pill { font-size: 11.5px; font-weight: 600; padding: 4px 9px; border-radius: 999px; white-space: nowrap; border: 1px solid var(--border); color: var(--muted); }
     .port-pill.online { color: var(--green); border-color: var(--green-border); background: var(--green-bg); }
@@ -270,13 +259,14 @@ DASHBOARD_HTML = """<!doctype html>
     }
     footer code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; color: #cfc7b8; }
   </style>
+  <link rel="icon" href="data:,">
 </head>
 <body>
   <div class="wrap">
     <header>
-      <p class="eyebrow">We All Breathe The Same Air · Capacitor Apps</p>
-      <h1>Rooms <code>www</code> Server Dashboard</h1>
-      <p class="subtitle">Live status &amp; local web servers for both iOS/Android room builds.</p>
+      <p class="eyebrow">We All Breathe The Same Air · Capacitor App</p>
+      <h1>Room <code>www</code> Server Dashboard</h1>
+      <p class="subtitle">Live status &amp; local web server for the flat 2D Three.js room + 4 interactive video chapters.</p>
     </header>
 
     <div class="offline-banner" id="offlineBanner">
@@ -307,67 +297,37 @@ DASHBOARD_HTML = """<!doctype html>
         </label>
       </div>
       <div class="mode-tip">
-        Adds <code>?dev=0</code> to room links to preview chapter icons and hide debug overlays.
+        Adds <code>?dev=0</code> to preview the 4 chapter icons and hide debug controls.
       </div>
     </div>
 
-    <section class="grid">
-      <article class="room-card" id="card-v1">
-        <div>
-          <div class="room-top">
-            <div>
-              <h2 class="room-title">1. Herinneringskamer</h2>
-              <p class="room-appid">com.likedust.herinneringskamer</p>
-            </div>
-            <span class="port-pill" id="pill-v1">Port 8771</span>
+    <article class="room-card" id="card-main">
+      <div>
+        <div class="room-top">
+          <div>
+            <h2 class="room-title">We All Breathe the Same Air</h2>
+            <p class="room-appid">com.likedust.wabtsa</p>
           </div>
-          <p class="room-desc">2.5D painted room (<code>app-v1-herinneringskamer/www</code>)</p>
+          <span class="port-pill" id="pill-main">Port 8771</span>
         </div>
+        <p class="room-desc">Flat 2D room in Three.js integrated with the 4 interactive video chapters (<code>Capacitor_Apps/app-room/www</code>)</p>
+      </div>
 
-        <div class="url-box">
-          <a href="http://localhost:8771/" target="_blank" rel="noopener" id="url-v1">http://localhost:8771/</a>
-          <button type="button" class="copy-btn" data-room="v1" data-copy="http://localhost:8771/">Copy</button>
-        </div>
+      <div class="url-box">
+        <a href="http://localhost:8771/" target="_blank" rel="noopener" id="url-main">http://localhost:8771/</a>
+        <button type="button" class="copy-btn" data-room="main" data-copy="http://localhost:8771/">Copy</button>
+      </div>
 
-        <div class="room-actions">
-          <a href="http://localhost:8771/" target="_blank" rel="noopener" class="btn-link btn-primary" id="open-v1">
-            Open Herinneringskamer ↗
-          </a>
-          <button type="button" class="btn-secondary reset-prog-btn" data-room="v1" title="Delete chapter progression and reset saved state for Herinneringskamer">
-            ↺ Reset Progress
-          </button>
-        </div>
-        <div class="reset-feedback" id="feedback-v1">✓ Progress reset!</div>
-      </article>
-
-      <article class="room-card" id="card-v2">
-        <div>
-          <div class="room-top">
-            <div>
-              <h2 class="room-title">2. Zolderkamer</h2>
-              <p class="room-appid">com.likedust.zolderkamer</p>
-            </div>
-            <span class="port-pill" id="pill-v2">Port 8772</span>
-          </div>
-          <p class="room-desc">3D toon-shaded attic room (<code>app-v2-zolderkamer/www</code>)</p>
-        </div>
-
-        <div class="url-box">
-          <a href="http://localhost:8772/" target="_blank" rel="noopener" id="url-v2">http://localhost:8772/</a>
-          <button type="button" class="copy-btn" data-room="v2" data-copy="http://localhost:8772/">Copy</button>
-        </div>
-
-        <div class="room-actions">
-          <a href="http://localhost:8772/" target="_blank" rel="noopener" class="btn-link btn-primary" id="open-v2">
-            Open Zolderkamer ↗
-          </a>
-          <button type="button" class="btn-secondary reset-prog-btn" data-room="v2" title="Delete chapter progression and reset saved state for Zolderkamer">
-            ↺ Reset Progress
-          </button>
-        </div>
-        <div class="reset-feedback" id="feedback-v2">✓ Progress reset!</div>
-      </article>
-    </section>
+      <div class="room-actions">
+        <a href="http://localhost:8771/" target="_blank" rel="noopener" class="btn-link btn-primary" id="open-main">
+          Open Room App ↗
+        </a>
+        <button type="button" class="btn-secondary reset-prog-btn" data-room="main" title="Delete chapter progression and reset saved state">
+          ↺ Reset Progress
+        </button>
+      </div>
+      <div class="reset-feedback" id="feedback-main">✓ Progress reset!</div>
+    </article>
 
     <section class="cloud-card">
       <div class="cloud-info">
@@ -387,7 +347,7 @@ DASHBOARD_HTML = """<!doctype html>
 
     <footer>
       <span id="lastChecked">Auto-checks status every 2s</span>
-      <span>Sync changes to mobile: <code>npm run sync</code></span>
+      <span>Sync changes to mobile: <code>cd Capacitor_Apps/app-room &amp;&amp; npm run sync</code></span>
     </footer>
   </div>
 
@@ -410,7 +370,6 @@ DASHBOARD_HTML = """<!doctype html>
       let busy = false;
       let lastRoomsData = null;
 
-      // Check URL param first (?dev=0 on dashboard page), fallback to localStorage
       const urlParams = new URLSearchParams(location.search);
       let hideDev = urlParams.get("dev") === "0" || (!urlParams.has("dev") && localStorage.getItem("dashboard_dev0") === "1");
       devToggle.checked = hideDev;
@@ -422,13 +381,9 @@ DASHBOARD_HTML = """<!doctype html>
           else localStorage.removeItem("dashboard_dev0");
         } catch (_) {}
 
-        // Keep dashboard URL parameter in sync if desired without reloading
         const url = new URL(location.href);
-        if (hideDev) {
-          url.searchParams.set("dev", "0");
-        } else {
-          url.searchParams.delete("dev");
-        }
+        if (hideDev) url.searchParams.set("dev", "0");
+        else url.searchParams.delete("dev");
         history.replaceState(null, "", url.toString());
 
         updateRoomUrls();
@@ -446,37 +401,26 @@ DASHBOARD_HTML = """<!doctype html>
 
       function buildRoomUrl(baseUrl) {
         const u = new URL(baseUrl);
-        if (hideDev) {
-          u.searchParams.set("dev", "0");
-        } else {
-          u.searchParams.delete("dev");
-        }
+        if (hideDev) u.searchParams.set("dev", "0");
+        else u.searchParams.delete("dev");
         return u.toString();
       }
 
       function updateRoomUrls() {
-        const ids = ["v1", "v2"];
-        ids.forEach(function (id) {
-          const room = lastRoomsData && lastRoomsData[id];
-          const running = !!(room && room.running);
-          const rawUrl = (room && room.url) || (id === "v1" ? "http://localhost:8771/" : "http://localhost:8772/");
-          const finalUrl = buildRoomUrl(rawUrl);
+        const room = lastRoomsData && lastRoomsData.main;
+        const rawUrl = (room && room.url) || "http://localhost:8771/";
+        const finalUrl = buildRoomUrl(rawUrl);
 
-          const urlEl = document.getElementById("url-" + id);
-          const openEl = document.getElementById("open-" + id);
-          const copyBtn = document.querySelector('.copy-btn[data-room="' + id + '"]');
+        const urlEl = document.getElementById("url-main");
+        const openEl = document.getElementById("open-main");
+        const copyBtn = document.querySelector('.copy-btn[data-room="main"]');
 
-          if (urlEl) {
-            urlEl.href = finalUrl;
-            urlEl.textContent = finalUrl;
-          }
-          if (openEl) {
-            openEl.href = finalUrl;
-          }
-          if (copyBtn) {
-            copyBtn.setAttribute("data-copy", finalUrl);
-          }
-        });
+        if (urlEl) {
+          urlEl.href = finalUrl;
+          urlEl.textContent = finalUrl;
+        }
+        if (openEl) openEl.href = finalUrl;
+        if (copyBtn) copyBtn.setAttribute("data-copy", finalUrl);
       }
 
       function setRoomState(id, room) {
@@ -487,9 +431,9 @@ DASHBOARD_HTML = """<!doctype html>
         const copyBtn = document.querySelector('.copy-btn[data-room="' + id + '"]');
 
         const running = !!(room && room.running);
-        const rawUrl = (room && room.url) || (id === "v1" ? "http://localhost:8771/" : "http://localhost:8772/");
+        const rawUrl = (room && room.url) || "http://localhost:8771/";
         const finalUrl = buildRoomUrl(rawUrl);
-        const port = (room && room.port) || (id === "v1" ? 8771 : 8772);
+        const port = (room && room.port) || 8771;
 
         card.classList.toggle("online", running);
         pill.className = "port-pill " + (running ? "online" : "offline");
@@ -502,9 +446,7 @@ DASHBOARD_HTML = """<!doctype html>
         openEl.href = finalUrl;
         openEl.classList.toggle("disabled", !running);
 
-        if (copyBtn) {
-          copyBtn.setAttribute("data-copy", finalUrl);
-        }
+        if (copyBtn) copyBtn.setAttribute("data-copy", finalUrl);
       }
 
       function renderStatus(data) {
@@ -517,16 +459,16 @@ DASHBOARD_HTML = """<!doctype html>
           const parts = [];
           if (data.pid) parts.push("PID " + data.pid);
           if (data.uptimeSeconds != null) parts.push("Uptime " + formatUptime(data.uptimeSeconds));
-          parts.push("Ports 8771 & 8772 active");
+          parts.push("Port 8771 active");
           statusMeta.textContent = parts.join(" · ");
           startOrRestartBtn.textContent = busy ? "Working…" : "↻ Restart Server";
           stopBtn.disabled = busy;
         } else {
           mainBadge.className = "status-badge stopped";
-          mainStatusText.textContent = data.partialRunning ? "Partially Running" : "Server Stopped";
-          statusMeta.textContent = "Ports 8771 & 8772 are stopped";
+          mainStatusText.textContent = "Server Stopped";
+          statusMeta.textContent = "Port 8771 is stopped";
           startOrRestartBtn.textContent = busy ? "Working…" : "▶ Start Server";
-          stopBtn.disabled = busy || !data.partialRunning;
+          stopBtn.disabled = true;
         }
 
         startOrRestartBtn.disabled = busy;
@@ -534,8 +476,7 @@ DASHBOARD_HTML = """<!doctype html>
         const byId = {};
         (data.rooms || []).forEach(function (r) { byId[r.id] = r; });
         lastRoomsData = byId;
-        setRoomState("v1", byId.v1);
-        setRoomState("v2", byId.v2);
+        setRoomState("main", byId.main);
 
         lastChecked.textContent = "Last checked: " + new Date().toLocaleTimeString();
       }
@@ -548,8 +489,7 @@ DASHBOARD_HTML = """<!doctype html>
         startOrRestartBtn.textContent = "▶ Start Server";
         startOrRestartBtn.disabled = true;
         stopBtn.disabled = true;
-        setRoomState("v1", { running: false, port: 8771, url: "http://localhost:8771/" });
-        setRoomState("v2", { running: false, port: 8772, url: "http://localhost:8772/" });
+        setRoomState("main", { running: false, port: 8771, url: "http://localhost:8771/" });
       }
 
       async function fetchStatus() {
@@ -601,7 +541,6 @@ DASHBOARD_HTML = """<!doctype html>
         });
       });
 
-      // Clear progression state for a room (both via hidden origin iframe and API call)
       function clearRoomProgress(roomId, port) {
         const btn = document.querySelector('.reset-prog-btn[data-room="' + roomId + '"]');
         const feedback = document.getElementById("feedback-" + roomId);
@@ -611,11 +550,8 @@ DASHBOARD_HTML = """<!doctype html>
         btn.textContent = "Resetting…";
 
         const roomOrigin = "http://localhost:" + port;
-
-        // Try API endpoint first (applies Clear-Site-Data: "storage")
         fetch(roomOrigin + "/__reset_storage", { method: "POST", mode: "cors" }).catch(function () {});
 
-        // Also load an invisible iframe under that origin to wipe localStorage directly in browser
         const ifr = document.createElement("iframe");
         ifr.style.display = "none";
         ifr.src = roomOrigin + "/__reset_storage.html?t=" + Date.now();
@@ -653,13 +589,10 @@ DASHBOARD_HTML = """<!doctype html>
 
       document.querySelectorAll(".reset-prog-btn").forEach(function (btn) {
         btn.addEventListener("click", function () {
-          const roomId = btn.getAttribute("data-room");
-          const port = roomId === "v1" ? 8771 : 8772;
-          clearRoomProgress(roomId, port);
+          clearRoomProgress("main", 8771);
         });
       });
 
-      // Deploy to Cloudflare Pages trigger
       const deployCloudBtn = document.getElementById("deployCloudBtn");
       const cloudMsg = document.getElementById("cloudMsg");
       let deploying = false;
@@ -743,7 +676,6 @@ class RangeHTTPRequestHandler(SimpleHTTPRequestHandler):
         localStorage.removeItem(k);
       }
     }
-    // Also clear completely as backup
     localStorage.clear();
     window.parent.postMessage({ type: "ld-storage-cleared", origin: location.origin, ok: true }, "*");
   } catch (err) {
@@ -799,7 +731,7 @@ class RangeHTTPRequestHandler(SimpleHTTPRequestHandler):
         try:
             fs = os.fstat(f.fileno())
             size = fs.st_size
-            m = re.match(r"bytes=(\d*)-(\d*)", range_header.strip())
+            m = re.match(r"bytes=(\\d*)-(\\d*)", range_header.strip())
             if not m:
                 f.close()
                 return super().send_head()
@@ -867,7 +799,7 @@ class RangeHTTPRequestHandler(SimpleHTTPRequestHandler):
 
 
 def run_worker():
-    """Serve both Capacitor www folders concurrently in one child process."""
+    """Serve Capacitor www folder in child process."""
     servers = []
     for room in ROOMS:
         handler = partial(RangeHTTPRequestHandler, directory=str(room["wwwDir"]))
@@ -891,7 +823,6 @@ def run_worker():
         while not stop_event.is_set():
             stop_event.wait(0.5)
     finally:
-        # Shut down all room servers in parallel so both ports release immediately
         shutdown_threads = []
         for s in servers:
             t = threading.Thread(target=s.shutdown, daemon=True)
@@ -1155,7 +1086,6 @@ class DashboardHandler(SimpleHTTPRequestHandler):
 def run_controller(open_browser=True):
     dashboard_url = f"http://localhost:{DASHBOARD_PORT}/"
 
-    # If already running, ensure www server is started and open the dashboard page
     if is_port_open(HOST, DASHBOARD_PORT):
         try:
             req = urllib.request.Request(f"http://{HOST}:{DASHBOARD_PORT}/api/start", method="POST")
@@ -1181,11 +1111,11 @@ def run_controller(open_browser=True):
     signal.signal(signal.SIGINT, shutdown_handler)
 
     print("============================================================")
-    print(" Like Dust Part 2 · Rooms www Server & Dashboard")
+    print(" We All Breathe the Same Air · www Server & Dashboard")
     print("============================================================")
     print(f" Dashboard:         {dashboard_url}")
     for r in ROOMS:
-        print(f" {r['name'] + ':':18s} http://localhost:{r['port']}/")
+        print(f" {r['name'] + ':':28s} http://localhost:{r['port']}/")
     print("------------------------------------------------------------")
     print(" Press Ctrl+C (or close this Terminal window) to stop all.")
     print("============================================================", flush=True)
@@ -1201,8 +1131,8 @@ def run_controller(open_browser=True):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Start Like Dust Part 2 www servers and open the Dashboard")
-    parser.add_argument("--worker", action="store_true", help="Internal flag: run static www servers")
+    parser = argparse.ArgumentParser(description="Start We All Breathe the Same Air www server and open the Dashboard")
+    parser.add_argument("--worker", action="store_true", help="Internal flag: run static www server")
     parser.add_argument("--no-open", action="store_true", help="Do not automatically open the browser")
     args = parser.parse_args()
 
@@ -1214,4 +1144,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

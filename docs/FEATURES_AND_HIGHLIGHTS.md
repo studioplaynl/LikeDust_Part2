@@ -1,76 +1,52 @@
 # Features & Highlights
 
-A comprehensive guide to the visual, audio, and interactive systems implemented in Like Dust Part 2.
+A comprehensive guide to the visual, audio, and interactive systems implemented in **We All Breathe the Same Air** (`Capacitor_Apps/app-room/`).
 
 ---
 
-## 1. Zolderkamer (Room 2 · 3D Attic)
+## 1. Flat 2D Room in Three.js (`app.js`)
 
-- **Edge-to-Edge Clarity (No Vignette):** The camera vignette in the post-processing shader was removed to allow crisp, clear, full-bleed visuals on all displays.
-- **Camera Staging Beside the Chair:**
-  - Positioned beside an open-slatted wooden chair (`x = 0.58, y = 1.22, z = -0.58`), directing the player's eye naturally toward the desk, desk lamp, and starry window.
-  - Generous asymmetric camera pan range (`[-1.48, +0.34]`) allowing wide sweeps across the room to the left.
-- **Narrative Object Progression (Leftward Arc):**
-  - **Chapter 1 (`Het paspoort`):** Lies directly on the wooden desk beneath the warm glow of the desk lamp with golden emblem detailing.
-  - **Chapter 2 (`De telefoon`):** Positioned to the left of the desk on the chest of drawers.
-  - **Chapter 3 (`De duif`):** Positioned further left on a wooden corner stool.
-  - **Chapter 4 (`De brief`):** Positioned along the left blue slope wall on a low bedside table.
-- **Time-of-Day Lighting Progression:**
-  - **0 (Night Start):** Deep blue night sky (`#060d22` / `#14264e`) with twinkling stars and crescent moon outside the window; warm, intimate desk lamp illuminated (`PointLight #ffc466`).
-  - **1 (Late Night):** Stars continue to shine; ambient light gently cools.
-  - **2 (Pre-dawn):** Stars begin to fade; subtle blue pre-dawn glow enters the room.
-  - **3 (Dawn):** Golden sunrise tints the horizon; desk lamp dims.
-  - **4 (Story Completed · Bright Morning):** Radiant morning sky (`#8ed0ff` / `#fff9e8`) with bright warm sunlight pouring through the window, desk lamp completely extinguished, and window circled for the ending sequence.
+- **True Flat 2D Presentation:** Built in Three.js with an `OrthographicCamera` over a `1920 × 1080` stage (`stageGroup`) with zero 2.5D camera parallax, matching the exact framing and artwork of `We All Breathe the Same Air-DEF 2`.
+- **Prologue & In-Room Character Beats:**
+  - **Prologue (`Sam`):** Sam sits on the lower bunk; clicking him plays `standup` with foley footsteps and transitions into his breathing `idle` loop in the sunbeam.
+  - **Chapter 1 (`Passport` · Schiphol):** Clicking the passport on the foreground table triggers Sam's `think` reaction clip + caption before zooming through the passport silhouette into Chapter 1.
+  - **Chapter 2 (`Photo` · The Asylum Centre):** Clicking the framed photo hides the tabletop prop while Sam picks it up (`frame` clip), then transitions into Chapter 2.
+  - **Chapter 3 (`Bike` · Amsterdam):** Clicking the bicycle triggers Sam's `bike` clip (with fluttering banknotes on the foreground table) -> Chapter 3 -> returning to the room plays Sam's `money` counting beat (`countMoney` animated bills).
+  - **Chapter 4 (`Letter` · The Letter):** Clicking the rolled notice on the left brick wall unrolls the rejection poster (`unrollPoster`) and plays Sam's `sad` clip -> Chapter 4 -> returning after all 4 chapters triggers the **Dove Window Cinematic (`birdCine`)** and **Finale (`playFinale`)** ending on *The End* card.
+- **Living Room Atmosphere & Time Progression:**
+  - **Volumetric Sunbeams (`raysA` / `raysB`):** Dual breathing light-ray planes blended with custom screen-blend GLSL shaders that shift angle and warmth as day turns to dusk.
+  - **3D-Lit Dust Motes:** `THREE.Points` particle system with vortex physics, Sam motion turbulence, and sunbeam glint illumination.
+  - **Blackboard & Desk Stack:** Dynamic `CanvasTexture` planes where chalk Dutch lessons (`School b...`) and stamped envelopes/forms accumulate across chapters.
+  - **Ambient Dove:** Occasional wing-flap clip (`pigeon`) on the bedpost prior to the Chapter 4 finale.
 
 ---
 
-## 2. Herinneringskamer (Room 1 · 2.5D Painted PSD)
+## 2. Interactive Video Chapter Player (`chapters/` + `shared.js`)
 
-- **Photoshop Layer Separation:** Rebuilt the painted room from layered artwork (`room 2.psd`) into depth planes (`z: 0.0` to `z: 3.0`).
-- **Stylized Shaders:** Custom GLSL shaders render dynamic ink hatching, pencil edges, watercolor bleed washes, and ambient paper textures.
-- **Mobile Touch Parallax:** One-finger touch dragging translates across 2.5D depth layers with inertia.
-
----
-
-## 3. Interactive Video Chapter Player
-
-- **SVG Silhouette Transition:** When a player clicks or taps an active item in the room, the camera approaches the item, cuts an exact silhouette contour mask of the 3D geometry, and expands it seamlessly into the full-screen video chapter.
+- **Three.js Silhouette Mask Transition:** Clicking an unlocked room object extracts its alpha silhouette from the Three.js scene via an offscreen `WebGLRenderTarget` and expands it smoothly into the full-screen interactive chapter iframe (`Hoofdstuk_1..4`).
 - **Auto-Hiding Video Controls:**
-  - Lower playback bar (`#play`, `#tl` timeline + markers, `#time`, and `#cc`) starts **hidden** during video playback.
-  - Clicking or tapping anywhere on the video pane smoothly fades the controls in.
-  - Controls auto-hide after **3 seconds** of user inactivity, or hide immediately upon tapping the pane again or entering an interaction.
+  - Lower playback bar (`#play`, `#tl` timeline + markers, `#time`, and `#cc`) starts **hidden** during video playback, fades in on tap/click, and auto-hides after **3 seconds** of inactivity.
 - **Custom Subtitle Toggle:**
-  - Replaced the previous `CC` text button with a custom SVG monitor icon with subtitle bars (play triangle removed).
-  - Subtitles are locked strictly to Dutch (`SUBLANG = "nl"`).
-- **Cleaned UI:**
-  - Removed top-left chapter title label (`.chap`) for an immersive cinematic presentation.
-  - Removed unnecessary UI items: `Read as comic`, `Restart`, and subtitle language dropdowns.
-  - Desktop `Full screen` button positioned in the top-right on web (hidden in native Capacitor apps).
+  - SVG monitor icon with subtitle bars (`SUBLANG = "nl"`).
+- **Audio Handoff:**
+  - Room ambient soundscape (`amb_room.mp3`) fades out smoothly when entering an interactive video chapter and fades back in upon returning to the room.
 
 ---
 
-## 4. Dev Mode vs. Store Production Mode
+## 3. Dev Mode vs. Store Production Mode
 
-A single flag controls development tools vs. store-ready presentation:
+A single flag at the top of `Capacitor_Apps/app-room/www/shared/shared.js` controls development tools vs. store-ready presentation:
 
 ```javascript
-// Located at the top of shared.js:
+// Located at the top of Capacitor_Apps/app-room/www/shared/shared.js:
 const DEV_DEFAULT = true; // Set to false before building for App Store / Google Play
 ```
 
 | Element | `DEV_MODE = true` (Testing) | `DEV_MODE = false` (Production) |
 | :--- | :--- | :--- |
-| **Room Top Bar** | Room name, 4 progress dots, reset `↺` button | **Hidden** |
-| **Room Bottom Hint** | `toets 1–4: hoofdstuk als gezien · 0: wissen` | **Hidden** |
-| **Chapter Tracking** | Dots in top bar | **4 Minimalist SVG Icons (passport, bicycle, bird, letter)** in top-right |
-| **Chapter Back Button**| `← Terug naar de kamer` button | **Hidden** |
+| **Room Top Bar** | `We All Breathe the Same Air · The Room`, 4 progress dots, reset `↺` button | **Hidden** |
+| **Room Bottom Hint** | `keys 1–4: toggle chapter · 0: reset` | **Hidden** |
+| **Chapter Tracking** | Dots in top bar | **4 Minimalist SVG Icons (passport, photo frame, bicycle, letter)** in top-right |
+| **Chapter Back Button**| `← Back to the room` button | **Hidden** |
 | **Assignment Skip** | `Skip ›` button displayed | **Never shown** |
 | **URL Testing Override**| Add `?dev=1` to force on | Add `?dev=0` to preview production mode |
-
----
-
-## 5. Audio & Volume Control
-
-- Completely removed the `Geluid aan` toggle button.
-- Native device hardware volume controls playback volume across the entire experience.
-

@@ -1,0 +1,1111 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<meta charset="utf-8">
+<script>document.documentElement.lang='en'</script>
+<title>We All Breathe the Same Air</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Literata:ital,opsz,wght@0,7..72,300;0,7..72,400;0,7..72,600;1,7..72,400&display=swap">
+<style>
+/* Layout: one 16:9 stage, letterboxed; HUD sits on the stage like captions on a film frame */
+:root{
+  --ink:#0d0c0b;        /* letterbox + panels */
+  --paper:#efe6d2;      /* text, like the reject letter */
+  --dim:#a99f8a;        /* secondary text */
+  --lamp:#f2c76b;       /* warm window light = interactive */
+  --stamp:#c8332b;      /* REJECT stamp red, used once */
+  --veil:rgba(13,12,11,.72);
+  --f-display:"Special Elite","Courier New",monospace;
+  --f-body:"Literata",Georgia,serif;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%}
+body{background:var(--ink);color:var(--paper);font-family:var(--f-body);overflow:hidden;
+  padding-left:max(0px,env(safe-area-inset-left,0px));padding-right:max(0px,env(safe-area-inset-right,0px))}
+#wrap{position:relative;width:100%;height:100%;display:grid;place-items:center;overflow:hidden}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;background:#111}
+#stage>img,#stage>canvas{position:absolute;display:block;max-width:none;pointer-events:none;user-select:none}
+.obj{transition:opacity .35s ease, filter .25s ease}
+#o-bike{transform-origin:0 0;transition:opacity .35s ease, filter .25s ease, transform .9s cubic-bezier(.45,0,.2,1)}
+#o-bike.moved{transform:translate(129px,0)}
+.obj.glow{filter:drop-shadow(0 0 10px rgba(242,199,107,.95)) drop-shadow(0 0 2px rgba(242,199,107,1)) brightness(1.12)}
+.obj.gone{opacity:0}
+/* geld op tafel beweegt tijdens hoofdstuk Amsterdam: biljetten wapperen en schuiven een beetje */
+#o-money{transform-origin:50% 90%}
+#count{left:1400px;top:900px;width:360px;height:180px}
+#o-birdfly{transform-origin:50% 50%}
+#flyc{left:0;top:0;width:1920px;height:1080px}
+/* filmisch tussenshot: zwarte balken boven en onder (cinemascope) */
+#cine{position:absolute;inset:0;background:#000;display:grid;place-items:center;opacity:0;pointer-events:none;transition:opacity .55s ease;z-index:3}
+#cine.on{opacity:1}
+#cine video{width:100%;height:100%;object-fit:contain;display:block}
+#plant{display:none}
+#tally{display:none}
+#cal{display:none}
+#stack{position:absolute;left:392px;top:524px;width:240px;height:220px;pointer-events:none}   /* stapel brieven op het bureau */
+#board{position:absolute;left:1640px;top:120px;width:280px;height:600px;pointer-events:none}   /* schoolbord: eerst leeg, met de tijd komt het krijt terug */   /* scheurkalender op de muur: de tijd die voorbijgaat */   /* vooraan op het bureau, dichter bij de kijker: je ziet hem goed groeien */
+#o-money.flutter{animation:flutter 1.1s steps(3,end) infinite}
+@keyframes flutter{0%,100%{transform:rotate(0) translateY(0) skewX(0)}25%{transform:rotate(-2.5deg) translateY(-4px) skewX(3deg)}50%{transform:rotate(1.5deg) translateY(-1px) skewX(-2deg)}75%{transform:rotate(-1deg) translateY(-5px) skewX(2deg)}}
+@media (prefers-reduced-motion:reduce){#o-money.flutter{animation:none}}
+.obj.cue{animation:none}
+#o-man.cue{animation:none}
+@keyframes cueSam{0%,100%{filter:drop-shadow(0 0 0 rgba(242,199,107,0))}50%{filter:drop-shadow(0 0 5px rgba(242,199,107,.35)) brightness(1.04)}}
+/* kleur aan / uit: warm goud dat oplicht en weer wegzakt */
+@keyframes cue{0%,100%{filter:drop-shadow(0 0 0 rgba(242,199,107,0)) sepia(0) saturate(1) brightness(1)}
+  45%,60%{filter:drop-shadow(0 0 10px rgba(242,199,107,.75)) drop-shadow(0 0 2px rgba(255,236,200,.9)) sepia(.45) saturate(1.45) brightness(1.18)}}
+@media (prefers-reduced-motion:reduce){.obj.cue{animation:none;filter:drop-shadow(0 0 10px rgba(242,199,107,.9))}}
+.soft{mix-blend-mode:soft-light}
+#stage{isolation:isolate}
+/* dag -> avond: --eve loopt van 0 (middag) naar 1 (avond) met de hoofdstukken mee */
+#stage{--eve:0}
+#eve{position:absolute;inset:0;pointer-events:none}
+#eve .m{position:absolute;inset:0;background:linear-gradient(180deg,#34385f 0%,#4d4266 50%,#6a4636 100%);mix-blend-mode:multiply;opacity:calc(var(--eve)*.6);transition:opacity 5s ease}
+#eve .w{position:absolute;inset:0;background:radial-gradient(ellipse 26% 34% at 40% 41%,rgba(255,132,52,.95),rgba(255,110,40,0) 72%),linear-gradient(200deg,rgba(255,120,50,.35),rgba(255,120,50,0) 45%);mix-blend-mode:soft-light;opacity:var(--eve);transition:opacity 5s ease}
+#o-light1,#o-light2{opacity:calc(1 - var(--eve));transition:opacity 5s ease}
+.rays{position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none;mix-blend-mode:screen}
+#raysA{animation:raysA 9s ease-in-out infinite}
+#raysB{animation:raysB 13s ease-in-out infinite}
+@keyframes raysA{0%,100%{filter:brightness(1)}50%{filter:brightness(.7)}}
+@keyframes raysB{0%,100%{opacity:0}50%{opacity:.8}}
+/* kleurgrading: koele schaduwen, warme hooglichten */
+#grade{position:absolute;inset:0;pointer-events:none;mix-blend-mode:soft-light;background:linear-gradient(180deg,rgba(40,80,110,.2),rgba(30,60,80,.12) 60%,rgba(120,70,30,.3))}
+/* warm middaglicht; zakt weg als de avond komt (dan neemt het oranje avondlicht het over) */
+#warm{position:absolute;inset:0;pointer-events:none;mix-blend-mode:soft-light;opacity:calc(1 - var(--eve)*.6);transition:opacity 5s ease;
+  background:radial-gradient(ellipse 55% 60% at 44% 55%,rgba(255,176,96,.42),rgba(255,160,80,.16) 70%,rgba(255,150,70,.08))}
+#grain{position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none;mix-blend-mode:overlay;opacity:.07;image-rendering:pixelated}
+@media (prefers-reduced-motion:reduce){#raysA,#raysB{animation:none}}
+#shade{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse 72% 68% at 48% 52%,rgba(8,7,6,0) 40%,rgba(8,7,6,.55) 100%),rgba(8,7,6,.15)}
+#dust{left:0;top:0;width:1920px;height:1080px}
+.hot .ping{display:none!important}
+#rings{display:none;position:absolute;left:0;top:0;width:1920px;height:1080px;pointer-events:none;overflow:visible}
+.ring{fill:none;stroke-linecap:round;stroke-linejoin:round;transition:opacity .9s ease,stroke .3s ease;opacity:0;stroke:var(--lamp)}
+.ring path{fill:none}
+.ring.flash{opacity:1;transition:opacity .2s ease}
+.ring.hover{opacity:.9;transition:opacity .25s ease}
+.ring.busy{opacity:0!important}
+.ring.draw path{animation:drawring 1.1s cubic-bezier(.5,0,.2,1) both}
+.ring.draw path+path{animation-delay:.25s}
+@keyframes drawring{from{stroke-dashoffset:var(--len)}to{stroke-dashoffset:0}}
+@keyframes breathe{50%{opacity:.6}}
+@media (prefers-reduced-motion:reduce){.ring.draw path{animation:none}}
+#marker{position:absolute;width:0;height:0;pointer-events:none;opacity:0;transition:opacity .8s ease;z-index:2}
+#marker.on{opacity:1;transition-delay:.6s}
+#marker b{display:none}
+#marker i{position:absolute;left:-8px;top:-8px;width:16px;height:16px;border-radius:50%;border:1.5px solid rgba(255,206,84,.8);animation:ripple 3.4s ease-out infinite}
+#marker i+i{display:none}
+@keyframes ripple{0%{transform:scale(1);opacity:0}15%{opacity:.7}100%{transform:scale(4.5);opacity:0}}
+@keyframes twinkle{50%{opacity:.45;transform:scale(.8)}}
+@media (prefers-reduced-motion:reduce){#marker i{display:none}#marker b{animation:none}}
+#gl{left:0;top:0;width:1920px;height:1080px}
+.hot{position:absolute;border:0;background:transparent;cursor:pointer;padding:0;border-radius:14px}
+.hot:focus-visible{outline:3px dashed var(--lamp);outline-offset:4px}
+.hot[disabled]{cursor:default}
+.hot .ping{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border-radius:50%;
+  border:2px solid var(--lamp);opacity:.0;pointer-events:none}
+.hot.hint:not([disabled]) .ping{animation:ping 2.2s ease-out infinite}
+.hot.done .ping{display:none}
+@keyframes ping{0%{transform:scale(.5);opacity:.95}80%{transform:scale(2.4);opacity:0}100%{opacity:0}}
+.tag{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%);white-space:nowrap;
+  font:300 26px/1 var(--f-body);letter-spacing:.05em;background:var(--veil);color:var(--paper);padding:10px 16px;border-radius:4px;
+  opacity:0;transition:opacity .2s;pointer-events:none}
+.hot .tag{display:none!important}   /* geen naamlabels op de voorwerpen, ook niet op de computer */
+.hot[disabled] .tag,body.busy .tag{opacity:0!important;transition:opacity .1s}
+.hot.done .tag::after{content:"  \2713";color:var(--lamp)}
+
+.hot.locked{cursor:default}
+.hot.locked .tag{display:none}
+.hot.locked .ping{display:none}
+
+/* UI-laag: los van het podium, schaalt met het scherm (telefoon, tablet, desktop) */
+#ui{position:absolute;inset:0;pointer-events:none;z-index:5}
+#hud{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;
+  padding-top:max(12px,env(safe-area-inset-top,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  background:linear-gradient(rgba(10,9,8,.55),rgba(10,9,8,0));padding-bottom:28px}
+#novel{font:clamp(10px,1.05vw,15px)/1.2 var(--f-display);letter-spacing:.14em;text-transform:uppercase;color:var(--paper);text-shadow:0 2px 10px #000}
+#chips{display:flex;gap:6px;margin-top:8px;pointer-events:auto;flex-wrap:wrap}
+.chip{font:300 clamp(11px,1vw,14px)/1 var(--f-body);letter-spacing:.03em;color:var(--paper);background:var(--veil);border:1px solid rgba(239,230,210,.22);
+  padding:.5em .7em;border-radius:4px;cursor:pointer;display:flex;gap:.45em;align-items:center;min-height:30px}
+.chip b{font:400 1em/1 var(--f-display);color:var(--dim)}
+.chip.next{border-color:var(--lamp);color:var(--lamp)}
+.chip.done b{color:var(--lamp)}
+.chip.done::after{content:"\2713";color:var(--lamp)}
+.chip[disabled]{opacity:.45;cursor:default}
+.chip:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
+#tools{display:flex;gap:8px;pointer-events:auto;flex-shrink:0}
+.tbtn{font:600 clamp(11px,1vw,14px)/1 var(--f-body);color:var(--paper);background:var(--veil);border:1px solid rgba(239,230,210,.25);
+  padding:.6em .9em;border-radius:4px;cursor:pointer;min-height:32px}
+.tbtn:hover{border-color:var(--lamp);color:var(--lamp)}
+.tbtn:focus-visible{outline:2px solid var(--lamp);outline-offset:2px}
+#caption{position:absolute;left:50%;top:clamp(64px,13vh,130px);transform:translateX(-50%);width:max-content;max-width:min(88vw,760px);text-align:center;
+  font:italic 400 clamp(14px,1.9vw,26px)/1.35 var(--f-body);color:var(--paper);background:var(--veil);padding:.5em 1em;border-radius:4px;
+  opacity:0;transition:opacity .4s}
+#caption.show{opacity:1}
+.card{position:absolute;inset:0;display:grid;place-items:center;text-align:center;background:rgba(10,9,8,.88);
+  padding-block:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  opacity:0;pointer-events:none;transition:opacity .7s ease;overflow:auto}
+.card.show{opacity:1;pointer-events:auto}
+#end.final{background:radial-gradient(ellipse 70% 60% at 50% 50%,rgba(10,9,8,.72),rgba(10,9,8,.35) 70%,rgba(10,9,8,.15));transition:opacity 3s ease}
+#end.final h2{text-shadow:0 2px 30px rgba(0,0,0,.8)}
+.card .k{font:clamp(11px,min(1.4vw,2.6vh),18px)/1.2 var(--f-display);letter-spacing:.3em;text-transform:uppercase;color:var(--dim)}
+.card h1,.card h2{font:400 clamp(30px,min(6.4vw,11vh),92px)/1.05 var(--f-display);margin:.25em 0 0;text-wrap:balance;color:var(--paper)}
+.card p{font:400 clamp(14px,min(1.8vw,3.4vh),22px)/1.5 var(--f-body);color:var(--dim);max-width:34em;margin:.9em auto 0}
+.card .sub{font:italic 400 clamp(15px,min(2vw,3.8vh),26px)/1.4 var(--f-body);color:var(--dim);margin-top:.6em}
+.card .rule{width:80px;height:3px;background:var(--stamp);margin:clamp(14px,3vh,28px) auto 0;transform:rotate(-2deg)}
+.card button.big{margin-top:clamp(16px,4vh,38px);font:clamp(15px,min(1.8vw,3.4vh),24px)/1 var(--f-display);color:var(--ink);background:var(--lamp);border:0;padding:.8em 1.6em;border-radius:4px;cursor:pointer;min-height:44px}
+.card button.big:focus-visible{outline:3px solid var(--paper);outline-offset:4px}
+/* hoofdstuktitel over de kamer heen: de kamer blijft zichtbaar en Sam begint al */
+.card.title{background:radial-gradient(ellipse 60% 45% at 50% 50%,rgba(10,9,8,.62),rgba(10,9,8,.18) 75%,rgba(10,9,8,0));pointer-events:none!important;transition:opacity 1s ease}
+.card.title h2{text-shadow:0 2px 24px rgba(0,0,0,.7)}
+/* titel links in beeld, zodat hij nooit over Sam valt (Sam staat altijd midden/rechts) */
+.card.title{place-items:center start;text-align:left;padding-left:max(5vw,env(safe-area-inset-left,0px));
+  background:linear-gradient(90deg,rgba(10,9,8,.6),rgba(10,9,8,.25) 32%,rgba(10,9,8,0) 48%)}
+.card.title>div{max-width:min(40vw,560px)}
+.card.title .rule{margin-left:0}
+.card.title h2{font-size:clamp(28px,min(5.2vw,9vh),80px)}
+.card.title .k,.card.title .sub{color:var(--paper);text-shadow:0 1px 12px rgba(0,0,0,.8)}
+#loadbar{width:min(320px,60vw);height:4px;background:rgba(239,230,210,.15);margin:clamp(16px,4vh,32px) auto 0;border-radius:3px;overflow:hidden}
+#loadbar span{display:block;height:100%;width:0;background:var(--lamp);transition:width .2s}
+#rotate{position:absolute;inset:0;display:grid;place-items:center;text-align:center;background:rgba(10,9,8,.94);pointer-events:auto;z-index:10;color:var(--paper);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+#rotate svg{color:var(--lamp);animation:turn 2.4s ease-in-out infinite}
+#rotate p{font:400 18px/1.5 var(--f-body);color:var(--paper);max-width:18em;margin:16px auto 0}
+#rotate button.big{margin-top:22px;font:16px/1 var(--f-display);color:var(--ink);background:var(--lamp);border:0;padding:.9em 1.6em;border-radius:4px;min-height:44px}
+@keyframes turn{0%,30%{transform:rotate(0)}60%,100%{transform:rotate(-90deg)}}
+/* kleine schermen: hoofdstukken alleen als nummer */
+@media (max-width:900px),(max-height:520px){.chip .t{display:none}#novel{display:none}#chips{margin-top:0}}
+@media (prefers-reduced-motion:reduce){.card,.obj,#caption{transition:none}#rotate svg{animation:none}}
+#marker{transform:scale(var(--ui,1))}
+
+/* Safari/iPhone: alleen de eenvoudigste lichtlagen (mengmodi geven daar rare vlekken en sprongen) */
+.safari #eve .w,.safari #grade,.safari #warm,.safari .soft{display:none!important}
+.safari #eve .m{mix-blend-mode:normal;background:linear-gradient(180deg,rgba(18,22,50,.6),rgba(34,26,52,.52) 50%,rgba(46,26,16,.48));opacity:calc(var(--eve)*.8)}
+.safari .rays{mix-blend-mode:normal;opacity:.8}
+.safari #raysA,.safari #raysB{animation:none}
+.safari #raysB{opacity:0}
+
+/* telefoons: geen doorlopende filter-animaties op grote lagen */
+.lite #raysA,.lite #raysB{animation:none}
+.lite #raysB{display:none}
+#grain{display:none!important}   /* filmkorrel staat uit: laag helemaal weg, scheelt rekenwerk */
+/* telefoons (ook Android): geen mengmodi, die kosten bij elke videoframe veel rekenkracht */
+.lite #eve .w,.lite #grade,.lite #warm,.lite .soft{display:none!important}
+.lite #eve .m{mix-blend-mode:normal;background:linear-gradient(180deg,rgba(18,22,50,.6),rgba(34,26,52,.52) 50%,rgba(46,26,16,.48));opacity:calc(var(--eve)*.8)}
+.lite .rays{mix-blend-mode:normal;opacity:.8}
+/* hoofdstuktitel op telefoons: geen schermvullende waas, alleen de letters */
+.lite .card.title{background:none;transition:opacity .6s ease}
+/* hoofdstuk 4: titel rechts, zodat de poster links vrij blijft */
+.card.title.right{place-items:center end;text-align:right;padding-left:16px;padding-right:max(5vw,env(safe-area-inset-right,0px));
+  background:linear-gradient(270deg,rgba(10,9,8,.6),rgba(10,9,8,.25) 32%,rgba(10,9,8,0) 48%)}
+.card.title.right .rule{margin-left:auto;margin-right:0}
+.lite .card.title.right{background:none}
+/* telefoon rechtop: de kamer is dan een strook in het midden; titel in de lege ruimte erboven, niet over Sam */
+@media (orientation:portrait){.card.title,.card.title.right{place-items:start center;text-align:center;padding-top:max(13vh,90px);padding-left:16px;padding-right:16px;background:none}
+  .card.title.right .rule{margin-left:auto;margin-right:auto}
+  .card.title>div{max-width:100%}.card.title .rule{margin-left:auto}.card.title h2{font-size:clamp(28px,10vw,56px)}}
+.lite .card.title h2,.lite .card.title .k,.lite .card.title .sub{text-shadow:0 1px 6px rgba(0,0,0,.95)}
+</style>
+
+<div id="wrap">
+  <div id="stage" aria-label="Interactive scene">
+    <img src="assets/room.jpg" style="left:0;top:0;width:1920px;height:1080px" alt="">
+    <img id="o-rejectOpen" class="obj gone" src="assets/reject_open.png" alt="">
+    <img id="o-reject" class="obj" src="assets/reject_rolled.png" alt="">
+    <img id="o-roll" class="obj gone" src="assets/reject_roll.png" alt="">
+    <img id="o-bike" class="obj" src="assets/bike.png" alt="">
+    <img id="o-bedBack" src="assets/bedfront.png" alt="">
+    <img id="o-man" class="obj" src="assets/man.png" alt="">
+    <img id="o-paper" class="obj" src="assets/paper.png" alt="">
+    <canvas id="plant" width="2" height="2" aria-hidden="true"></canvas>
+    <canvas id="tally" width="2" height="2" aria-hidden="true"></canvas>
+    <canvas id="cal" width="2" height="2" aria-hidden="true"></canvas>
+    <canvas id="board" width="560" height="1200" aria-hidden="true"></canvas>
+    <canvas id="stack" width="480" height="440" aria-hidden="true"></canvas>
+    <img id="o-bird" class="obj" src="assets/bird.png" alt="">
+    <img id="o-birdfly" src="assets/bird_h34.png" alt="" hidden>
+    <canvas id="flyc" width="1920" height="1080" aria-hidden="true"></canvas>
+    <img id="o-money" class="obj" src="assets/money.png" alt="">
+    <img id="o-frame" class="obj" src="assets/frame.png" alt="">
+    <img id="o-passport" class="obj" src="assets/passport.png" alt="">
+    <canvas id="count" width="720" height="360" aria-hidden="true"></canvas>
+    <canvas id="gl" width="1920" height="1080"></canvas>
+    <img id="o-seat" class="obj gone" src="assets/seat.png" alt="">
+    <img id="o-bed" class="obj gone" src="assets/bedfront.png" alt="">
+    <img id="o-post" src="assets/post.png" alt="">
+    <img id="o-light1" class="soft" src="assets/light1.png" alt="">
+    <img id="o-light2" class="soft" src="assets/light2.png" alt="">
+    <canvas id="raysA" class="rays" width="960" height="540"></canvas>
+    <canvas id="raysB" class="rays" width="960" height="540"></canvas>
+    <div id="grade" aria-hidden="true"></div>
+    <div id="warm" aria-hidden="true"></div>
+    <div id="eve" aria-hidden="true"><div class="m"></div><div class="w"></div></div>
+    <div id="shade"></div>
+    <canvas id="dust" width="1920" height="1080"></canvas>
+    <svg id="rings" viewBox="0 0 1920 1080" aria-hidden="true"></svg>
+    <div id="hots"></div>
+    <div id="marker" aria-hidden="true"><i></i><i></i><b></b><span id="markerT" hidden></span></div>
+
+  </div>
+  <div id="ui">
+    <div id="cine" aria-hidden="true"><video id="cineV" muted playsinline preload="none"></video></div>
+    <div id="hud">
+      <div>
+        <div id="novel">We All Breathe the Same Air</div>
+        <div id="chips" hidden></div>
+      </div>
+      <div id="tools">
+        <button class="tbtn" id="fs" type="button" hidden>Fullscreen</button>
+        <button class="tbtn" id="mute" type="button" aria-pressed="false">Sound on</button>
+      </div>
+    </div>
+    <div id="caption" role="status" aria-live="polite"></div>
+
+    <div class="card" id="card"><div>
+      <div class="k" id="cardK"></div><h2 id="cardT"></h2><div class="sub" id="cardS"></div><div class="rule"></div>
+      <button class="big" id="cardBtn" type="button">Back to the room</button>
+    </div></div>
+
+    <div class="card show" id="start"><div>
+      <div class="k">A graphic novel in four chapters</div>
+      <h1>We All Breathe<br>the Same Air</h1>
+      <p>Every object in his room opens a chapter. Follow the small light.</p>
+      <div id="loadbar"><span></span></div>
+      <button class="big" id="startBtn" type="button" disabled>Loading&hellip;</button>
+    </div></div>
+
+    <div class="card" id="end"><div>
+      <div class="k">The End</div>
+      <h2>We All Breathe<br>the Same Air</h2>
+      <div class="rule"></div>
+      <button class="big" id="again" type="button">Start again</button>
+    </div></div>
+    <div id="rotate" hidden><div>
+      <svg viewBox="0 0 64 64" width="56" height="56" aria-hidden="true"><rect x="20" y="6" width="24" height="40" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><path d="M14 50a22 22 0 0 0 36 4" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M50 46v8h-8" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <p>Turn your screen sideways for the best view.</p>
+      <button class="big" id="rotateOk" type="button">Continue anyway</button>
+    </div></div>
+  </div>
+</div>
+
+<script>
+/* ===== Hoofdstukken: volgorde, titels en teksten pas je hier aan ===== */
+// Elk voorwerp = één hoofdstuk. Volgorde in deze lijst = volgorde in het verhaal.
+const CHAPTERS = [
+  {id:"passport", amb:"airport", label:"Passport", title:"Schiphol",  sub:"Arrival",         clip:"think",  real:["passport2",.2], sfx:"", pick:[], fb:"rustle", hit:[1378,918,152,110], text:"His passport. Arriving at Schiphol."},
+  {id:"frame", amb:"azc",    label:"Photo",     title:"The Asylum Centre", sub:"",                 clip:"frame",  hide:"o-frame", real:["frame",0], fb:"pickup", hit:[1600,749,205,250], text:"A photo from the asylum centre."},
+  {id:"bike", amb:"city",     label:"Bike",    title:"Amsterdam", sub:"",                 clip:"bike",   real:["bike",.25], fb:"bell", hide:"o-bike", hit:[790,508,280,271], mark:[842,528], text:"His bike. Amsterdam.",
+    then:{clip:"money", real:"money", sfx:"rustle", text:"He counts what is left."}, flutter:"o-money"},
+  {id:"reject", amb:"wind",   label:"Letter",    title:"The Letter", sub:"Rejected · final chapter", clip:"sad", titleRight:true, real:["sad",.5], fb:"cloth", hit:[330,415,105,190], text:"The letter. Rejected."}
+];
+// Waar elke clip op het 1920×1080 beeld staat: [x, y, breedte, hoogte]
+const CLIPS = {
+  standup:{rect:[417,330,983,644]},
+  idle:   {rect:[349,332,1121,625], loop:true},
+  think:  {rect:[349,332,1121,625]},
+  frame:  {rect:[382,332,1121,625]},
+  bike:   {rect:[219,396,1264,706], grade:0.92},   // hoofdstuk 3: groot, midden op de vloer
+  money:  {rect:[176,332,1121,625]},
+  sad:    {rect:[363,343,1121,625]},
+  pigeon: {rect:[1005,303,599,306]}
+};
+const LAYERS = {"man":[960,540,261,415],"reject":[233,392,801,250],"rejectOpen":[233,392,801,250],"roll":[351,471,81,32],"post":[1210,510,50,538],"seat":[1140,777,105,178],"bed":[1056,440,244,362],"bedBack":[1056,440,244,362],"bike":[790,508,426,271],"paper":[486,605,183,98],"bird":[1298,424,87,62],"money":[1518,1010,146,67],"frame":[1591,749,214,295],"passport":[1380,922,149,106],"light1":[436,368,539,650],"light2":[523,873,455,136]};
+
+/* ===== Apparaat: iPhone/iPad/Safari krijgen H.264 (mp4) en eenvoudigere lichtlagen ===== */
+const IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const SAFARI=IOS||/^((?!chrome|android|crios|fxios|edg).)*safari/i.test(navigator.userAgent);
+if(SAFARI)document.documentElement.classList.add('safari');
+// telefoons/tablets: lichtere versie (minder pixels om te tekenen, minder stof), zodat alles soepel loopt
+const LITE=SAFARI||matchMedia('(pointer: coarse)').matches||Math.min(screen.width,screen.height)<820;
+if(LITE)document.documentElement.classList.add('lite');
+const useWebm=v=>!SAFARI&&v.canPlayType('video/webm; codecs="vp9"');
+
+/* ===== 12 beelden per seconde: alle bewegingen springen per 1/12 s, zoals getekende animatie ===== */
+const FPS12=1000/12, step12=t=>Math.floor(t/FPS12)*FPS12;
+
+/* ===== Podium schalen ===== */
+const $=id=>document.getElementById(id);
+const stage=$('stage'), wrap=$('wrap');
+// belangrijk deel van de kamer (alle voorwerpen); dit blijft altijd in beeld
+const FOCUS={x:300,y:150,w:1520,h:930};
+function fit(){const W=wrap.clientWidth,H=wrap.clientHeight;
+  const contain=Math.min(W/1920,H/1080),cover=Math.max(W/1920,H/1080);
+  let s=Math.min(W/FOCUS.w,H/FOCUS.h);s=Math.min(Math.max(s,contain),cover);
+  const sw=1920*s,sh=1080*s;
+  let tx=W/2-(FOCUS.x+FOCUS.w/2)*s,ty=H/2-(FOCUS.y+FOCUS.h/2)*s;
+  tx=sw>=W?Math.min(0,Math.max(W-sw,tx)):(W-sw)/2;
+  ty=sh>=H?Math.min(0,Math.max(H-sh,ty)):(H-sh)/2;
+  const C=window.CAM||{z:1,dx:0,dy:0,cx:0,cy:0};
+  stage.style.transform=`translate(${tx}px,${ty}px) scale(${s}) translate(${C.dx}px,${C.dy}px) translate(${C.cx}px,${C.cy}px) scale(${C.z}) translate(${-C.cx}px,${-C.cy}px)`;
+  stage.style.setProperty('--ui',Math.max(1,0.8/s).toFixed(2));
+  const port=H>W&&W<=1024;$('rotate').hidden=!port||rotateOk;}
+let rotateOk=false;
+addEventListener('resize',fit);addEventListener('orientationchange',()=>setTimeout(fit,200));
+for(const [k,[x,y,w,h]] of Object.entries(LAYERS)){const el=$('o-'+k);if(el)Object.assign(el.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});}
+
+/* ===== Video's ===== */
+const vids={};
+/* Telefoons/iPhone: geen video maar vooraf uitgeknipte beeldreeksen (12 per seconde, duif 24).
+   Video's naar WebGL sturen hapert op iPhone; losse beelden tekenen loopt altijd gelijkmatig. */
+const SP=LITE?{"standup":{"vw":1024,"vh":672,"bx":382,"by":48,"bw":468,"bh":606,"fw":281,"fh":364,"cols":14,"n":61,"fps":12},"idle":{"vw":1024,"vh":572,"bx":446,"by":42,"bw":132,"bh":524,"fw":92,"fh":367,"cols":44,"n":61,"fps":12},"think":{"vw":1024,"vh":572,"bx":446,"by":42,"bw":130,"bh":524,"fw":91,"fh":367,"cols":45,"n":61,"fps":12},"frame":{"vw":1024,"vh":572,"bx":443,"by":48,"bw":205,"bh":518,"fw":133,"fh":337,"cols":30,"n":61,"fps":12},"bike":{"vw":1024,"vh":572,"bx":246,"by":18,"bw":584,"bh":536,"fw":350,"fh":322,"cols":11,"n":61,"fps":12},"money":{"vw":1024,"vh":572,"bx":556,"by":54,"bw":201,"bh":512,"fw":131,"fh":333,"cols":31,"n":61,"fps":12},"sad":{"vw":1024,"vh":572,"bx":384,"by":194,"bw":284,"bh":362,"fw":185,"fh":235,"cols":22,"n":61,"fps":12},"pigeon":{"vw":1024,"vh":522,"bx":480,"by":108,"bw":232,"bh":226,"fw":139,"fh":136,"cols":29,"n":121,"fps":24}}:null;
+class Flip{constructor(n){this.n=n;this.m=SP[n];this.img=new Image();this.img.decoding='async';this.readyState=0;this.loop=false;this.paused=true;this.ended=false;
+    this._t=0;this._t0=0;this._ev={};this.duration=this.m.n/this.m.fps;
+    this.img.onload=()=>{const ok=()=>{this.readyState=4;this._emit('loadeddata');this._emit('canplaythrough');};(this.img.decode?this.img.decode():Promise.resolve()).then(ok,ok);};
+    this.img.onerror=()=>this._emit('error');}
+  set src(v){} get src(){return this.img.src} get currentSrc(){return this.img.src}
+  setAttribute(){} canPlayType(){return ''}
+  load(){if(!this.img.src)this.img.src='assets/sp/'+this.n+'.webp';}
+  _now(){let t=(performance.now()-this._t0)/1000;if(this.loop)t%=this.duration;return Math.min(t,this.duration);}
+  get currentTime(){return this.paused?this._t:this._now();}
+  set currentTime(v){this._t=v;if(!this.paused)this._t0=performance.now()-v*1000;this.ended=false;setTimeout(()=>this._emit('seeked'),0);}
+  play(){if(this.paused){if(this.ended||this._t>=this.duration)this._t=0;this.paused=false;this.ended=false;this._t0=performance.now()-this._t*1000;
+      setTimeout(()=>this._emit('playing'),0);clearTimeout(this._tk);this._tick();}return Promise.resolve();}
+  pause(){if(!this.paused){this._t=this._now();this.paused=true;clearTimeout(this._tk);}}
+  _tick(){if(this.paused)return;const t=this._now();this._emit('timeupdate');
+    if(!this.loop&&t>=this.duration){this.paused=true;this._t=this.duration;this.ended=true;this._emit('ended');return;}this._tk=setTimeout(()=>this._tick(),60);}
+  frame(){return Math.max(0,Math.min(this.m.n-1,Math.floor(this.currentTime*this.m.fps+1e-4)));}
+  addEventListener(e,f,o){(this._ev[e]=this._ev[e]||[]).push({f,once:!!(o&&o.once)});}
+  removeEventListener(e,f){this._ev[e]=(this._ev[e]||[]).filter(x=>x.f!==f);}
+  _emit(e){const L=this._ev[e];if(!L||!L.length)return;this._ev[e]=L.filter(x=>!x.once);for(const x of L){try{x.f({type:e,target:this});}catch(err){console.error(err);}}}}
+// iPhone speelt video's die niet in de pagina staan schokkerig af: daarom in een onzichtbaar hoekje van 1 pixel
+const vbin=document.createElement('div');vbin.style.cssText='position:fixed;left:0;top:0;width:1px;height:1px;overflow:hidden;opacity:.01;pointer-events:none;z-index:-1';document.body.appendChild(vbin);
+for(const n in CLIPS){const v=LITE?new Flip(n):document.createElement('video');v.muted=true;v.playsInline=true;v.setAttribute('playsinline','');v.preload='auto';
+  v.loop=!!CLIPS[n].loop;v.src='assets/'+n+(n==='pigeon'?'':'12')+(useWebm(v)?'.webm':'.mp4');vids[n]=v;if(!LITE)vbin.appendChild(v);
+  // nieuw videobeeld? dan pas uploaden (de clips zijn zelf 12 beelden per seconde: elk beeld precies één keer, geen haperende stappen)
+  if('requestVideoFrameCallback' in v){const cb=()=>{v._fresh=true;v.requestVideoFrameCallback(cb);};v.requestVideoFrameCallback(cb);v._rvfc=true;}
+  v.addEventListener('seeked',()=>{v._fresh=true;});v.addEventListener('playing',()=>{v._fresh=true;});}
+
+/* ===== WebGL green screen ===== */
+const glc=LITE?document.createElement('canvas'):$('gl');if(LITE){glc.width=2;glc.height=2;}   // op telefoons minder pixels; het beeld schaalt toch omlaag
+const gl=glc.getContext('webgl',{premultipliedAlpha:true,alpha:true,antialias:false,powerPreference:'low-power'});
+const VS=`attribute vec2 p;uniform vec4 r;varying vec2 v;void main(){v=p;vec2 xy=r.xy+p*r.zw;gl_Position=vec4(xy.x/960.0-1.0,1.0-xy.y/540.0,0,1);}`;
+const FS=`precision mediump float;varying vec2 v;uniform sampler2D t;uniform float a;uniform float stool;uniform float g;
+void main(){vec4 c=texture2D(t,v);float mx=max(c.r,c.b);float k=c.g-mx;
+ float al=1.0-smoothstep(0.05,0.19,k);c.g=min(c.g,mx+0.01);
+ al=clamp((al-0.12)/0.88,0.0,1.0);
+ if(stool>0.5){float m=smoothstep(0.688,0.705,v.x)*smoothstep(0.688,0.705,v.y);al*=1.0-m;}
+ float y=dot(c.rgb,vec3(.3,.59,.11));c.rgb=mix(vec3(y),c.rgb,0.85+0.15*g)*g;
+ al*=a;gl_FragColor=vec4(c.rgb*al,al);}`;
+function sh(t,s){const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);return o;}
+const prog=gl.createProgram();gl.attachShader(prog,sh(gl.VERTEX_SHADER,VS));gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,FS));gl.linkProgram(prog);gl.useProgram(prog);
+gl.bindBuffer(gl.ARRAY_BUFFER,gl.createBuffer());gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([0,0,1,0,0,1,1,1]),gl.STATIC_DRAW);
+const ap=gl.getAttribLocation(prog,'p');gl.enableVertexAttribArray(ap);gl.vertexAttribPointer(ap,2,gl.FLOAT,false,0,0);
+const uR=gl.getUniformLocation(prog,'r'),uA=gl.getUniformLocation(prog,'a'),uS=gl.getUniformLocation(prog,'stool'),uG=gl.getUniformLocation(prog,'g');
+gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);
+const tex={};
+for(const n in CLIPS){const t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);
+  for(const [p,v] of [[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE]])gl.texParameteri(gl.TEXTURE_2D,p,v);tex[n]=t;}
+let layers=[];
+const layer=n=>layers.find(l=>l.name===n);
+function show(n,d=280){let l=layer(n);if(!l){l={name:n,alpha:0};layers.push(l);}l.target=1;l.speed=1000/d;}
+function hide(n,d=280){const l=layer(n);if(l){l.target=0;l.speed=1000/d;}}
+let last=performance.now();
+let glEmpty=false,glSt=-1;
+function draw(now){const dt=Math.min(.1,(now-last)/1000);last=now;
+  if(!layers.length){if(!glEmpty){gl.viewport(0,0,glc.width,glc.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);glEmpty=true;}requestAnimationFrame(draw);return;}   // niets te tekenen: niets doen
+  const st0=step12(now),fading=layers.some(l=>l.alpha!==l.target),fresh=layers.some(l=>{const v=vids[l.name];return v._rvfc?(v._fresh||!l.up):(l.st!==st0||!l.up);});
+  if(!fading&&!fresh&&!glEmpty){requestAnimationFrame(draw);return;}glSt=st0;   // niets veranderd: canvas laten staan
+  glEmpty=false;gl.viewport(0,0,glc.width,glc.height);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);
+  for(const l of layers)l.alpha+=Math.sign(l.target-l.alpha)*Math.min(Math.abs(l.target-l.alpha),l.speed*dt);
+  layers=layers.filter(l=>!(l.target===0&&l.alpha<=0));
+  for(const l of layers){const v=vids[l.name];if(v.readyState<2)continue;gl.bindTexture(gl.TEXTURE_2D,tex[l.name]);
+    const st=step12(now);if(v._rvfc?(v._fresh||!l.up):(l.st!==st||!l.up)){try{gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,v);l.st=st;l.up=true;v._fresh=false;}catch(e){continue;}}
+    const r=CLIPS[l.name].rect;gl.uniform4f(uR,...r);gl.uniform1f(uA,l.alpha);gl.uniform1f(uG,CLIPS[l.name].grade||1);gl.uniform1f(uS,CLIPS[l.name].stool&&v.currentTime>0.15&&v.currentTime<1.4?1:0);
+    gl.drawArrays(gl.TRIANGLE_STRIP,0,4);}
+  requestAnimationFrame(draw);}
+if(!LITE)requestAnimationFrame(draw);
+/* telefoon: Sam uit de beeldreeksen tekenen op een gewoon canvas */
+if(LITE){const c2=$('gl');c2.width=1152;c2.height=648;const x2=c2.getContext('2d');const K=1152/1920;let lt2=performance.now(),empty2=false;
+  (function draw2(now){const dt=Math.min(.1,(now-lt2)/1000);lt2=now;
+    const fading=layers.some(l=>l.alpha!==l.target);
+    for(const l of layers)l.alpha+=Math.sign(l.target-l.alpha)*Math.min(Math.abs(l.target-l.alpha),l.speed*dt);
+    layers=layers.filter(l=>!(l.target===0&&l.alpha<=0));
+    let changed=fading;for(const l of layers){const v=vids[l.name];const f=v.readyState>=4?v.frame():-1;if(f!==l.f){l.f=f;changed=true;}}
+    if(!layers.length){if(!empty2){x2.clearRect(0,0,1152,648);empty2=true;}requestAnimationFrame(draw2);return;}
+    if(changed||empty2){empty2=false;x2.setTransform(1,0,0,1,0,0);x2.clearRect(0,0,1152,648);x2.setTransform(K,0,0,K,0,0);
+      for(const l of layers){const v=vids[l.name];if(l.f<0)continue;const m=v.m,r=CLIPS[l.name].rect,sx=r[2]/m.vw,sy=r[3]/m.vh;
+        x2.globalAlpha=Math.max(0,Math.min(1,l.alpha));
+        x2.drawImage(v.img,(l.f%m.cols)*m.fw,Math.floor(l.f/m.cols)*m.fh,m.fw,m.fh,r[0]+m.bx*sx,r[1]+m.by*sy,m.bw*sx,m.bh*sy);}
+      x2.globalAlpha=1;}
+    requestAnimationFrame(draw2);})(performance.now());}
+function firstFrame(v){return new Promise(res=>{if('requestVideoFrameCallback' in v)v.requestVideoFrameCallback(()=>res());
+  else v.addEventListener('playing',()=>setTimeout(res,40),{once:true});setTimeout(res,900);});}
+async function start(n){const v=vids[n];v.pause();try{v.currentTime=0}catch(e){}const p=v.play();if(p)p.catch(()=>{});await firstFrame(v);return v;}
+const ended=v=>new Promise(r=>v.addEventListener('ended',r,{once:true}));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+
+/* ===== Geluid ===== */
+let muted=false,actx=null;const pigeonAudio=new Audio('assets/pigeon.mp3');pigeonAudio.preload='auto';
+// iPhone: geluid ook als de stille-modus-schakelaar aan staat (anders zwijgt al het gegenereerde geluid)
+try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(e){}
+function ac(){if(!actx){try{actx=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}if(actx&&actx.state!=='running'&&actx.state!=='closed')actx.resume();return actx;}
+// stille wav: één keer starten binnen een tik zet de iPhone in 'media'-stand
+const SILENT=(()=>{const n=4410,b=new ArrayBuffer(44+n*2),v=new DataView(b);const w=(o,t)=>{for(let i=0;i<t.length;i++)v.setUint8(o+i,t.charCodeAt(i));};
+  w(0,'RIFF');v.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,44100,true);v.setUint32(28,88200,true);v.setUint16(32,2,true);v.setUint16(34,16,true);w(36,'data');v.setUint32(40,n*2,true);
+  return URL.createObjectURL(new Blob([b],{type:'audio/wav'}));})();
+const keepAlive=new Audio(SILENT);keepAlive.loop=true;keepAlive.setAttribute('playsinline','');
+function unlockAudio(){const c=ac();if(!c)return;try{const bf=c.createBuffer(1,1,22050),src=c.createBufferSource();src.buffer=bf;src.connect(c.destination);src.start(0);}catch(e){}
+  try{const q=keepAlive.play();if(q)q.catch(()=>{});}catch(e){}}
+// elke tik: geluid weer wakker maken (iPhone zet het soms stil na een melding of scherm uit)
+addEventListener('pointerdown',()=>{if(actx&&actx.state!=='running')unlockAudio();},{passive:true});
+addEventListener('touchend',()=>{if(actx&&actx.state!=='running')unlockAudio();},{passive:true});
+function bell(){const c=ac();if(!c)return;const t=c.currentTime;[[2350,.18],[3120,.09],[4720,.05]].forEach(([f,g])=>{for(const d of[0,.16]){
+  const o=c.createOscillator(),a=c.createGain();o.frequency.value=f;a.gain.setValueAtTime(0,t+d);a.gain.linearRampToValueAtTime(g,t+d+.005);a.gain.exponentialRampToValueAtTime(.0001,t+d+1.1);
+  o.connect(a).connect(c.destination);o.start(t+d);o.stop(t+d+1.2);}});}
+function rustle(){const c=ac();if(!c)return;const len=c.sampleRate*.7,b=c.createBuffer(1,len,c.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(Math.sin(Math.PI*i/len),2)*(.5+.5*Math.random()*Math.random());
+  const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=b;f.type='bandpass';f.frequency.value=3200;f.Q.value=.7;g.gain.value=.22;
+  s.connect(f).connect(g).connect(c.destination);s.start();}
+function chime(){const c=ac();if(!c)return;const t=c.currentTime;[196,293.7,392].forEach((f,i)=>{const o=c.createOscillator(),a=c.createGain();o.type='triangle';o.frequency.value=f;
+  a.gain.setValueAtTime(0,t+i*.09);a.gain.linearRampToValueAtTime(.07,t+i*.09+.04);a.gain.exponentialRampToValueAtTime(.0001,t+i*.09+2.2);o.connect(a).connect(c.destination);o.start(t+i*.09);o.stop(t+2.5);});}
+/* extra geluiden, allemaal zelf opgewekt (geen bestanden): */
+function nz(c,sec,shape){const len=Math.max(1,Math.floor(c.sampleRate*sec)),b=c.createBuffer(1,len,c.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*shape(i/len);const s=c.createBufferSource();s.buffer=b;return s;}
+function out(c,vol){const g=c.createGain();g.gain.value=vol;g.connect(c.destination);return g;}
+// bed dat kraakt als Sam opstaat
+function creak(){const c=ac();if(!c)return;const t=c.currentTime+.02;
+  for(const [d,f0,f1,v] of [[0,190,150,.045],[.22,240,175,.035]]){const o=c.createOscillator(),lfo=c.createOscillator(),lg=c.createGain(),bp=c.createBiquadFilter(),g=c.createGain();
+    o.type='sawtooth';o.frequency.setValueAtTime(f0,t+d);o.frequency.linearRampToValueAtTime(f1,t+d+.45);lfo.frequency.value=23;lg.gain.value=18;lfo.connect(lg).connect(o.frequency);
+    bp.type='bandpass';bp.frequency.value=900;bp.Q.value=2.5;g.gain.setValueAtTime(0,t+d);g.gain.linearRampToValueAtTime(v,t+d+.06);g.gain.exponentialRampToValueAtTime(.0001,t+d+.5);
+    o.connect(bp).connect(g).connect(c.destination);o.start(t+d);lfo.start(t+d);o.stop(t+d+.55);lfo.stop(t+d+.55);}}
+// jas die schuurt
+function cloth(vol=.16){const c=ac();if(!c)return;const s=nz(c,.55,p=>Math.pow(Math.sin(Math.PI*p),1.5)*(.4+.6*Math.random()));
+  const f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=1100;f.Q.value=.6;s.connect(f).connect(out(c,vol));s.start();}
+// zachte voetstap op de stenen vloer
+function step(at=0,vol=.5){const c=ac();if(!c)return;const t=c.currentTime+at;const s=nz(c,.12,p=>Math.pow(1-p,4));
+  const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=420;const g=c.createGain();g.gain.value=vol;s.connect(f).connect(g).connect(c.destination);s.start(t);
+  const s2=nz(c,.06,p=>Math.pow(1-p,6)),f2=c.createBiquadFilter();f2.type='highpass';f2.frequency.value=2500;s2.connect(f2).connect(out(c,.05));s2.start(t+.01);}
+// voorwerp oppakken: korte houten tik
+function pickup(){const c=ac();if(!c)return;const t=c.currentTime+.02;const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(320,t);o.frequency.exponentialRampToValueAtTime(140,t+.08);
+  g.gain.setValueAtTime(.12,t);g.gain.exponentialRampToValueAtTime(.0001,t+.12);o.connect(g).connect(c.destination);o.start(t);o.stop(t+.14);
+  const s=nz(c,.05,p=>Math.pow(1-p,3)),f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=1800;s.connect(f).connect(out(c,.12));s.start(t);}
+// fotolijst: glas dat zacht tikt
+function clink(){const c=ac();if(!c)return;const t=c.currentTime+.18;[[2630,.05],[3950,.03],[5210,.015]].forEach(([f,v])=>{const o=c.createOscillator(),g=c.createGain();o.frequency.value=f;
+  g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.0001,t+.45);o.connect(g).connect(c.destination);o.start(t);o.stop(t+.5);});}
+// fiets: freewheel die tikt als het wiel draait
+function freewheel(){const c=ac();if(!c)return;let t=c.currentTime+.05;const n=26;
+  for(let i=0;i<n;i++){const s=nz(c,.012,p=>1-p),f=c.createBiquadFilter();f.type='highpass';f.frequency.value=3000;const g=c.createGain();g.gain.value=.09*(1-i/n*.7);
+    s.connect(f).connect(g).connect(c.destination);s.start(t);t+=.045+i*.0028;}}
+// poster die openrolt: papier dat langs de muur schuift en knispert
+function unrollSnd(){const c=ac();if(!c)return;const t=c.currentTime;const s=nz(c,1.35,p=>Math.pow(Math.sin(Math.PI*Math.min(1,p*1.1)),.8)*(1-p*.6)*(.55+.45*Math.random()));
+  const f=c.createBiquadFilter();f.type='bandpass';f.Q.value=.9;f.frequency.setValueAtTime(1400,t);f.frequency.exponentialRampToValueAtTime(4200,t+1.2);s.connect(f).connect(out(c,.2));s.start(t);
+  for(let i=0;i<9;i++){const k=nz(c,.02,p=>1-p),kf=c.createBiquadFilter();kf.type='highpass';kf.frequency.value=3500;k.connect(kf).connect(out(c,.07+Math.random()*.05));k.start(t+.1+Math.random()*1.1);}
+  const th=c.createOscillator(),tg=c.createGain();th.frequency.setValueAtTime(110,t+1.3);th.frequency.exponentialRampToValueAtTime(60,t+1.45);tg.gain.setValueAtTime(.0001,t+1.29);tg.gain.linearRampToValueAtTime(.09,t+1.3);tg.gain.exponentialRampToValueAtTime(.0001,t+1.5);
+  th.connect(tg).connect(c.destination);th.start(t+1.29);th.stop(t+1.55);}
+/* echte opgenomen geluiden (assets/snd); als een bestand niet laadt, valt het terug op de zelfgemaakte klank */
+const SND={},SNDV={standup2:.85,passport2:.9,frame:.8,bike:.75,money:.8,poster:.8,sad:.85,bird:.8};let sndLoading=false;
+function loadSounds(){const c=ac();if(!c||sndLoading)return;sndLoading=true;
+  for(const n in SNDV)fetch('assets/snd/'+n+'.mp3').then(r=>r.arrayBuffer()).then(b=>new Promise((ok,no)=>c.decodeAudioData(b,ok,no))).then(buf=>{SND[n]=buf;}).catch(()=>{});}
+function real(n,fallback,at=0){if(muted)return;const c=ac();if(c&&SND[n]){const s=c.createBufferSource(),g=c.createGain();s.buffer=SND[n];g.gain.value=SNDV[n];s.connect(g).connect(c.destination);s.start(c.currentTime+at);return;}
+  if(fallback)setTimeout(fallback,at*1000);}
+function sfx(n){if(muted||!n)return;if(n.startsWith('snd:')){real(n.slice(4));return;}if(n==='bell')bell();else if(n==='rustle')rustle();else if(n==='chime')chime();
+  else if(n==='creak')creak();else if(n==='cloth')cloth();else if(n==='pickup')pickup();else if(n==='clink')clink();else if(n==='freewheel')freewheel();else if(n==='unroll')unrollSnd();
+  else if(n==='pigeon'){chirp(.14);}}
+
+// klein vogeltje: korte tjilpjes (getekend met geluid, geen opname nodig)
+function chirp(vol=.12){const c=ac();if(!c||muted)return;let t=c.currentTime+.02;const n=3+Math.floor(Math.random()*4);
+  for(let i=0;i<n;i++){const f0=3200+Math.random()*900,f1=f0+900+Math.random()*1300,d=.05+Math.random()*.05;
+    const o=c.createOscillator(),g=c.createGain(),v=c.createOscillator(),vg=c.createGain();o.type='sine';
+    o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+d*.6);o.frequency.exponentialRampToValueAtTime(f0*.9,t+d);
+    v.frequency.value=38;vg.gain.value=120;v.connect(vg).connect(o.frequency);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.008);g.gain.exponentialRampToValueAtTime(.0001,t+d);
+    o.connect(g).connect(c.destination);o.start(t);v.start(t);o.stop(t+d+.02);v.stop(t+d+.02);
+    t+=d+(i%2?.04:.09)+Math.random()*.06;}}
+/* ===== Achtergrondgeluid per hoofdstuk (loops, zacht in elkaar overvloeiend) ===== */
+const AMB={},AMBV={room:.55,airport:.6,azc:.6,city:.6,wind:.65};let ambCur=null,ambWant=null,ambLoading=false;
+function loadAmb(){const c=ac();if(!c||ambLoading)return;ambLoading=true;
+  for(const n in AMBV)fetch('assets/snd/amb_'+n+'.mp3').then(r=>r.arrayBuffer()).then(b=>new Promise((ok,no)=>c.decodeAudioData(b,ok,no))).then(buf=>{AMB[n]=buf;if(ambWant===n&&(!ambCur||ambCur.n!==n))amb(n);}).catch(()=>{});}
+function amb(n,fade=2.5){ambWant=n;const c=actx;if(!c)return;const t=c.currentTime;
+  if(ambCur&&ambCur.n===n)return;
+  if(ambCur){const o=ambCur;o.g.gain.cancelScheduledValues(t);o.g.gain.setValueAtTime(o.g.gain.value,t);o.g.gain.linearRampToValueAtTime(0,t+fade);setTimeout(()=>{try{o.s.stop()}catch(e){}},fade*1000+100);ambCur=null;}
+  if(!n||!AMB[n])return;
+  const s=c.createBufferSource(),g=c.createGain();s.buffer=AMB[n];s.loop=true;s.loopStart=.06;s.loopEnd=AMB[n].duration-.06;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(muted?0:AMBV[n],t+fade);s.connect(g).connect(c.destination);s.start(t,.06);ambCur={n,s,g};}
+function ambMute(){if(!ambCur||!actx)return;const t=actx.currentTime;ambCur.g.gain.cancelScheduledValues(t);ambCur.g.gain.setValueAtTime(ambCur.g.gain.value,t);ambCur.g.gain.linearRampToValueAtTime(muted?0:AMBV[ambCur.n],t+.4);}
+$('mute').onclick=function(){muted=!muted;ambMute();this.textContent=muted?'Sound off':'Sound on';this.setAttribute('aria-pressed',muted);if(muted)pigeonAudio.pause();};
+
+/* ===== Verloop ===== */
+const cap=$('caption');let capTimer;
+function say(t,ms=4200){clearTimeout(capTimer);cap.textContent=t;cap.classList.add('show');if(ms)capTimer=setTimeout(()=>cap.classList.remove('show'),ms);}
+let phase='room',busy=false;const done=new Set();
+window.__st=()=>({phase,busy,done:[...done],layers:layers.map(l=>l.name)});
+const nextIdx=()=>{const i=CHAPTERS.findIndex(c=>!done.has(c.id));return i<0?CHAPTERS.length:i;};
+let introSeen=false;
+const INTRO={kicker:'Prologue',title:'Sam',sub:'This is his room. Every object tells part of his story.'};
+const unlocked=i=>introSeen&&i<=nextIdx();
+
+// hotspots
+const hots={};
+function mkHot(id,hit,label,onClick,glowId){const b=document.createElement('button');b.type='button';b.className='hot';b.setAttribute('aria-label',label);
+  const [x,y,w,h]=hit;Object.assign(b.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});
+  b.innerHTML=`<span class="ping"></span><span class="tag">${label}</span>`;const g=$(glowId);
+  b.onmouseenter=b.onfocus=()=>{if(!b.disabled&&!b.classList.contains('locked')&&g)g.classList.add('glow')};
+  b.onmouseleave=b.onblur=()=>g&&g.classList.remove('glow');b.onclick=onClick;$('hots').appendChild(b);hots[id]=b;return b;}
+mkHot('sam',[985,545,235,405],'Sam',()=>standUp(),'o-man');
+CHAPTERS.forEach((c,i)=>mkHot(c.id,c.hit,`Chapter ${i+1} · ${c.title}`,()=>openChapter(i),c.hide||('o-'+c.id)));
+const chips=$('chips');
+CHAPTERS.forEach((c,i)=>{const b=document.createElement('button');b.type='button';b.className='chip';b.innerHTML=`<b>${i+1}</b><span class="t">${c.title}</span>`;b.onclick=()=>openChapter(i);chips.appendChild(b);});
+
+/* ===== Getekende cirkels rond de voorwerpen ===== */
+const rings={};
+function rnd(seed){let t=seed>>>0;return()=>{t+=0x6D2B79F5;let r=Math.imul(t^t>>>15,1|t);r^=r+Math.imul(r^r>>>7,61|r);return((r^r>>>14)>>>0)/4294967296;};}
+function sketchPath(cx,cy,rx,ry,R,off){const n=34,start=R()*6.28,sweep=6.28+0.35+R()*0.3;let d='';
+  const a1=R()*6.28,a2=R()*6.28;
+  for(let i=0;i<=n;i++){const t=i/n,a=start+sweep*t;
+    const w=1+0.045*Math.sin(a*2+a1)+0.03*Math.sin(a*3+a2)+(R()-.5)*0.015+off*(t-.5)*0.08;
+    const x=cx+Math.cos(a)*rx*w,y=cy+Math.sin(a)*ry*w;d+=(i?' L':'M')+x.toFixed(1)+' '+y.toFixed(1);}
+  return d;}
+[{id:'sam',hit:[985,545,235,405]},...CHAPTERS].forEach((c,i)=>{const [x,y,w,h]=c.hit;const R=rnd(1234+i*97);
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.setAttribute('class','ring');
+  const cx=x+w/2,cy=y+h/2,rx=w/2+26,ry=h/2+22;
+  [[5,0],[2.4,1]].forEach(([sw,o])=>{const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d',sketchPath(cx+(o?3:0),cy+(o?-2:0),rx+(o?6:0),ry+(o?4:0),R,o));p.setAttribute('stroke-width',sw);g.appendChild(p);});
+  $('rings').appendChild(g);rings[c.id]=g;
+  requestAnimationFrame(()=>g.querySelectorAll('path').forEach(p=>{const L=p.getTotalLength();p.style.setProperty('--len',L);p.style.strokeDasharray=L;}));
+  const b=hots[c.id];b.addEventListener('mouseenter',()=>{if(!b.disabled&&!b.classList.contains('locked'))g.classList.add('hover')});
+  b.addEventListener('mouseleave',()=>g.classList.remove('hover'));b.addEventListener('focus',()=>{if(!b.classList.contains('locked'))g.classList.add('hover')});b.addEventListener('blur',()=>g.classList.remove('hover'));});
+let lastNext=null;
+function flashRing(g){clearTimeout(g._t);g.classList.remove('draw','flash');void g.getBBox();g.classList.add('draw','flash');g._t=setTimeout(()=>g.classList.remove('flash'),2600);}
+function refreshRings(){const n=introSeen?nextIdx():-1;
+  {const g=rings.sam;g.classList.toggle('busy',busy||phase!=='room');g.classList.toggle('next',!introSeen);g.classList.toggle('done',introSeen);
+   if(!introSeen&&lastNext!=='sam'&&!busy){flashRing(g);lastNext='sam';}}
+  CHAPTERS.forEach((c,i)=>{const g=rings[c.id];if(!g)return;
+    g.classList.toggle('busy',busy||phase!=='room');
+    g.classList.toggle('next',i===n);g.classList.toggle('done',done.has(c.id));g.classList.toggle('open',unlocked(i)&&i!==n&&!done.has(c.id));
+    if(i===n&&lastNext!==c.id&&!busy){flashRing(g);lastNext=c.id;}});}
+window.__setEve=p=>{stage.style.setProperty('--eve',p);window.__eve=p;setRays(p);};
+function refresh(){
+  {const p=introSeen?Math.min(1,done.size/(CHAPTERS.length-1)):0;stage.style.setProperty('--eve',p.toFixed(3));if(window.__plant){const pt=introSeen?.35+.65*Math.min(1,done.size/CHAPTERS.length):.12;window.__plantT=introSeen?Math.max(window.__plantT||0,pt):pt;window.__plant(window.__plantT);}if(Math.abs(p-(window.__eve??0))>.001&&typeof tweenRays==='function')tweenRays(p);else if(p===0&&typeof setRays==='function'&&rayE>0)setRays(0);window.__eve=p;}
+  const n=introSeen?nextIdx():-1;const sb=hots.sam;sb.hidden=phase!=='room'||introSeen;sb.disabled=busy;sb.classList.toggle('done',introSeen);
+  CHAPTERS.forEach((c,i)=>{const b=hots[c.id];b.hidden=phase!=='room';b.disabled=busy;
+    b.classList.toggle('locked',!unlocked(i));b.classList.toggle('hint',i===n);b.classList.toggle('done',done.has(c.id));
+    b.querySelector('.tag').textContent=unlocked(i)?`Chapter ${i+1} · ${c.title}`:'Locked';
+    const ch=chips.children[i];ch.disabled=busy||phase!=='room'||!unlocked(i);ch.classList.toggle('next',i===n);ch.classList.toggle('done',done.has(c.id));});
+  chips.hidden=false;if(typeof refreshRings==='function')refreshRings();
+  $('o-man').classList.toggle('cue',!introSeen&&!busy);
+  CHAPTERS.forEach((c,i)=>{const el=$(c.hide||('o-'+c.id));if(el)el.classList.toggle('cue',i===n&&!busy);});
+  {const m=$('marker');let tgt=null,lab='';
+   if(!introSeen){tgt=[985,545,235,405];lab='Click on Sam';}
+   else if(n>=0&&n<CHAPTERS.length){const c=CHAPTERS[n];tgt=c.mark?[c.mark[0],c.mark[1],0,0]:c.hit;lab='Click: '+CHAPTERS[n].label.toLowerCase();}
+   const on=!!tgt&&!busy&&phase==='room';m.classList.toggle('on',on);
+   if(tgt){m.style.left=(tgt[0]+tgt[2]/2)+'px';m.style.top=(tgt[1]+tgt[3]/2)+'px';$('markerT').textContent=lab;}}
+}
+
+
+
+
+// afwijzing: het opgerolde papier rolt open
+async function unroll(){const open=$('o-rejectOpen'),roll=$('o-roll'),rolled=$('o-reject');
+  real('poster',()=>sfx('unroll'));open.style.transition=roll.style.transition='none';
+  const top=392,h=250,startY=487,endY=612,dur=1300;
+  open.classList.remove('gone');roll.classList.remove('gone');rolled.classList.add('gone');
+  await new Promise(res=>{const t0=performance.now();(function f(now){now=step12(now-t0)+t0;const p=Math.min(1,(now-t0)/dur),e=1-Math.pow(1-p,3);
+    const y=startY+(endY-startY)*e;open.style.clipPath=`inset(0 0 ${top+h-y}px 0)`;
+    roll.style.transform=`translateY(${y-startY}px) scale(${1-0.35*e})`;roll.style.opacity=String(1-Math.max(0,(p-.75)/.25));
+    if(p<1)requestAnimationFrame(f);else res();})(performance.now());});
+  roll.classList.add('gone');roll.style.transform='';roll.style.opacity='';open.style.clipPath='';open.style.transition=roll.style.transition='';
+  await new Promise(r=>setTimeout(r,500));}
+
+async function playExtra(clip,text,fx,hideId){if(busy||!introSeen||phase!=='room')return;busy=true;refresh();document.querySelectorAll('.glow').forEach(e=>e.classList.remove('glow'));
+  say(text,0);sfx(fx);const v=await start(clip);show(clip,400);$(hideId).classList.add('gone');hide('idle',400);
+  await ended(v);cap.classList.remove('show');await start('idle');show('idle',400);hide(clip,400);$(hideId).classList.remove('gone');
+  busy=false;refresh();}
+/* Slot: Sam verdwijnt uit beeld, de lege kamer blijft. Langzaam naar het raam, dan de titel. */
+async function finale(c){hide(c.clip,1800);hide('idle',600);refresh();
+  await sleep(1900);
+  const zoom=camTo(1.14,0,0,870,470,7000);
+  await sleep(4200);$('end').classList.add('final','show');await zoom;}
+async function openChapter(i){const c=CHAPTERS[i];if(busy||phase!=='room')return;stopReact();
+  if(!introSeen)return;
+  if(!unlocked(i)){say(`Chapter ${nextIdx()+1} first: the ${CHAPTERS[nextIdx()].label.toLowerCase()}.`,3000);return;}
+  busy=true;refresh();document.querySelectorAll('.glow').forEach(e=>e.classList.remove('glow'));
+  if(c.id==='bike'||c.id==='reject')loadCine();   // vogelshot pas laden tegen het einde, niet bij het begin
+  // hoofdstukkaart eerst: titel verschijnt, blijft even staan en vervaagt, daarna begint de actie
+  $('cardK').textContent='Chapter '+(i+1);$('cardT').textContent=c.title;$('cardS').textContent=c.sub||'';$('cardS').hidden=!c.sub;
+  const cd=$('card');$('cardBtn').hidden=true;cd.classList.toggle('right',!!c.titleRight);cd.classList.add('title','show');sfx('chime');
+  setTimeout(()=>cd.classList.remove('show'),2600);setTimeout(()=>{cd.classList.remove('title','right');$('cardBtn').hidden=false;},3700);
+  await sleep(500);   // titel komt op, Sam begint meteen daarna
+  if(c.id==='reject'&&!$('o-reject').classList.contains('gone'))await unroll();
+  amb(c.amb,3);const capT=setTimeout(()=>say(c.text,0),2900);if(c.real)real(c.real[0],()=>sfx(c.fb),c.real[1]);else sfx(c.sfx);(c.pick||[]).forEach(([n,ms])=>setTimeout(()=>sfx(n),ms));if(c.flutter)$(c.flutter).classList.add('flutter');
+  // de plant groeit tijdens het hoofdstuk zelf, zodat je het ziet gebeuren
+  if(window.__plant){const n=done.size+(done.has(c.id)?0:1);window.__plantT=Math.max(window.__plantT||0,.35+.65*Math.min(1,n/CHAPTERS.length));window.__plant(window.__plantT);}
+  if(c.id==='bike'){hide('idle',300);await sleep(300);}
+  const v=await start(c.clip);show(c.clip,c.keepIdle?150:400);
+  if(c.hide)$(c.hide).classList.add('gone');if(!c.keepIdle)hide('idle',400);
+  await ended(v);
+  // tweede actie in hetzelfde hoofdstuk (bij de fiets: daarna geld tellen)
+  if(c.then){const t=c.then;say(t.text,0);if(t.real)real(t.real,()=>sfx(t.sfx));else sfx(t.sfx);if(c.flutter){$(c.flutter).classList.remove('flutter');countMoney(true);}const v2=await start(t.clip);show(t.clip,450);hide(c.clip,450);
+    if(c.hide)$(c.hide).classList.remove('gone');if(t.hide)$(t.hide).classList.add('gone');
+    await ended(v2);}
+  clearTimeout(capT);cap.classList.remove('show');if(c.flutter){$(c.flutter).classList.remove('flutter');countMoney(false);}
+  if(c.id==='reject')await birdCine();   // laatste hoofdstuk: filmisch shot van de duif die door het open raam wegvliegt
+  done.add(c.id);const isLast=done.size===CHAPTERS.length;
+  if(isLast){await finale(c);return;}
+  if(!c.keepIdle){await start('idle');show('idle',10);}hide(c.clip,10);if(c.then){hide(c.then.clip,10);if(c.then.hide)$(c.then.hide).classList.remove('gone');}
+  if(c.hide){const h=$(c.hide);h.style.transition='none';h.classList.remove('moved');h.classList.remove('gone');h.offsetWidth;h.style.transition='';}
+  if(isLast){await sleep(900);$('end').classList.add('show');return;}
+  amb('room',5);   // terug in de kamer: de stad of hal sterft langzaam weg
+  busy=false;refresh();   // terug in de kamer: het volgende object licht op
+}
+
+async function standUp(){if(busy||introSeen)return;busy=true;refresh();document.activeElement&&document.activeElement.blur&&document.activeElement.blur();document.body.classList.add('busy');setTimeout(()=>document.body.classList.remove('busy'),1500);$('o-man').classList.remove('glow','cue');
+  const v=await start('standup');show('standup',120);
+  if(!muted&&actx)real('standup2',()=>{sfx('creak');setTimeout(()=>sfx('cloth'),350);[1.5,2.05,2.6,3.15].forEach((a,i)=>step(a,.42-i*.06));});   // bed kraakt, jas, voetstappen$('o-man').classList.add('gone');
+  const seat=$('o-seat');seat.style.transition='opacity .12s linear';setTimeout(()=>seat.classList.remove('gone'),230);setTimeout(()=>{seat.style.transition='opacity .4s ease';seat.classList.add('gone');},1150);   // bedrand voor de kruk uit de clip
+  await new Promise(r=>{const f=()=>{if(v.currentTime>=v.duration-0.35||v.ended){v.removeEventListener('timeupdate',f);r();}};v.addEventListener('timeupdate',f);v.addEventListener('ended',r,{once:true});});
+  await start('idle');show('idle',450);hide('standup',450);
+  introSeen=true;busy=false;refresh();}
+let cardMode='chapter';
+function openIntro(){if(busy||phase!=='room')return;busy=true;refresh();document.querySelectorAll('.glow').forEach(e=>e.classList.remove('glow'));
+  cardMode='intro';$('cardK').textContent=INTRO.kicker;$('cardT').textContent=INTRO.title;$('cardS').textContent=INTRO.sub;$('cardS').hidden=!INTRO.sub;
+  $('cardBtn').textContent=introSeen?'Back to the room':'Begin the story';$('card').classList.add('show');sfx('chime');$('cardBtn').focus();}
+$('cardBtn').onclick=()=>{$('card').classList.remove('show');
+  if(cardMode==='intro'){cardMode='chapter';const first=!introSeen;introSeen=true;busy=false;refresh();if(first)say('Click the passport to begin.',4500);return;}
+  if(done.size===CHAPTERS.length&&$('cardBtn').textContent==='To the end'){$('end').classList.add('show');return;}
+  busy=false;refresh();};
+function reset(){$('end').classList.remove('final');if(window.CAM){window.CAM=null;fit();}stopReact&&stopReact();if(typeof amb==='function'&&actx)amb('room',3);done.clear();lastNext=null;introSeen=false;hide('idle',10);phase='room';$('o-bike').classList.remove('moved');busy=false;for(const l of layers)l.target=0;Object.values(vids).forEach(v=>v.pause());
+  ['o-man','o-bike','o-bird','o-frame','o-money','o-reject'].forEach(id=>$(id).classList.remove('gone'));['o-rejectOpen','o-roll'].forEach(id=>$(id).classList.add('gone'));$('o-rejectOpen').style.clipPath='';refresh();
+  // Sam zit op het bed als eerste beeld van de opstaan-clip, zodat het opstaan naadloos begint
+  const sv=vids.standup;sv.pause();let done1=false;
+  const swap=()=>{if(done1||introSeen)return;done1=true;const l=layer('standup');if(l){l.alpha=0;}show('standup',350);setTimeout(()=>{if(!introSeen)$('o-man').classList.add('gone');},360);};
+  sv.addEventListener('seeked',swap,{once:true});setTimeout(swap,600);try{sv.currentTime=0.04}catch(e){swap();}}
+$('again').onclick=()=>{$('end').classList.remove('show');reset();};
+
+
+/* ===== Filmisch licht: lichtbundels uit het raam en het dakraam ===== */
+// bundel = bovenrand (bij de lichtbron) en onderrand (waar het licht landt)
+// e = 0 middag, 1 avond. 's Avonds staat de zon laag: de bundel wordt langer, schuift naar voren-links en kleurt oranje.
+const lerp=(a,b,t)=>a+(b-a)*t, lp=(p,q,t)=>[lerp(p[0],q[0],t),lerp(p[1],q[1],t)];
+function beamsFor(e){return[
+  {top:[[790,388],[905,388]], bot:[lp([430,1015],[40,1080],e),lp([985,1015],[600,1080],e)], k:1},   // raam
+  {top:[[888,0],[952,0]],    bot:[[830,760],[1010,760]], k:.45*(1-e)}                                // dakraam (verdwijnt)
+];}
+let BEAMS=beamsFor(0);
+function beamAt(px,py){let best=0;for(const B of BEAMS){const y0=B.top[0][1],y1=B.bot[0][1];if(py<y0||py>y1)continue;const t=(py-y0)/(y1-y0);
+  const l=B.top[0][0]+(B.bot[0][0]-B.top[0][0])*t,r=B.top[1][0]+(B.bot[1][0]-B.top[1][0])*t;if(px<l||px>r)continue;
+  const u=(px-l)/(r-l),edge=Math.min(u,1-u)*2;const fall=(1-t*.55);best=Math.max(best,B.k*Math.min(1,edge*2.2)*fall);}return best;}
+// zachte lichtbundels zonder canvas-blur (die werkt niet op iPhone/Safari): klein tekenen en vergroten = vanzelf zacht
+function drawRays(cv,seed,e){const sm=cv._sm||(cv._sm=Object.assign(document.createElement('canvas'),{width:240,height:135}));
+  const md=cv._md||(cv._md=Object.assign(document.createElement('canvas'),{width:480,height:270}));
+  const x=sm.getContext('2d');let r=seed;const R=()=>{r=(r*16807)%2147483647;return r/2147483647;};
+  x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,sm.width,sm.height);x.setTransform(sm.width/1920,0,0,sm.height/1080,0,0);
+  x.globalCompositeOperation='lighter';
+  const C=[Math.round(lerp(255,255,e)),Math.round(lerp(222,150,e)),Math.round(lerp(162,72,e))];const col=a=>`rgba(${C[0]},${C[1]},${C[2]},${a})`;
+  for(const B of beamsFor(e)){if(B.k<.01)continue;const n=B.k>.9?9:4;
+    for(let i=0;i<n;i++){const a=i/n,w=(1/n)*(.5+R()*.6);
+      const tl=B.top[0][0]+(B.top[1][0]-B.top[0][0])*a, tr=tl+(B.top[1][0]-B.top[0][0])*w;
+      const bl=B.bot[0][0]+(B.bot[1][0]-B.bot[0][0])*a, br=bl+(B.bot[1][0]-B.bot[0][0])*w;
+      const g=x.createLinearGradient(B.top[0][0],B.top[0][1],B.bot[0][0],B.bot[0][1]);const A=B.k*(.10+R()*.12)*(1+.8*e);
+      g.addColorStop(0,col(A*1.6));g.addColorStop(.55,col(A*.8));g.addColorStop(1,col(A*.25));
+      x.fillStyle=g;x.beginPath();x.moveTo(tl,B.top[0][1]);x.lineTo(tr,B.top[0][1]);x.lineTo(br,B.bot[0][1]);x.lineTo(bl,B.bot[0][1]);x.closePath();x.fill();}}
+  // avond: lichtvlek van het raam (met tralies) ver naar voren op de vloer
+  if(e>.02){const q=[lp([470,1012],[150,968],e),lp([900,1012],[520,968],e),lp([985,1080],[600,1080],e),lp([430,1080],[40,1080],e)];
+    const P=(u,v)=>{const ax=lerp(q[0][0],q[1][0],u),ay=lerp(q[0][1],q[1][1],u),bx=lerp(q[3][0],q[2][0],u),by=lerp(q[3][1],q[2][1],u);return[lerp(ax,bx,v),lerp(ay,by,v)];};
+    x.fillStyle=col(.45*e);
+    for(let cI=0;cI<4;cI++)for(let rI=0;rI<2;rI++){const u0=cI/4+.02,u1=(cI+1)/4-.02,v0=rI/2+.04,v1=(rI+1)/2-.04;
+      const p1=P(u0,v0),p2=P(u1,v0),p3=P(u1,v1),p4=P(u0,v1);x.beginPath();x.moveTo(...p1);x.lineTo(...p2);x.lineTo(...p3);x.lineTo(...p4);x.closePath();x.fill();}}
+  // gloed rond het raam
+  const gl2=x.createRadialGradient(848,438,10,848,438,190+60*e);gl2.addColorStop(0,col(.55+.15*e));gl2.addColorStop(1,col(0));
+  x.fillStyle=gl2;x.fillRect(560,160,580,560);
+  // in twee stappen vergroten voor een zachte, gelijkmatige gloed
+  const m=md.getContext('2d');m.clearRect(0,0,md.width,md.height);m.imageSmoothingEnabled=true;m.imageSmoothingQuality='high';m.drawImage(sm,0,0,md.width,md.height);
+  const o=cv.getContext('2d');o.setTransform(1,0,0,1,0,0);o.clearRect(0,0,cv.width,cv.height);o.imageSmoothingEnabled=true;o.imageSmoothingQuality='high';o.drawImage(md,0,0,cv.width,cv.height);}
+let rayE=-1;
+function setRays(e){if(Math.abs(e-rayE)<.004)return;rayE=e;BEAMS=beamsFor(e);drawRays($('raysA'),7,e);drawRays($('raysB'),31,e);}
+setRays(0);
+// zacht overgaan naar het nieuwe licht (zelfde tempo als de kleur, ~5 s)
+let rayTween=null;
+function tweenRays(to){const from=rayE<0?0:rayE;const t0=performance.now();cancelAnimationFrame(rayTween);let last=0;
+  (function f(now){const p=Math.min(1,(now-t0)/5000),e=from+(to-from)*(p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2);
+    if(now-last>70||p===1){setRays(e);last=now;}if(p<1)rayTween=requestAnimationFrame(f);})(performance.now());}
+
+/* ===== Stof: zweeft overal, maar je ziet het vooral in het licht ===== */
+(function(){const c=$('dust'),x=c.getContext('2d');const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(LITE){c.width=960;c.height=540;x.scale(.5,.5);}
+  const P=[];for(let i=0;i<(LITE?60:300);i++){const z=Math.random();   // z: 0 = ver weg, 1 = dichtbij de camera
+    P.push({x:Math.random()*1920,y:Math.random()*1080,z,r:.5+z*z*3.2,blur:z>.93,ph:Math.random()*6.28,sp:.15+Math.random()*.5,
+      vx:0,vy:0,tw:1+Math.random()*3,spin:(Math.random()<.5?-1:1)*(.3+Math.random()*.7),orb:4+Math.random()*14});}
+  const spr=(rad,soft)=>{const s=document.createElement('canvas');s.width=s.height=rad*2+2;const g=s.getContext('2d');const gr=g.createRadialGradient(rad+1,rad+1,0,rad+1,rad+1,rad);
+    gr.addColorStop(0,'rgba(255,244,220,1)');gr.addColorStop(soft?.15:.45,'rgba(255,240,214,'+(soft?.55:.9)+')');gr.addColorStop(1,'rgba(255,236,206,0)');g.fillStyle=gr;g.fillRect(0,0,s.width,s.height);return s;};
+  const sharp=spr(6,false),bokeh=spr(18,true);
+  // een paar trage luchtwervels die langzaam door de kamer drijven
+  const V=[{x:700,y:650,r:260,s:1},{x:1150,y:500,r:220,s:-1},{x:450,y:850,r:240,s:-1}];
+  let lt=performance.now();
+  let skip=-1;
+  function f(now){if(LITE){const q=Math.floor(now/41.67);if(q===skip){requestAnimationFrame(f);return;}skip=q;}   // telefoon: 24 beelden per seconde
+    const dt=Math.min(.08,(now-lt)/1000);lt=now;const T=now/1000,ev=window.__eve||0;
+    // zachte sporen: oude beelden vervagen in plaats van meteen te verdwijnen (op telefoons gewoon wissen)
+    if(LITE)x.clearRect(0,0,1920,1080);else{x.globalCompositeOperation='destination-out';x.fillStyle='rgba(0,0,0,.42)';x.fillRect(0,0,1920,1080);x.globalCompositeOperation='source-over';}
+    V[0].x=700+Math.sin(T*.05)*180;V[0].y=640+Math.cos(T*.04)*90;V[1].x=1150+Math.cos(T*.045)*150;V[1].y=520+Math.sin(T*.06)*110;V[2].x=430+Math.sin(T*.035)*120;
+    // als Sam beweegt, zet hij de lucht in beweging
+    const act=layers.some(l=>l.alpha>.5&&l.name!=='idle'&&l.name!=='pigeon');
+    for(const p of P){if(!RM){p.ph+=dt*p.sp;
+        let fx=Math.sin(p.y*.0042+T*.21)*9+Math.sin(p.y*.012-T*.15)*4, fy=Math.cos(p.x*.0033+T*.16)*6+Math.sin(p.x*.009+T*.11)*2.5-2.2*beamAt(p.x,p.y);
+        for(const v of V){const dx=p.x-v.x,dy=p.y-v.y,d2=dx*dx+dy*dy,R2=v.r*v.r;if(d2<R2){const k=(1-d2/R2)*14*v.s;fx+=-dy/v.r*k;fy+=dx/v.r*k;}}
+        if(act){const dx=p.x-927,dy=p.y-680,d=Math.hypot(dx,dy)+1;if(d<320){const k=(1-d/320)*22;fx+=dx/d*k;fy+=dy/d*k-6*(1-d/320);}}
+        p.vx+=(fx*(.45+p.z)-p.vx)*Math.min(1,dt*1.6);p.vy+=(fy*(.45+p.z)-p.vy)*Math.min(1,dt*1.6);   // traagheid: vloeiend versnellen en afremmen
+        p.x+=(p.vx+Math.cos(p.ph*p.spin)*p.orb*.25)*dt;p.y+=(p.vy+Math.sin(p.ph*p.spin)*p.orb*.2)*dt;
+        if(p.x<-20)p.x+=1960;if(p.x>1940)p.x-=1960;if(p.y<-20)p.y+=1120;if(p.y>1100)p.y-=1120;}
+      const L=beamAt(p.x,p.y)*(1-.55*ev);
+      const glint=.5+.5*Math.pow(Math.max(0,Math.sin(p.ph*p.tw*2)),3);   // draait en vangt licht
+      const a=(L*1.05*glint)+.02;if(a<.03)continue;
+      x.globalAlpha=Math.min(1,a*(p.blur?.45:1));
+      const img=p.blur?bokeh:sharp,sz=p.blur?p.r*5:p.r*2.2;x.drawImage(img,p.x-sz/2,p.y-sz/2,sz,sz);}
+    x.globalAlpha=1;if(!RM)requestAnimationFrame(f);}
+  requestAnimationFrame(f);})();
+
+/* ===== Filmkorrel ===== */
+(function(){return;const c=$('grain'),x=c.getContext('2d');const id=x.createImageData(256,256);let k=0;
+  function f(){if(++k%3===0){const d=id.data;for(let i=0;i<d.length;i+=4){const v=Math.random()*255;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255;}x.putImageData(id,0,0);}requestAnimationFrame(f);}
+  if(!matchMedia('(prefers-reduced-motion: reduce)').matches)f();else{f();}})();
+
+/* ===== De duif beweegt af en toe vanzelf (niet klikbaar) ===== */
+let birdBusy=false;
+async function birdMove(){if(birdBusy||$('start').classList.contains('show'))return;birdBusy=true;
+  const v=await start('pigeon');show('pigeon',150);$('o-bird').classList.add('gone');
+  if(!muted&&actx){chirp(.1);setTimeout(()=>chirp(.08),900);}
+  await ended(v);hide('pigeon',150);$('o-bird').classList.remove('gone');birdBusy=false;}
+// eenmalig: de duif vliegt naar de andere kant van de kamer (op het bureau)
+let birdFlown=false;
+function flutter(){const c=ac();if(!c||muted)return;const t=c.currentTime,dur=1.6,len=Math.floor(c.sampleRate*dur),b=c.createBuffer(1,len,c.sampleRate),d=b.getChannelData(0);
+  for(let i=0;i<len;i++){const tt=i/c.sampleRate;const flap=Math.pow(Math.max(0,Math.sin(tt*2*Math.PI*11)),3);d[i]=(Math.random()*2-1)*flap*Math.min(1,(dur-tt)*2)*Math.min(1,tt*8);}
+  const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();s.buffer=b;f.type='bandpass';f.frequency.value=900;f.Q.value=.6;g.gain.value=.35;s.connect(f).connect(g).connect(c.destination);s.start(t);}
+// hoofdstuk 4: de duif vliegt van het bed door het raam naar buiten en is daarna weg
+// Getekende vliegende duif (zijaanzicht, kijkt naar links).
+// s = vleugelstand: 1 = helemaal omhoog, 0 = zijwaarts (verkort), -1 = helemaal omlaag. sweep = hoe ver de vleugel naar achteren staat (graden).
+function drawDove(x,s,sweep,sFar){
+  const INK='#2a2b2f';
+  function wing(far,sv){x.save();
+    x.translate(far?-4:-12,far?-11:-7);x.rotate((sweep+(far?6:0))*Math.PI/180);
+    const sy=Math.sign(sv)*Math.max(.12,Math.abs(sv));x.scale(far?.92:1,sy);
+    const g=x.createLinearGradient(0,0,0,-72);
+    if(far){g.addColorStop(0,'#b9bdc4');g.addColorStop(1,'#80868f');}else{g.addColorStop(0,'#fbfaf8');g.addColorStop(.55,'#e2e3e6');g.addColorStop(1,'#a9aeb6');}
+    x.beginPath();x.moveTo(0,0);x.bezierCurveTo(-14,-24,-17,-50,-5,-72);
+    // vingers (slagpennen) aan de punt
+    const F=[[3,-71],[7,-66],[11,-68],[15,-61],[19,-62],[23,-54],[27,-55],[31,-46]];
+    for(const [fx,fy] of F)x.lineTo(fx,fy);
+    x.quadraticCurveTo(40,-36,42,-24);x.quadraticCurveTo(44,-10,30,0);x.closePath();
+    x.fillStyle=g;x.fill();x.lineWidth=1.3/Math.max(.3,Math.abs(sy));x.lineWidth=1.3;x.strokeStyle=INK;x.stroke();
+    x.lineWidth=.75;x.strokeStyle=far?'rgba(40,42,48,.45)':'rgba(80,84,92,.55)';
+    x.beginPath();x.moveTo(-9,-30);x.quadraticCurveTo(14,-34,38,-26);x.stroke();
+    for(let i=0;i<7;i++){const u=i/7;x.beginPath();x.moveTo(-10+u*6,-40-u*24);x.lineTo(4+i*4,-62+i*2.5);x.stroke();}
+    for(let i=0;i<5;i++){x.beginPath();x.moveTo(-6+i*9,-28+i*1.5);x.lineTo(2+i*9,-12+i*1);x.stroke();}
+    x.restore();}
+  wing(true,sFar);
+  // lijf, kop en staart in één lijn
+  x.beginPath();x.moveTo(-63,-7.5);x.lineTo(-54,-11);x.bezierCurveTo(-52,-20,-40,-21,-35,-14);x.bezierCurveTo(-20,-15,10,-13,32,-5);
+  x.lineTo(64,-10);x.quadraticCurveTo(71,-2,66,7);x.lineTo(32,6);x.bezierCurveTo(10,13,-22,14,-36,7);x.bezierCurveTo(-44,4,-50,0,-54,-4);x.closePath();
+  const bg=x.createLinearGradient(0,-20,0,14);bg.addColorStop(0,'#fdfcfa');bg.addColorStop(.6,'#ebebe8');bg.addColorStop(1,'#b8bcc2');x.fillStyle=bg;x.fill();x.lineWidth=1.5;x.strokeStyle=INK;x.stroke();
+  x.lineWidth=.7;x.strokeStyle='rgba(70,74,80,.5)';for(let i=0;i<3;i++){x.beginPath();x.moveTo(36,-3+i*3);x.lineTo(66,-8+i*5);x.stroke();}
+  x.beginPath();x.moveTo(-63,-7.5);x.lineTo(-54,-11);x.lineTo(-54,-4);x.closePath();x.fillStyle='#c4876a';x.fill();x.lineWidth=.9;x.stroke();
+  x.beginPath();x.arc(-46,-13,1.9,0,Math.PI*2);x.fillStyle='#121212';x.fill();
+  x.strokeStyle='#a9605f';x.lineWidth=1.8;x.beginPath();x.moveTo(6,10);x.lineTo(17,13);x.moveTo(10,10);x.lineTo(20,11);x.stroke();
+  wing(false,s);
+}
+
+async function birdFlyOut(){const el=$('o-bird');if(el.classList.contains('gone')&&!birdBusy)return;
+  while(birdBusy)await sleep(100);birdBusy=true;hide('pigeon',80);
+  const F25=1000/25,S=i=>'assets/bird_h'+i+'.png',TAKEOFF=[34,35,36,37,38,39];
+  const fl=$('o-birdfly'),cv=$('flyc'),x=cv.getContext('2d');const [fx,fy,fw,fh]=[1287,369,130,120];
+  // 1) opstijgen op de bedrand: getekende beelden uit de duivenclip
+  Object.assign(fl.style,{left:fx+'px',top:fy+'px',width:fw+'px',height:fh+'px',transform:'',opacity:'1'});fl.src=S(34);fl.hidden=false;el.classList.add('gone');
+  for(let i=0;i<TAKEOFF.length;i++){fl.src=S(TAKEOFF[i]);fl.style.transform=`translate(0px,${i<3?i*1.2:-(i-2)*4}px)`;await sleep(F25);}
+  fl.hidden=true;flutter();
+  // 2) vliegen: getekende duif, elk beeld opnieuw getekend op 25 beelden per seconde
+  const c0={x:1344,y:433},win={x:850,y:440},out={x:838,y:418};
+  const path=e=>{const cx=(c0.x+win.x)/2+50,cy=Math.min(c0.y,win.y)-115;return[(1-e)*(1-e)*c0.x+2*(1-e)*e*cx+e*e*win.x,(1-e)*(1-e)*c0.y+2*(1-e)*e*cy+e*e*win.y];};
+  const D=2300,OUT=900,HZ=3.6,BASE=.48;   // zelfde formaat als de duif op het bed
+  const sm=(a,b,v)=>{const t=Math.max(0,Math.min(1,(v-a)/(b-a)));return t*t*(3-2*t);};
+  const WIN={x:792,y:390,w:112,h:98};   // de raamopening: buiten het raam zie je de duif niet meer
+  await new Promise(res=>{const t0=performance.now();(function f(now){const t=Math.floor((now-t0)/F25)*F25;
+    let bx,by,sc,op=1,ang=0,sv,sw,sf,clip=false;const ph=t/1000*HZ*Math.PI*2;
+    if(t<D){const p=t/D,e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;[bx,by]=path(e);const [ax,ay]=path(Math.min(1,e+.03));
+      ang=Math.atan2(ay-by,-(ax-bx))*180/Math.PI;sc=BASE*(1-.38*e);
+      const g=sm(.72,.92,p)*.65;   // zachte overgang van slaan naar zweven bij het raam (geen sprong)
+      const amp=1-g;sv=Math.cos(ph)*amp+.45*g;sw=10+14*Math.sin(ph)*amp+6*g;sf=Math.cos(ph-.45)*amp+.4*g;by-=Math.sin(ph)*4*sc*amp;}
+    else{   // door het raam naar buiten: blijft rustig doorvliegen, wordt kleiner en lost op in het licht
+      const q=Math.min(1,(t-D)/OUT),eq=q*q*(3-2*q);bx=win.x+(out.x-win.x)*eq;by=win.y+(out.y-win.y)*eq-Math.sin(ph)*1.5;
+      sc=BASE*(.62-.38*eq);op=1-sm(.35,1,q);sv=.25+.45*Math.cos(ph*.9);sw=12+8*Math.sin(ph*.9);sf=.25+.45*Math.cos(ph*.9-.45);ang=6;clip=q>.08;}
+    x.clearRect(0,0,1920,1080);x.save();
+    if(clip){x.beginPath();x.rect(WIN.x,WIN.y,WIN.w,WIN.h);x.clip();}
+    x.globalAlpha=op;x.translate(bx,by);x.rotate(Math.max(-18,Math.min(14,-ang*.5))*Math.PI/180);x.scale(sc,sc);drawDove(x,sv,sw,sf);x.restore();
+    if(t<D+OUT)requestAnimationFrame(f);else{x.clearRect(0,0,1920,1080);res();}})(performance.now());});
+  birdBusy=false;}
+async function birdFly(){if(birdBusy||birdFlown||$('start').classList.contains('show'))return;birdBusy=true;birdFlown=true;
+  const el=$('o-bird');const [x0,y0,w,h]=LAYERS.bird;const to={x:586,y:577};   // nieuwe plek: rechterhoek van het bureau
+  el.style.transition='none';flutter();
+  await new Promise(res=>{const t0=performance.now(),D=1900;(function f(now){now=step12(now-t0)+t0;const p=Math.min(1,(now-t0)/D),e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+    const cx=(x0+to.x)/2,cy=Math.min(y0,to.y)-260;   // boog omhoog door de kamer
+    const bx=(1-e)*(1-e)*x0+2*(1-e)*e*cx+e*e*to.x, by=(1-e)*(1-e)*y0+2*(1-e)*e*cy+e*e*to.y;
+    const flap=p<.95?1+.22*((Math.round(now/FPS12)%2)?1:-1):1, tilt=(p<.5?-12:8)*Math.sin(Math.PI*p);
+    el.style.transform=`translate(${bx-x0}px,${by-y0}px) rotate(${tilt}deg) scale(1,${flap})`;
+    if(p<1)requestAnimationFrame(f);else res();})(performance.now());});
+  // vast op de nieuwe plek zetten; de bewegingsclip schuift mee
+  const dx=to.x-x0,dy=to.y-y0;LAYERS.bird=[to.x,to.y,w,h];Object.assign(el.style,{left:to.x+'px',top:to.y+'px',transform:''});
+  const r=CLIPS.pigeon.rect;CLIPS.pigeon.rect=[r[0]+dx,r[1]+dy,r[2],r[3]];
+  setTimeout(()=>{el.style.transition='';},50);birdBusy=false;}
+// de duif beweegt maar af en toe; één keer (na ongeveer een halve minuut) vliegt hij weg
+// de duif beweegt alleen even tijdens hoofdstuk 1 (wordt gestart vanuit openChapter)
+
+
+/* ===== Geld op tafel wordt geteld: biljetten gaan één voor één van de stapel naar een nieuw stapeltje ===== */
+const countMoney=(function(){const cv=$('count'),x=cv.getContext('2d');x.scale(2,2);   // 2x scherp; lokaal 360x180, linksboven = (1400,900) in de kamer
+  let bill=null;const img=$('o-money');
+  const mk=()=>{const c=document.createElement('canvas');c.width=52;c.height=30;const g=c.getContext('2d');g.drawImage(img,5,5,52,30,0,0,52,30);bill=c;};
+  if(img.complete)mk();else img.addEventListener('load',mk,{once:true});
+  let on=false,raf=0,fly=[],pile=[],lastSpawn=0,fade=1;
+  const FROM=[180,118],TO=[78,142];   // van de bovenkant van de stapel naar links ervoor op tafel
+  function flick(){const c=ac();if(!c||muted)return;const len=Math.floor(c.sampleRate*.07),b=c.createBuffer(1,len,c.sampleRate),d=b.getChannelData(0);
+    for(let i=0;i<len;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2);const s=c.createBufferSource(),f=c.createBiquadFilter(),g=c.createGain();
+    s.buffer=b;f.type='highpass';f.frequency.value=2500;g.gain.value=.12;s.connect(f).connect(g).connect(c.destination);s.start();}
+  function drawBill(cx,cy,rot,sy,shade,alpha){if(!bill)return;x.save();x.globalAlpha=alpha;x.translate(cx,cy);x.rotate(rot);x.scale(1,Math.max(.06,Math.abs(sy)));
+    x.drawImage(bill,-26,-15);if(shade>0){x.fillStyle=`rgba(20,30,20,${shade})`;x.fillRect(-26,-15,52,30);}x.restore();}
+  function frame(now){now=step12(now);x.clearRect(0,0,360,180);
+    if(on&&now-lastSpawn>430){lastSpawn=now;fly.push({t0:now,r:(Math.random()-.5)*.25});}
+    if(!on)fade=Math.max(0,fade-.025);
+    for(const p of pile)drawBill(p.x,p.y,p.r,1,0,fade);
+    fly=fly.filter(b=>{const t=Math.min(1,(now-b.t0)/520),e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+      const px=FROM[0]+(TO[0]-FROM[0])*e,py=FROM[1]+(TO[1]-FROM[1])*e-Math.sin(Math.PI*e)*38-pile.length*.9*e;
+      const sy=Math.cos(Math.PI*e);drawBill(px,py,-.15+b.r*e+Math.sin(Math.PI*e)*.35,sy,sy<0?.25:0,fade);   // biljet draait om tijdens het tellen
+      if(t>=1){pile.push({x:TO[0]+(Math.random()-.5)*5,y:TO[1]-pile.length*.9,r:b.r+(Math.random()-.5)*.12});flick();if(pile.length>14)pile.shift();return false;}return true;});
+    if(on||fade>0)raf=requestAnimationFrame(frame);else{pile=[];fly=[];x.clearRect(0,0,360,180);}}
+  return function(start){if(start){on=true;fade=1;pile=[];fly=[];lastSpawn=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(frame);}else{on=false;}};})();
+
+
+/* ===== Plantje op het bureau dat langzaam groeit (met het verhaal mee) ===== */
+(function(){return;   // plant vervangen door de krijtstreepjes hieronder
+  const cv=$('plant'),x=cv.getContext('2d');x.scale(2,2);
+  const BASE=[150,290];                       // onderkant van de pot (lokaal); staat op de vloer voor het bureau
+  let r=11;const R=()=>{r=(r*16807)%2147483647;return r/2147483647;};
+  // stelen: richting, lengte, wanneer ze beginnen te groeien
+  const STEMS=[];for(let i=0;i<12;i++){const a=-Math.PI/2+(i-5.5)*.15+(R()-.5)*.2;STEMS.push({a,len:60+R()*130,start:i/14*.55,bend:(R()-.5)*.9,leaves:[]});
+    const n=8+Math.floor(R()*5);for(let j=0;j<n;j++)STEMS[i].leaves.push({at:.15+j/(n)*.85,side:j%2?1:-1,size:12+R()*11,tilt:.4+R()*.6});}
+  let g=0,target=.08;const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  window.__plant=t=>{target=t;};window.__plantNow=t=>{target=t;g=t;};let plt=performance.now();
+  const INK='#1b1712';
+  function leaf(px,py,ang,size,k){if(k<=0)return;const L=size*k,W=L*.42;x.save();x.translate(px,py);x.rotate(ang);
+    const gr=x.createLinearGradient(0,-W,0,W);gr.addColorStop(0,'#71894e');gr.addColorStop(.55,'#506836');gr.addColorStop(1,'#344722');
+    x.beginPath();x.moveTo(0,0);x.quadraticCurveTo(L*.45,-W,L,0);x.quadraticCurveTo(L*.45,W,0,0);x.closePath();x.fillStyle=gr;x.fill();
+    x.lineWidth=1.1;x.strokeStyle=INK;x.stroke();x.beginPath();x.moveTo(1,0);x.lineTo(L*.85,0);x.lineWidth=.6;x.strokeStyle='rgba(27,23,18,.55)';x.stroke();x.restore();}
+  function pot(){const [bx,by]=BASE;x.save();
+    x.beginPath();x.moveTo(bx-16,by);x.lineTo(bx+16,by);x.lineTo(bx+21,by-30);x.lineTo(bx-21,by-30);x.closePath();
+    const gr=x.createLinearGradient(bx-21,0,bx+21,0);gr.addColorStop(0,'#4f2e20');gr.addColorStop(.35,'#7e4f34');gr.addColorStop(1,'#3e241a');x.fillStyle=gr;x.fill();x.lineWidth=1.4;x.strokeStyle=INK;x.stroke();
+    x.beginPath();x.rect(bx-24,by-36,48,8);const g2=x.createLinearGradient(bx-24,0,bx+24,0);g2.addColorStop(0,'#5a3424');g2.addColorStop(.4,'#8c5a3c');g2.addColorStop(1,'#46291c');x.fillStyle=g2;x.fill();x.stroke();
+    x.beginPath();x.ellipse(bx,by-36,22,3.2,0,0,Math.PI*2);x.fillStyle='#2a2119';x.fill();
+    x.beginPath();x.ellipse(bx,by+1,20,3,0,0,Math.PI*2);x.fillStyle='rgba(0,0,0,.35)';x.fill();x.restore();}
+  let pst=-1,pk=0;function draw(now){now=step12(now);if(now===pst||(LITE&&Math.abs(target-g)<.002&&(pk^=1))){if(now!==pst)pst=now;requestAnimationFrame(draw);return;}pst=now;const dt=Math.min(.2,(now-plt)/1000);plt=now;g+=(target-g)*(RM?1:1-Math.exp(-dt/2.4));   // groeit zichtbaar in ~6-8 s naar het doel toe
+    const T=now/1000;x.clearRect(0,0,300,300);const top=[BASE[0],BASE[1]-37];
+    for(const s of STEMS){const k=Math.max(0,Math.min(1,(g-s.start)/(1-s.start)));if(k<=0)continue;
+      const len=s.len*Math.pow(k,.8),sway=Math.sin(T*.7+s.a*3)*.035*k;
+      const ang=s.a+sway,ex=top[0]+Math.cos(ang)*len,ey=top[1]+Math.sin(ang)*len,cx=top[0]+Math.cos(ang+s.bend*.5)*len*.5,cy=top[1]+Math.sin(ang+s.bend*.5)*len*.5;
+      x.beginPath();x.moveTo(top[0],top[1]);x.quadraticCurveTo(cx,cy,ex,ey);x.lineWidth=2.2;x.strokeStyle=INK;x.stroke();x.lineWidth=1.1;x.strokeStyle='#5b7338';x.stroke();
+      for(const l of s.leaves){const lk=Math.max(0,Math.min(1,(k-l.at+.25)/.25));if(lk<=0)continue;const t=l.at;
+        const px=(1-t)*(1-t)*top[0]+2*(1-t)*t*cx+t*t*ex,py=(1-t)*(1-t)*top[1]+2*(1-t)*t*cy+t*t*ey;
+        leaf(px,py,ang+l.side*(.9+l.tilt*.5)+Math.sin(T*1.1+t*5)*.05,l.size*(.6+.4*k),lk);}
+      leaf(ex,ey,ang+Math.sin(T*.9)*.06,9*k,Math.min(1,k*2));}
+    pot();requestAnimationFrame(draw);}
+  requestAnimationFrame(draw);})();
+
+for(let i=34;i<=39;i++){const im=new Image();im.src='assets/bird_h'+i+'.png';}
+
+/* ===== Laatste hoofdstuk: de duif vliegt weg (tussenshot in de stijl van de tekening, 12 beelden per seconde) ===== */
+const cineV=$('cineV');cineV.muted=true;cineV.playsInline=true;
+// liggend scherm: breed filmshot; staand scherm (telefoon rechtop): verticale versie die de duif volgt
+function cineSrc(){const want='birdout'+(innerHeight>innerWidth?'_v':'')+(useWebm(cineV)?'.webm':'.mp4');
+  if(!cineV.src.endsWith('/'+want)){cineV.src='assets/'+want;cineV.load();return true;}return false;}
+let cineLoading=false;function loadCine(){if(cineLoading)return;cineLoading=true;cineV.preload='auto';cineSrc();cineV.load();}
+// camera-beweging in de kamer (inzoomen op de duif), zodat de kamer naadloos overgaat in het filmshot
+function camTo(z,dx,dy,cx,cy,ms){return new Promise(res=>{const from=Object.assign({z:1,dx:0,dy:0,cx,cy},window.CAM||{}),t0=performance.now();
+  (function f(now){const p=Math.min(1,(now-t0)/ms),e=p<.5?4*p*p*p:1-Math.pow(-2*p+2,3)/2;
+    window.CAM={z:from.z+(z-from.z)*e,dx:from.dx+(dx-from.dx)*e,dy:from.dy+(dy-from.dy)*e,cx,cy};fit();if(p<1)requestAnimationFrame(f);else res();})(performance.now());});}
+const CINE_START=.4;   // eerste beeld waarin de duif helemaal in beeld op de bedrand zit
+async function birdCine(){const box=$('cine');
+  loadCine();if(cineSrc())cineV.load();
+  if(cineV.readyState<4)await new Promise(r=>{cineV.addEventListener('canplaythrough',()=>r(),{once:true});setTimeout(r,4000);});
+  await new Promise(r=>{const d=()=>r();cineV.addEventListener('seeked',d,{once:true});setTimeout(d,700);try{cineV.currentTime=CINE_START}catch(e){d();}});
+  // de duif in de kamer: midden van het lijf; in het filmshot zit hij op ongeveer (1450,580)
+  const [bx,by,bw,bh]=LAYERS.bird,P={x:bx+bw*.5,y:by+bh*.55},Q={x:1690,y:660};
+  const zoomP=camTo(1.8,0,0,P.x,P.y,1300);   // inzoomen op de duif zelf: hij blijft op elk scherm in beeld
+  await sleep(850);box.classList.add('on');await zoomP;
+  if(!muted&&actx)real('bird',()=>{chirp(.12);setTimeout(()=>flutter(),1000);setTimeout(()=>chirp(.07),2600);});
+  const p=cineV.play();if(p)p.catch(()=>{});
+  await new Promise(r=>{const done=()=>r();cineV.addEventListener('ended',done,{once:true});setTimeout(done,((cineV.duration||5)-CINE_START)*1000+800);});
+  $('o-bird').classList.add('gone');window.CAM=null;fit();   // terug in de kamer: camera weer normaal, duif weg
+  box.classList.remove('on');await sleep(750);}
+
+/* ===== Scherm ===== */
+fit();
+$('rotateOk').onclick=()=>{rotateOk=true;fit();};
+{const fb=$('fs');const can=document.fullscreenEnabled||document.webkitFullscreenEnabled;fb.hidden=!can;
+ fb.onclick=async()=>{try{if(document.fullscreenElement||document.webkitFullscreenElement){(document.exitFullscreen||document.webkitExitFullscreen).call(document);}
+   else{const el=document.documentElement;await (el.requestFullscreen||el.webkitRequestFullscreen).call(el);}}catch(e){fb.hidden=true;}};
+ document.addEventListener('fullscreenchange',()=>{fb.textContent=document.fullscreenElement?'Window':'Fullscreen';setTimeout(fit,50);});}
+
+/* ===== Laden ===== */
+const sb=$('startBtn'),bar=document.querySelector('#loadbar span');let loaded=0;const total=Object.keys(vids).length;
+function tick(){loaded++;bar.style.width=(loaded/total*100)+'%';if(loaded>=total){sb.disabled=false;sb.textContent='Start';}}
+for(const v of Object.values(vids)){let f=false;const ok=()=>{if(!f){f=true;tick();}};v.addEventListener('canplaythrough',ok,{once:true});v.addEventListener('error',ok,{once:true});setTimeout(ok,8000);v.load();}
+sb.onclick=()=>{unlockAudio();loadSounds();loadAmb();amb('room',4);pigeonAudio.load();
+  // iPhone: video's één keer starten binnen de klik, anders weigert Safari ze later af te spelen
+  // meteen weer pauzeren (zelfde moment): telt als ontgrendeld, maar de telefoon hoeft niet negen video's tegelijk af te spelen
+  for(const v of Object.values(vids)){try{const q=v.play();v.pause();if(q)q.catch(()=>{});}catch(e){}}
+  try{const q=cineV.play();cineV.pause();if(q)q.catch(()=>{});}catch(e){}
+ $('start').classList.remove('show');reset();setTimeout(()=>birdMove(),2000);};   // de duif beweegt één keer aan het begin
+refresh();
+
+/* ===== Krijtstreepjes op de muur: Sam telt de dagen. Bij elk hoofdstuk komen er streepjes bij. ===== */
+(function(){return;   // vervangen door de scheurkalender
+  const cv=$('tally'),x=cv.getContext('2d');x.scale(2,2);
+  // waarde t (0..1, zelfde als de oude plant) -> aantal streepjes
+  const MAP=[[0,2],[.12,3],[.35,5],[.51,12],[.675,22],[.84,37],[1,58]];
+  const cnt=t=>{for(let i=1;i<MAP.length;i++)if(t<=MAP[i][0]){const [a,ca]=MAP[i-1],[b,cb]=MAP[i];return ca+(cb-ca)*(t-a)/(b-a);}return MAP[MAP.length-1][1];};
+  let g=.12,target=.12;window.__plant=t=>{target=t;};window.__plantNow=t=>{target=t;g=t;};
+  // vaste 'hand': elk streepje een beetje anders, maar altijd hetzelfde
+  let r=7;const R=()=>{r=(r*16807)%2147483647;return r/2147483647;};
+  const MK=[];const PER=20,SP=8.2,GAP=12,H=25,ROW=34;
+  for(let i=0;i<60;i++){const row=Math.floor(i/PER),k=i%PER,grp=Math.floor(k/5),inG=k%5;
+    const x0=6+grp*(4*SP+GAP)+(inG<4?inG*SP:0)+row*3,y0=8+row*ROW;
+    if(inG<4)MK.push({a:[x0+(R()-.5)*1.5,y0+(R()-.5)*2],b:[x0+(R()-.5)*2.5,y0+H+(R()-.5)*2],j:R()});
+    else MK.push({a:[x0-SP*.6-2,y0+H*.78+(R()-.5)*2],b:[x0+3*SP+3,y0+H*.2+(R()-.5)*2],j:R()});}
+  function chalk(ax,ay,bx,by,p,j){if(p<=0)return;const ex=ax+(bx-ax)*p,ey=ay+(by-ay)*p;
+    for(let s=0;s<3;s++){x.beginPath();x.moveTo(ax+(s-1)*.55,ay+(j*2-1)*.4);x.lineTo(ex+(s-1)*.5,ey);x.lineWidth=s===1?2:1;
+      x.strokeStyle=s===1?'rgba(226,219,204,.78)':'rgba(226,219,204,.32)';x.stroke();}
+    // korrelige krijtrand
+    const n=Math.floor(8*p);for(let q=0;q<n;q++){const u=(q+.5)/8;x.fillStyle='rgba(30,26,22,.35)';x.fillRect(ax+(bx-ax)*u+(j-.5)*1.2,ay+(by-ay)*u,1,1.2);}}
+  let last=-1,lt=performance.now();
+  function draw(now){const st=step12(now);if(st===last){requestAnimationFrame(draw);return;}last=st;
+    const dt=Math.min(.25,(now-lt)/1000);lt=now;
+    const prev=g;g+=(target-g)*(1-Math.exp(-dt/2.2));if(Math.abs(target-g)<.0005)g=target;
+    const cN=cnt(g);if(Math.abs(cN-(draw.c??-1))>1e-4){draw.c=cN;
+      x.setTransform(2,0,0,2,0,0);x.clearRect(0,0,300,150);
+      x.setTransform(2,2*.17,0,2,0,0);   // schuin mee met de linkermuur (loopt naar rechts omhoog)
+      const c=cnt(g);
+      for(let i=0;i<MK.length;i++){const p=Math.max(0,Math.min(1,c-i));if(p<=0)break;const m=MK[i];chalk(m.a[0],m.a[1],m.b[0],m.b[1],p,m.j);}}
+    requestAnimationFrame(draw);}
+  requestAnimationFrame(draw);})();
+
+/* ===== Scheurkalender op de muur: bij elk hoofdstuk scheuren er blaadjes af en dwarrelen naar beneden ===== */
+(function(){return;   // vervangen door het schoolbord
+  const cv=$('cal'),x=cv.getContext('2d');
+  const DATES=[[.12,'MARCH',2],[.35,'MARCH',3],[.51,'MARCH',14],[.675,'AUGUST',2],[.84,'JANUARY',19],[1,'NOVEMBER',30]];
+  const MON=['JANUARY','FEBRUARY','MARCH','APRIL','MAY','JUNE','JULY','AUGUST','SEPTEMBER','OCTOBER','NOVEMBER','DECEMBER'];
+  const at=t=>{let d=DATES[0];for(const q of DATES)if(t>=q[0]-1e-4)d=q;return d;};
+  let cur=at(.12),falling=[],stubs=0,queue=[];
+  window.__plant=t=>{const d=at(t);if(d!==cur&&d[0]>cur[0]){tearTo(d);}};
+  window.__plantNow=t=>{cur=at(t);falling=[];queue=[];dirty=true;};
+  // blaadjes tussen de oude en nieuwe datum (een paar snel na elkaar, de laatste is de nieuwe datum)
+  function tearTo(d){const n=d===DATES[2]?3:6;const m0=MON.indexOf(cur[1]),m1=MON.indexOf(d[1]);let span=(m1-m0+12)%12;
+    for(let k=1;k<=n;k++){const last=k===n;const mm=last?d[1]:MON[(m0+Math.round(span*k/n)+12)%12];const dd=last?d[2]:1+Math.floor(Math.random()*28);
+      queue.push({at:performance.now()+k*260,date:last?d:[0,mm,dd]});}
+    if(!muted&&actx)for(let k=1;k<=n;k++)setTimeout(()=>{try{rustle();}catch(e){}},k*260);}
+  const PX=40,PY=30,PW=130,PH=165,HEAD=38;   // papier (lokaal, in podium-pixels)
+  function sheet(m,d,alpha=1){x.save();x.globalAlpha*=alpha;
+    const g=x.createLinearGradient(0,0,PW,PH);g.addColorStop(0,'#ddd3bd');g.addColorStop(1,'#b8ab90');
+    x.fillStyle=g;x.fillRect(0,0,PW,PH);x.fillStyle='#7a281f';x.fillRect(0,0,PW,HEAD);
+    x.fillStyle='rgba(0,0,0,.08)';x.fillRect(0,HEAD,PW,3);
+    x.fillStyle='#f3ead8';x.font='600 16px Georgia,serif';x.textAlign='center';x.textBaseline='middle';x.fillText(m,PW/2,HEAD/2+1);
+    x.fillStyle='#231d17';x.font='700 82px Georgia,serif';x.fillText(String(d),PW/2,HEAD+(PH-HEAD)/2+4);
+    x.strokeStyle='#1b1712';x.lineWidth=1.6;x.strokeRect(0,0,PW,PH);x.restore();}
+  let dirty=true,lastSt=-1;
+  function draw(now){const st=step12(now);
+    while(queue.length&&queue[0].at<=now){const q=queue.shift();falling.push({m:cur[1],d:cur[2],t0:now,sx:(Math.random()-.5)*60,rot:(Math.random()<.5?-1:1)*(1.2+Math.random())});cur=q.date;stubs=Math.min(14,stubs+1);dirty=true;}
+    if(st===lastSt||(!dirty&&!falling.length)){requestAnimationFrame(draw);return;}lastSt=st;dirty=false;
+    x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,cv.width,cv.height);
+    x.setTransform(2,2*.15,0,2,0,0);   // mee met de linkermuur
+    // schaduw op de muur
+    x.fillStyle='rgba(0,0,0,.28)';x.fillRect(PX+6,PY+8,PW,PH);
+    x.save();x.translate(PX,PY);sheet(cur[1],cur[2]);
+    // afgescheurde randjes bovenaan
+    for(let k=0;k<stubs;k++){x.fillStyle=k%2?'#e6dcc6':'#d9cdb4';const y=-2-k*.0;x.beginPath();x.moveTo(0,y);for(let u=0;u<=PW;u+=6)x.lineTo(u,y+3+((u*7+k*13)%5));x.lineTo(PW,y);x.closePath();x.fill();}
+    x.restore();
+    // spijker / ophanging
+    x.fillStyle='#2a2119';x.fillRect(PX+PW/2-14,PY-6,28,8);x.beginPath();x.arc(PX+PW/2,PY-12,3.2,0,Math.PI*2);x.fill();
+    // vallende blaadjes (12 per seconde)
+    const keep=[];for(const f of falling){const p=Math.min(1,(st-f.t0)/1100);if(p<1)keep.push(f);
+      const e=p*p;x.save();x.translate(PX+PW/2+f.sx*p+Math.sin(p*7)*14,PY+PH/2+e*230);x.rotate(f.rot*e+Math.sin(p*6)*.15);x.scale(1,1-.35*Math.abs(Math.sin(p*5)));
+      x.translate(-PW/2,-PH/2);sheet(f.m,f.d,p>.65?1-(p-.65)/.35:1);x.restore();}
+    falling=keep;if(falling.length)dirty=true;
+    requestAnimationFrame(draw);}
+  requestAnimationFrame(draw);})();
+
+/* ===== Schoolbord uit de tekening: in het begin schoongeveegd; bij elk hoofdstuk komt er krijt bij
+   (Sam leert, de tijd gaat voorbij). Aan het einde is het bord weer precies zoals in de tekening. ===== */
+(function(){const cv=$('board'),x=cv.getContext('2d'),img=new Image();img.src='assets/board_clean.png';
+  // stukken van het bord (lokaal, podium-pixels) en wanneer ze verschijnen
+  const REG=[[.35,135,30,145,90],[.51,32,135,173,135],[.675,45,268,100,57],[.675,155,258,125,142],[.675,190,108,90,152],[.84,32,403,148,142],[.84,170,388,110,157]];
+  let target=.12,shown={},dirty=true,lastSt=-1,full=0,fullT=null;
+  const want=t=>REG.map((r,i)=>t>=r[0]-1e-4?i:-1).filter(i=>i>=0);
+  function apply(t,instant){const now=performance.now();let k=0;for(const i of want(t))if(!(i in shown)){shown[i]=instant?-1e9:now+k*900;k++;}
+    if(t>=.999&&fullT===null)fullT=instant?-1e9:now+k*900+600;dirty=true;
+    if(!instant&&k&&!muted&&actx)for(let q=0;q<k;q++)chalkSnd(q*.9);}
+  window.__plant=t=>{if(t>target){target=t;apply(t,false);}};
+  window.__plantNow=t=>{target=t;shown={};fullT=null;apply(t,true);};
+  function chalkSnd(at){const c=actx;if(!c)return;for(let j=0;j<7;j++){const t0=c.currentTime+at+j*.11+Math.random()*.05;
+    const s=nz(c,.07+Math.random()*.06,p=>Math.sin(Math.PI*p)*(.5+.5*Math.random())),f=c.createBiquadFilter();f.type='bandpass';f.frequency.value=3200+Math.random()*1800;f.Q.value=1.4;
+    const g=c.createGain();g.gain.value=.05;s.connect(f).connect(g).connect(c.destination);s.start(t0);}}
+  img.onload=()=>{dirty=true;};
+  function draw(now){const st=step12(now);let anim=false;
+    if(img.complete&&img.naturalWidth&&(dirty||st!==lastSt)){
+      const prog={};for(const i in shown){const p=Math.max(0,Math.min(1,(now-shown[i])/1600));prog[i]=p;if(p<1)anim=true;}
+      let fa=fullT===null?0:Math.max(0,Math.min(1,(now-fullT)/1800));if(fullT!==null&&fa<1)anim=true;
+      if(dirty||anim){lastSt=st;dirty=false;x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,560,1200);
+        if(fa<1){x.globalAlpha=1-fa;x.drawImage(img,0,0,560,1200);x.globalAlpha=1;
+          x.setTransform(2,0,0,2,0,0);x.globalCompositeOperation='destination-out';
+          for(const i in prog){const [,rx,ry,rw,rh]=REG[i],p=prog[i];if(p<=0)continue;
+            // 'schrijven': van linksboven naar rechtsonder vrijgeven, met zachte rand
+            const L=rw+rh*.6,front=p*(L+30);const g=x.createLinearGradient(rx,ry,rx+L*.86,ry+L*.5);
+            const a=Math.max(0,Math.min(1,(front-30)/L)),b=Math.max(0,Math.min(1,front/L));
+            g.addColorStop(0,'rgba(0,0,0,1)');g.addColorStop(a,'rgba(0,0,0,1)');g.addColorStop(Math.max(a,b),'rgba(0,0,0,0)');g.addColorStop(1,'rgba(0,0,0,0)');
+            x.fillStyle=g;x.beginPath();if(x.roundRect)x.roundRect(rx,ry,rw,rh,10);else x.rect(rx,ry,rw,rh);x.fill();}
+          x.globalCompositeOperation='source-over';}}}
+    requestAnimationFrame(draw);}
+  requestAnimationFrame(draw);})();
+
+/* ===== Stapel brieven en formulieren op het bureau: bij elk hoofdstuk komt er post bij ===== */
+(function(){const cv=$('stack'),x=cv.getContext('2d');
+  const MAP=[[0,1],[.12,1],[.35,2],[.51,5],[.675,9],[.84,14],[1,19]];
+  const want=t=>{let n=1;for(const [a,c] of MAP)if(t>=a-1e-4)n=c;return n;};
+  let r=5;const R=()=>{r=(r*16807)%2147483647;return r/2147483647;};
+  const KINDS=[{f:'#cfc8b8',lines:1},{f:'#bfae8c',env:1},{f:'#d6cfc0',lines:1,stamp:1},{f:'#9f845b',env:1},{f:'#c4c8ca',lines:1},{f:'#cdc2ae',env:1,stamp:1}];
+  const IT=[];for(let i=0;i<20;i++){const k=KINDS[Math.floor(R()*KINDS.length)];IT.push({k,w:70+R()*16,h:90+R()*12,rot:(R()-.5)*.5,dx:(R()-.5)*14,dy:(R()-.5)*6});}
+  let shown=1,drops=[],dirty=true,lastSt=-1;
+  function chain(t,instant){const n=want(t);if(n<=shown){return;}const now=performance.now();
+    for(let i=shown;i<n;i++)drops.push({i,t0:instant?-1e9:now+(i-shown)*380});
+    if(!instant&&!muted&&actx)for(let i=0;i<n-shown;i++)setTimeout(()=>{try{rustle();}catch(e){}},i*380+250);shown=n;dirty=true;}
+  const p0=window.__plant,p1=window.__plantNow;
+  window.__plant=t=>{p0&&p0(t);chain(t,false);};
+  window.__plantNow=t=>{p1&&p1(t);shown=1;drops=[];chain(t,true);};
+  const BX=120,BY=170,TH=2.6;   // onderkant van de stapel (lokaal) en dikte per vel
+  function item(it,lift,alpha){const k=it.k;x.save();x.globalAlpha=alpha;
+    // bovenaanzicht op het schuine bureaublad: draaien, dan plat drukken
+    x.translate(0,-lift);x.scale(1,.42);x.rotate(-.26+it.rot);
+    const w=it.w,h=it.h;x.fillStyle='rgba(0,0,0,.25)';x.fillRect(-w/2+3,-h/2+5,w,h);
+    x.fillStyle=k.f;x.fillRect(-w/2,-h/2,w,h);x.lineWidth=2;x.strokeStyle='#1b1712';x.strokeRect(-w/2,-h/2,w,h);
+    if(k.env){x.beginPath();x.moveTo(-w/2,-h/2);x.lineTo(0,-h*.05);x.lineTo(w/2,-h/2);x.lineWidth=1.4;x.strokeStyle='rgba(27,23,18,.6)';x.stroke();}
+    if(k.lines){x.strokeStyle='rgba(40,34,28,.45)';x.lineWidth=2.2;for(let j=0;j<7;j++){const yy=-h/2+16+j*11;x.beginPath();x.moveTo(-w/2+10,yy);x.lineTo(w/2-10-(j%3)*12,yy);x.stroke();}}
+    if(k.stamp){x.strokeStyle='rgba(150,36,28,.8)';x.lineWidth=2.5;x.strokeRect(w/2-34,h/2-24,26,16);}
+    x.restore();}
+  function draw(now){const st=step12(now);const anim=drops.some(d=>now-d.t0<700);
+    if((dirty||anim)&&st!==lastSt){lastSt=st;dirty=false;x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,480,440);x.setTransform(2,0,0,2,0,0);
+      const fall={};for(const d of drops)fall[d.i]=Math.max(0,Math.min(1,(now-d.t0)/700));
+      for(let i=0;i<shown;i++){const it=IT[i];let p=i in fall?fall[i]:1;if(p<=0)continue;const e=1-Math.pow(1-p,3);
+        x.save();x.translate(BX+it.dx+(1-e)*-30,BY+it.dy*.4);item(it,i*TH+(1-e)*60,Math.min(1,p*2));x.restore();}
+      drops=drops.filter(d=>now-d.t0<700);}
+    requestAnimationFrame(draw);}
+  requestAnimationFrame(draw);})();
+/* ===== Als de kijker een tijdje niets doet, wordt Sam even onrustig (denkt na, kijkt om zich heen) ===== */
+let idleT=performance.now(),reacting=false,reactAbort=null;
+const poke=()=>{idleT=performance.now();};
+addEventListener('pointerdown',poke,{passive:true});addEventListener('keydown',poke);addEventListener('pointermove',poke,{passive:true});
+function stopReact(){if(!reacting)return;reacting=false;if(reactAbort)reactAbort();reactAbort=null;show('idle',250);hide('think',250);try{vids.think.pause();}catch(e){}}
+setInterval(async()=>{if(busy||!introSeen||phase!=='room')idleT=performance.now();   // de wachttijd telt pas als de kijker vrij is
+  if(reacting||busy||!introSeen||phase!=='room'||document.hidden||done.size>=CHAPTERS.length)return;
+  if($('card').classList.contains('show')||$('end').classList.contains('show'))return;
+  if(performance.now()-idleT<15000)return;
+  reacting=true;idleT=performance.now();
+  const v=await start('think');if(!reacting)return;show('think',450);hide('idle',450);
+  if(!muted&&actx)setTimeout(()=>{if(reacting)sfx('cloth');},400);
+  await Promise.race([ended(v),new Promise(r=>{reactAbort=r;})]);
+  if(reacting){reacting=false;reactAbort=null;show('idle',450);hide('think',450);idleT=performance.now();}},1000);
+</script>
+
+</body></html>

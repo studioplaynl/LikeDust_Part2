@@ -1,0 +1,14 @@
+{
+  "appId": "com.likedust.wabtsa",
+  "appName": "We All Breathe the Same Air",
+  "webDir": "www",
+  "backgroundColor": "#000000",
+  "ios": {
+    "contentInset": "never",
+    "allowsLinkPreview": false
+  },
+  "android": {
+    "backgroundColor": "#000000",
+    "allowMixedContent": true
+  }
+}

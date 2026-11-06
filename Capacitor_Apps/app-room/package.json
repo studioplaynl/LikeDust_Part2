@@ -1,0 +1,19 @@
+{
+  "name": "we-all-breathe-the-same-air",
+  "version": "1.0.0",
+  "private": true,
+  "description": "We All Breathe the Same Air — Flat 2D Room (Three.js) integrated with Interactive Video Chapters",
+  "scripts": {
+    "sync": "npx cap sync",
+    "open:ios": "npx cap open ios",
+    "open:android": "npx cap open android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^7.0.0",
+    "@capacitor/core": "^7.0.0",
+    "@capacitor/ios": "^7.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^7.0.0"
+  }
+}

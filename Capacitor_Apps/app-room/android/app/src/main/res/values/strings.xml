@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">We All Breathe the Same Air</string>
+    <string name="title_activity_main">We All Breathe the Same Air</string>
+    <string name="package_name">com.likedust.wabtsa</string>
+    <string name="custom_url_scheme">com.likedust.wabtsa</string>
+</resources>

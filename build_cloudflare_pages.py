@@ -3,9 +3,8 @@
 Prepares the static directory ready for Cloudflare Pages deployment.
 
 Target output directory: dist_pages/
-  ├── index.html                     (Static Cloudflare review dashboard)
-  ├── herinneringskamer/             (Room 1 www build)
-  └── zolderkamer/                   (Room 2 www build)
+  ├── index.html   (Static Cloudflare review dashboard)
+  └── room/        (We All Breathe the Same Air — Flat 2D Three.js Room + Video Chapters)
 """
 
 import shutil
@@ -20,7 +19,8 @@ DASHBOARD_HTML = """<!doctype html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Like Dust Part 2 · Web Review Dashboard</title>
+  <title>We All Breathe the Same Air · Web Review Dashboard</title>
+  <link rel="icon" href="data:,">
   <style>
     :root {
       --bg: #0f0e0c;
@@ -45,7 +45,7 @@ DASHBOARD_HTML = """<!doctype html>
       line-height: 1.5;
       padding: 40px 20px;
     }
-    .wrap { max-width: 780px; margin: 0 auto; }
+    .wrap { max-width: 740px; margin: 0 auto; }
     header { margin-bottom: 24px; }
     .eyebrow {
       margin: 0 0 6px;
@@ -103,7 +103,6 @@ DASHBOARD_HTML = """<!doctype html>
     .mode-tip { color: var(--muted); font-size: 12px; }
     .mode-tip code { background: rgba(255, 255, 255, 0.06); padding: 1px 5px; border-radius: 4px; color: #cfc7b8; }
 
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; }
     .room-card {
       background: var(--panel);
       border: 1px solid var(--border);
@@ -115,7 +114,7 @@ DASHBOARD_HTML = """<!doctype html>
       gap: 18px;
     }
     .room-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-    .room-title { margin: 0; font-size: 19px; font-weight: 700; }
+    .room-title { margin: 0; font-size: 20px; font-weight: 700; }
     .room-appid { margin: 3px 0 0; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; color: var(--muted); }
     .room-pill { font-size: 11.5px; font-weight: 600; padding: 4px 9px; border-radius: 999px; border: 1px solid var(--border); color: var(--accent); background: rgba(214, 169, 62, 0.1); }
     .room-desc { margin: 10px 0 0; font-size: 13.5px; color: var(--muted); }
@@ -207,8 +206,8 @@ DASHBOARD_HTML = """<!doctype html>
   <div class="wrap">
     <header>
       <p class="eyebrow">We All Breathe The Same Air · Review Dashboard</p>
-      <h1>Like Dust Part 2 · Room Builds</h1>
-      <p class="subtitle">Cloudflare Pages online review for both interactive room variations.</p>
+      <h1>Like Dust Part 2 · Room Build</h1>
+      <p class="subtitle">Cloudflare Pages online review for the flat 2D Three.js room + 4 interactive video chapters.</p>
     </header>
 
     <div class="banner">
@@ -216,7 +215,7 @@ DASHBOARD_HTML = """<!doctype html>
         <span class="dot"></span>
         <span>Hosted on Cloudflare Pages</span>
       </div>
-      <div class="banner-desc">Static web review build · No local ports required</div>
+      <div class="banner-desc">Static web review build · Shared with iOS &amp; Android Capacitor app</div>
     </div>
 
     <div class="mode-bar">
@@ -227,73 +226,41 @@ DASHBOARD_HTML = """<!doctype html>
         </label>
       </div>
       <div class="mode-tip">
-        Adds <code>?dev=0</code> to room links to preview chapter icons and hide debug overlays.
+        Adds <code>?dev=0</code> to preview the 4 chapter icons and hide debug overlays.
       </div>
     </div>
 
-    <section class="grid">
-      <!-- Room 1 -->
-      <article class="room-card" id="card-v1">
-        <div>
-          <div class="room-top">
-            <div>
-              <h2 class="room-title">1. Herinneringskamer</h2>
-              <p class="room-appid">com.likedust.herinneringskamer</p>
-            </div>
-            <span class="room-pill">Variatie 1</span>
+    <article class="room-card" id="card-main">
+      <div>
+        <div class="room-top">
+          <div>
+            <h2 class="room-title">We All Breathe the Same Air</h2>
+            <p class="room-appid">com.likedust.wabtsa</p>
           </div>
-          <p class="room-desc">2.5D painted room (Layers from <code>room 2.psd</code>)</p>
+          <span class="room-pill">Flat 2D · Three.js</span>
         </div>
+        <p class="room-desc">Flat 2D room in Three.js integrated with Sam's clips &amp; the 4 interactive video chapters</p>
+      </div>
 
-        <div class="url-box">
-          <a href="./herinneringskamer/" target="_blank" rel="noopener" id="url-v1">./herinneringskamer/</a>
-          <button type="button" class="copy-btn" data-room="v1">Copy</button>
-        </div>
+      <div class="url-box">
+        <a href="./room/" target="_blank" rel="noopener" id="url-main">./room/</a>
+        <button type="button" class="copy-btn" data-room="main">Copy</button>
+      </div>
 
-        <div class="room-actions">
-          <a href="./herinneringskamer/" target="_blank" rel="noopener" class="btn-link" id="open-v1">
-            Open Herinneringskamer ↗
-          </a>
-          <button type="button" class="btn-reset" data-room="v1" title="Delete chapter progression and reset saved state for Herinneringskamer">
-            ↺ Reset Progress
-          </button>
-        </div>
-        <div class="reset-feedback" id="feedback-v1">✓ Progress reset!</div>
-      </article>
-
-      <!-- Room 2 -->
-      <article class="room-card" id="card-v2">
-        <div>
-          <div class="room-top">
-            <div>
-              <h2 class="room-title">2. Zolderkamer</h2>
-              <p class="room-appid">com.likedust.zolderkamer</p>
-            </div>
-            <span class="room-pill">Variatie 2</span>
-          </div>
-          <p class="room-desc">3D toon-shaded attic room (Three.js)</p>
-        </div>
-
-        <div class="url-box">
-          <a href="./zolderkamer/" target="_blank" rel="noopener" id="url-v2">./zolderkamer/</a>
-          <button type="button" class="copy-btn" data-room="v2">Copy</button>
-        </div>
-
-        <div class="room-actions">
-          <a href="./zolderkamer/" target="_blank" rel="noopener" class="btn-link" id="open-v2">
-            Open Zolderkamer ↗
-          </a>
-          <button type="button" class="btn-reset" data-room="v2" title="Delete chapter progression and reset saved state for Zolderkamer">
-            ↺ Reset Progress
-          </button>
-        </div>
-        <div class="reset-feedback" id="feedback-v2">✓ Progress reset!</div>
-      </article>
-    </section>
+      <div class="room-actions">
+        <a href="./room/" target="_blank" rel="noopener" class="btn-link" id="open-main">
+          Open Room App ↗
+        </a>
+        <button type="button" class="btn-reset" data-room="main" title="Delete chapter progression and reset saved state">
+          ↺ Reset Progress
+        </button>
+      </div>
+      <div class="reset-feedback" id="feedback-main">✓ Progress reset!</div>
+    </article>
 
     <footer>
-      <span>Shared origin: progress is stored in your browser's localStorage</span>
-      <span>Press <code>0</code> inside either room to reset progress at any time</span>
+      <span>Progress is stored in your browser's localStorage</span>
+      <span>Press <code>0</code> inside the room (in Dev Mode) to reset progress at any time</span>
     </footer>
   </div>
 
@@ -304,38 +271,25 @@ DASHBOARD_HTML = """<!doctype html>
       let hideDev = urlParams.get("dev") === "0" || (!urlParams.has("dev") && localStorage.getItem("pages_dev0") === "1");
       devToggle.checked = hideDev;
 
-      function getPath(roomId) {
-        return roomId === "v1" ? "./herinneringskamer/" : "./zolderkamer/";
-      }
-
-      function getFinalUrl(roomId) {
-        const base = new URL(getPath(roomId), location.href);
-        if (hideDev) {
-          base.searchParams.set("dev", "0");
-        } else {
-          base.searchParams.delete("dev");
-        }
+      function getFinalUrl() {
+        const base = new URL("./room/", location.href);
+        if (hideDev) base.searchParams.set("dev", "0");
+        else base.searchParams.delete("dev");
         return base.href;
       }
 
       function updateUrls() {
-        ["v1", "v2"].forEach(function(id) {
-          const finalUrl = getFinalUrl(id);
-          const urlEl = document.getElementById("url-" + id);
-          const openEl = document.getElementById("open-" + id);
-          const copyBtn = document.querySelector('.copy-btn[data-room="' + id + '"]');
+        const finalUrl = getFinalUrl();
+        const urlEl = document.getElementById("url-main");
+        const openEl = document.getElementById("open-main");
+        const copyBtn = document.querySelector('.copy-btn[data-room="main"]');
 
-          if (urlEl) {
-            urlEl.href = finalUrl;
-            urlEl.textContent = urlEl.href;
-          }
-          if (openEl) {
-            openEl.href = finalUrl;
-          }
-          if (copyBtn) {
-            copyBtn.setAttribute("data-copy", finalUrl);
-          }
-        });
+        if (urlEl) {
+          urlEl.href = finalUrl;
+          urlEl.textContent = urlEl.href;
+        }
+        if (openEl) openEl.href = finalUrl;
+        if (copyBtn) copyBtn.setAttribute("data-copy", finalUrl);
       }
 
       devToggle.addEventListener("change", function() {
@@ -353,24 +307,19 @@ DASHBOARD_HTML = """<!doctype html>
         updateUrls();
       });
 
-      // Reset progress directly in the shared Pages domain
-      function resetProgress(roomId) {
-        const btn = document.querySelector('.btn-reset[data-room="' + roomId + '"]');
-        const feedback = document.getElementById("feedback-" + roomId);
+      function resetProgress() {
+        const btn = document.querySelector('.btn-reset[data-room="main"]');
+        const feedback = document.getElementById("feedback-main");
         if (btn) btn.disabled = true;
 
         try {
-          // Remove room specific keys
-          localStorage.removeItem("ld2-room-" + roomId);
-          // Remove chapter progression keys
+          localStorage.removeItem("ld2-room-main");
           localStorage.removeItem("wabtsa-number");
           localStorage.removeItem("wabtsa-line");
           localStorage.removeItem("wabtsa-cc");
-
-          // Also remove any remaining keys with the prefix
           for (let i = localStorage.length - 1; i >= 0; i--) {
             const k = localStorage.key(i);
-            if (k && (k.startsWith("ld2-room-" + roomId) || k.startsWith("wabtsa-"))) {
+            if (k && (k.startsWith("ld2-room-") || k.startsWith("wabtsa-"))) {
               localStorage.removeItem(k);
             }
           }
@@ -386,10 +335,7 @@ DASHBOARD_HTML = """<!doctype html>
       }
 
       document.querySelectorAll(".btn-reset").forEach(function(btn) {
-        btn.addEventListener("click", function() {
-          const roomId = btn.getAttribute("data-room");
-          resetProgress(roomId);
-        });
+        btn.addEventListener("click", resetProgress);
       });
 
       document.querySelectorAll(".copy-btn").forEach(function(btn) {
@@ -421,23 +367,15 @@ def build_pages():
     (DIST_DIR / "index.html").write_text(DASHBOARD_HTML.strip() + "\n", encoding="utf-8")
     print("  ✓ Created dist_pages/index.html")
 
-    # 2. Copy Room 1 (Herinneringskamer)
-    v1_src = CAPACITOR_DIR / "app-v1-herinneringskamer" / "www"
-    v1_dst = DIST_DIR / "herinneringskamer"
-    print(f"  → Copying Room 1 from {v1_src.name}/www ...")
-    shutil.copytree(v1_src, v1_dst, ignore=shutil.ignore_patterns(".DS_Store", "__pycache__"))
-    print("  ✓ Created dist_pages/herinneringskamer/")
-
-    # 3. Copy Room 2 (Zolderkamer)
-    v2_src = CAPACITOR_DIR / "app-v2-zolderkamer" / "www"
-    v2_dst = DIST_DIR / "zolderkamer"
-    print(f"  → Copying Room 2 from {v2_src.name}/www ...")
-    shutil.copytree(v2_src, v2_dst, ignore=shutil.ignore_patterns(".DS_Store", "__pycache__"))
-    print("  ✓ Created dist_pages/zolderkamer/")
+    # 2. Copy unified Room www bundle
+    room_src = CAPACITOR_DIR / "app-room" / "www"
+    room_dst = DIST_DIR / "room"
+    print(f"  → Copying Room app from {room_src.parent.name}/www ...")
+    shutil.copytree(room_src, room_dst, ignore=shutil.ignore_patterns(".DS_Store", "__pycache__"))
+    print("  ✓ Created dist_pages/room/")
 
     print("\n🎉 Build complete! Ready to deploy dist_pages/ to Cloudflare Pages.")
 
 
 if __name__ == "__main__":
     build_pages()
-

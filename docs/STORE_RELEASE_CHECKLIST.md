@@ -1,27 +1,24 @@
 # Store Release Checklist
 
-Before submitting **Like Dust Part 2** to the **Apple App Store**, **Google Play Store**, or publishing to live web hosting, follow this checklist.
+Before submitting **We All Breathe the Same Air** to the **Apple App Store**, **Google Play Store**, or publishing to live web hosting, follow this checklist.
 
 ---
 
 ## 1. Disable Development Mode
 
-In `shared.js`, set `DEV_DEFAULT = false`:
+In `Capacitor_Apps/app-room/www/shared/shared.js`, set `DEV_DEFAULT = false`:
 
 ```javascript
-// File: Capacitor_Apps/app-v1-herinneringskamer/www/shared/shared.js
-// File: Capacitor_Apps/app-v2-zolderkamer/www/shared/shared.js
-// File: Kamer_Variaties/shared/shared.js
-
+// File: Capacitor_Apps/app-room/www/shared/shared.js
 const DEV_DEFAULT = false;
 ```
 
 This ensures:
-- Dev HUD bar (`DE KAMER ...` and progress dots) is hidden.
-- Chapter progress is displayed cleanly via the **4 top-right icons (passport, bicycle, bird, letter)**.
-- `← Terug naar de kamer` button inside chapters is hidden.
+- Dev HUD bar (`We All Breathe the Same Air · The Room` and progress dots) is hidden.
+- Chapter progress is displayed cleanly via the **4 top-right icons (passport, photo frame, bicycle, letter)**.
+- `← Back to the room` button inside chapters is hidden.
 - `Skip ›` button during chapter assignments is completely removed.
-- Dev keyboard shortcuts (`1-4` to mark chapters, `0` to reset) are disabled.
+- Dev keyboard shortcuts (`1–4` to toggle chapters, `0` to reset) are disabled.
 
 ---
 
@@ -30,12 +27,7 @@ This ensures:
 After making any changes in `www/`, sync them into the native iOS and Android projects:
 
 ```bash
-# Sync Room 1
-cd Capacitor_Apps/app-v1-herinneringskamer
-npm run sync
-
-# Sync Room 2
-cd ../app-v2-zolderkamer
+cd Capacitor_Apps/app-room
 npm run sync
 ```
 
@@ -45,11 +37,12 @@ npm run sync
 
 1. Open project in Xcode:
    ```bash
+   cd Capacitor_Apps/app-room
    npm run open:ios
    ```
 2. Verify **Signing & Capabilities**:
    - Ensure your Apple Developer Team is selected.
-   - Bundle Identifier: `com.likedust.zolderkamer` (or `com.likedust.herinneringskamer`).
+   - Bundle Identifier: `com.likedust.wabtsa`.
 3. Set Build Version and Number under **General > Identity**.
 4. Select `Any iOS Device (arm64)` as build destination.
 5. In menu bar: **Product > Archive**.
@@ -61,9 +54,10 @@ npm run sync
 
 1. Open project in Android Studio:
    ```bash
+   cd Capacitor_Apps/app-room
    npm run open:android
    ```
-2. Verify `versionCode` and `versionName` in `android/app/build.gradle`.
+2. Verify `applicationId` (`com.likedust.wabtsa`), `versionCode`, and `versionName` in `android/app/build.gradle`.
 3. In menu bar: **Build > Generate Signed Bundle / APK**.
 4. Select **Android App Bundle (.aab)**.
 5. Choose your release keystore, key alias, and passwords.
@@ -79,5 +73,4 @@ npm run sync
    python3 build_cloudflare_pages.py
    # or double-click ./Deploy_Cloudflare_Pages.command
    ```
-2. Deploy the generated `dist_pages/` directory via Wrangler or git push to your Cloudflare Pages project.
-
+2. Deploy the generated `dist_pages/` directory (`dist_pages/index.html` dashboard + `dist_pages/room/` app) via Wrangler or git push to your Cloudflare Pages project.
