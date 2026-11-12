@@ -1,0 +1,541 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>We All Breathe The Same Air</title>
+<link rel="icon" href="data:,">
+<meta name="description" content="We All Breathe The Same Air: interactive intro to the graphic novel by Sam Yazdanpanna.">
+<meta property="og:title" content="We All Breathe The Same Air">
+<meta property="og:description" content="We All Breathe The Same Air: interactive intro to the graphic novel by Sam Yazdanpanna.">
+<meta property="og:image" content="img/reflect.jpg">
+<meta name="theme-color" content="#000000">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="stylesheet" href="../fonts/fonts.css">
+<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;padding:0;-webkit-text-size-adjust:100%}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<style>
+/* Layout: one full-screen cinema stage. Starts immediately with the intro video (click/tap reveals chapter-style controls) → the airport window, where clicking young Sam's silhouette enters the 2D Room. */
+:root{
+  --ink:#000;
+  --steel:#151a1e;
+  --chalk:#ece8de;
+  --chalk-dim:#a3a59e;
+  --amber:#D6A93E;
+  --ochre:#D6A93E;
+  --ochre-dim:#a8873a;
+  --shade:rgba(0,0,0,.62);
+  --amber-glow:rgba(214,169,62,.5);
+  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --f-body:"Literata",Georgia,serif;
+  color-scheme:dark;
+}
+html,body{height:100%;background:var(--ink);color:var(--chalk)}
+body{overflow:hidden;font-family:var(--f-body);-webkit-user-select:none;user-select:none}
+.stage{position:fixed;inset:0;overflow:hidden;background:var(--ink)}
+.screen{position:absolute;inset:0;transition:opacity 1.2s ease}
+.screen.off{opacity:0;pointer-events:none}
+.btn{font-family:var(--f-display);font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:1rem;color:#000;background:var(--chalk);border:0;padding:14px 30px;cursor:pointer;transition:background .2s,transform .2s}
+.btn:hover{background:var(--amber);transform:translateY(-1px)}
+.ghost{font:700 .78rem var(--f-display);letter-spacing:.2em;text-transform:uppercase;color:var(--chalk);background:var(--shade);border:1px solid rgba(236,232,222,.35);padding:9px 14px;cursor:pointer;text-decoration:none;display:inline-block;backdrop-filter:blur(4px)}
+.ghost:hover,.ghost[aria-pressed="true"]{border-color:var(--ochre);color:var(--ochre)}
+.btn:focus-visible,.ghost:focus-visible,.play:focus-visible{outline:2px solid var(--ochre);outline-offset:4px}
+#young,#young:focus,#young:focus-visible{outline:none;-webkit-tap-highlight-color:transparent}
+
+/* intro video */
+#intro video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;opacity:0;transition:opacity 1s ease}
+#intro video.on{opacity:1}
+.subs{position:absolute;left:0;right:0;bottom:calc(9vh + env(safe-area-inset-bottom,0px));z-index:3;display:flex;justify-content:center;padding-inline:16px;pointer-events:none}
+.subs span{font-family:Arial,Helvetica,"Helvetica Neue",sans-serif;font-weight:700;font-size:clamp(1.1rem,2.6vw,2rem);line-height:1.3;color:var(--ochre);text-align:center;max-width:42ch;text-wrap:balance;text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,0 2px 0 #000,0 -2px 0 #000,0 0 8px rgba(0,0,0,.9);opacity:0;transition:opacity .2s linear}
+.subs span.on{opacity:1}
+
+/* chapter-style video controls (auto-hide, click/tap reveals) */
+.top{
+  position:fixed;
+  top:calc(12px + env(safe-area-inset-top,0px));
+  left:max(16px,env(safe-area-inset-left,0px));
+  right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  z-index:20;
+}
+.tools{display:flex;gap:8px;align-items:center}
+.ctl{
+  position:fixed;
+  left:0;
+  right:0;
+  bottom:0;
+  z-index:20;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:10px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:linear-gradient(to top,rgba(0,0,0,.82),rgba(0,0,0,0));
+}
+.ctl,.top{opacity:0!important;pointer-events:none!important;transition:opacity .35s ease!important}
+body.show-ctl #intro:not(.off) .ctl,
+body.show-ctl #intro:not(.off) .top{opacity:1!important;pointer-events:auto!important}
+
+.play{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  border:1px solid rgba(236,232,222,.4);
+  background:var(--shade);
+  color:var(--chalk);
+  cursor:pointer;
+  font-size:.9rem;
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+}
+.play:hover{border-color:var(--ochre);color:var(--ochre)}
+.tl{position:relative;flex:1 1 auto;height:22px;min-width:0;cursor:pointer;touch-action:none}
+.tl .rail{position:absolute;left:0;right:0;top:10px;height:2px;background:rgba(236,232,222,.2)}
+.tl .fill{position:absolute;left:0;top:10px;height:2px;background:var(--ochre);width:0}
+.time{font:600 .78rem var(--f-display);letter-spacing:.12em;color:var(--chalk-dim);font-variant-numeric:tabular-nums;flex:0 0 auto}
+.ctl .cc{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  padding:5px 7px;
+  border:0;
+  background:transparent;
+  color:var(--chalk);
+  opacity:.86;
+  flex:0 0 auto;
+  transition:color .2s,opacity .2s,filter .2s;
+}
+.ctl .cc:hover,.ctl .cc[aria-pressed="true"]{color:var(--ochre);opacity:1}
+.ctl .cc[aria-pressed="true"]{filter:drop-shadow(0 0 6px rgba(214,169,62,.45))}
+.ctl .cc svg{width:30px;height:22px;display:block}
+
+#unmute{
+  position:fixed;
+  left:50%;
+  bottom:calc(74px + env(safe-area-inset-bottom,0px));
+  transform:translateX(-50%);
+  z-index:25;
+}
+
+@media (max-height:500px) and (orientation:landscape){
+  .top{top:calc(4px + env(safe-area-inset-top,0px))}
+  .top .ghost{padding:5px 9px;font-size:.62rem}
+  .ctl{padding-top:4px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
+  .play{width:30px;height:30px}
+}
+@media (max-width:640px){
+  .ghost{padding:7px 10px;font-size:.68rem}
+  #fs{display:none!important}
+}
+
+/* window scene */
+#scene{display:grid;place-items:center}
+.wrap{position:relative;width:min(100vw,calc(100vh * 16 / 9));aspect-ratio:16/9;max-width:100%;overflow:hidden}
+.zoom{position:absolute;inset:0;animation:breathe 12s ease-in-out infinite;transform-origin:68% 40%}
+.zoom > img.bgimg{width:100%;height:100%;object-fit:cover;display:block}
+@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
+#young{position:absolute;left:48%;top:0;width:46%;height:96%;border:0;background:transparent;cursor:pointer;border-radius:45% 45% 10% 10%}
+.sil{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.88;animation:silBreathe 5s ease-in-out infinite;transition:opacity .6s ease}
+@keyframes silBreathe{0%,100%{opacity:.68}50%{opacity:1}}
+.wrap.hover .sil{animation:none;opacity:1}
+.wrap.chosen .sil{animation:none;opacity:1}
+.hint{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));font-family:var(--f-display);letter-spacing:.24em;text-transform:uppercase;font-size:.85rem;color:var(--chalk);text-shadow:0 2px 12px #000;white-space:nowrap}
+.hint b{color:var(--amber);font-weight:700}
+
+/* begin (fade to black before room) */
+#begin{display:grid;place-items:center;background:#000}
+
+/* paper + film grain laid over the picture */
+.fx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.fx .paper{position:absolute;inset:0;z-index:40;background:url(img/paper.jpg) center/cover;mix-blend-mode:soft-light;opacity:.6}
+.fx .grain{position:absolute;inset:-120px;z-index:40;background:url(img/grain.png);mix-blend-mode:overlay;opacity:.18;animation:grain .5s steps(1) infinite}
+@keyframes grain{0%{transform:translate(0,0)}17%{transform:translate(-37px,22px)}33%{transform:translate(29px,-41px)}50%{transform:translate(-18px,-9px)}67%{transform:translate(44px,31px)}83%{transform:translate(-50px,48px)}100%{transform:translate(12px,-26px)}}
+@media (prefers-reduced-motion:reduce){.fx .grain{animation:none}}
+@media (hover:none),(pointer:coarse){.fx{display:none}}
+@media (max-width:600px){.hint{font-size:.72rem}}
+@media (prefers-reduced-motion:reduce){.zoom,.sil{animation:none}.sil{opacity:1}}
+</style>
+
+<div class="stage">
+  <section class="screen" id="intro">
+    <video id="iv" playsinline webkit-playsinline preload="auto" disablepictureinpicture poster="img/reflect.jpg" src="../vid/intro.mp4"></video>
+    <div class="subs" aria-live="polite"><span id="sub"></span></div>
+
+    <button class="btn" id="unmute" type="button" hidden>Tap for sound</button>
+
+    <div class="top" id="topBar">
+      <a class="ghost home-link" href="../index.html">← Home</a>
+      <span class="tools">
+        <button class="ghost" id="skip" type="button">Skip ›</button>
+        <button class="ghost" id="fs" type="button" hidden>⛶ Full screen</button>
+      </span>
+    </div>
+
+    <div class="ctl" id="ctl">
+      <button class="play" id="play" type="button" aria-label="Pause">❚❚</button>
+      <div class="tl" id="tl"><div class="rail"></div><div class="fill" id="fill"></div></div>
+      <span class="time" id="time">0:00 / 1:13</span>
+      <button class="ghost cc" id="cc" type="button" aria-pressed="false" aria-label="Subtitles"><svg viewBox="0 0 32 24" aria-hidden="true"><rect x="2" y="2" width="28" height="20" rx="2.8" fill="none" stroke="currentColor" stroke-width="2.4"/><rect x="6" y="14.8" width="6.6" height="1.85" rx=".35" fill="currentColor"/><rect x="14.4" y="14.8" width="3.2" height="1.85" rx=".35" fill="currentColor"/><rect x="19.4" y="14.8" width="6.6" height="1.85" rx=".35" fill="currentColor"/><rect x="8.8" y="17.6" width="5.8" height="1.85" rx=".35" fill="currentColor"/><rect x="17.4" y="17.6" width="5.8" height="1.85" rx=".35" fill="currentColor"/></svg></button>
+    </div>
+  </section>
+
+  <section class="screen off" id="scene">
+    <div class="wrap" id="wrap">
+      <div class="zoom"><img class="bgimg" src="img/reflect.jpg" alt="Grown-up Sam looks out of an airport window and sees his seventeen-year-old self reflected in the glass, with the control tower and a plane behind.">
+      <img class="sil" src="img/young-silhouette.png" alt=""></div>
+      <button id="young" type="button" aria-label="Click young Sam to begin the story"></button>
+      <div class="hint">Click <b>young Sam</b> to begin</div>
+    </div>
+  </section>
+
+  <section class="screen off" id="begin"></section>
+  <div class="fx" aria-hidden="true"><i class="paper"></i><i class="grain"></i></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const iv=$("iv");
+let running=false;
+
+function show(n){ ["intro","scene","begin"].forEach(s=>$(s).classList.toggle("off",s!==n)); }
+
+/* ---------- subtitles (start, end in seconds of the video) ---------- */
+const CUES=[
+  [0.8,2.3,"My name is Sam."],
+  [3.1,4.5,"I was born in Iran."],
+  [6.2,9.0,"I was seventeen when I had to leave Iran."],
+  [9.85,12.1,"My mother came with me as far as Istanbul…"],
+  [13.2,14.9,"…and then she went back to Iran."],
+  [16.4,21.1,"There, a smuggler named Yilmaz handed me a fake passport…"],
+  [21.55,23.5,"…and put me on a plane."],
+  [23.8,25.8,"Destination: the Netherlands."],
+  [27.0,29.4,"And that's when it all began."],
+  [30.3,32.3,"Interrogations… admission…"],
+  [32.45,34.2,"…and a wait that never seemed to end."],
+  [34.3,36.8,"In the refugee camp, I fell in love."],
+  [37.35,39.4,"I took care of a little bird."],
+  [40.05,42.3,"And it was there that a letter reached me…"],
+  [42.4,44.1,"…one that changed everything."],
+  [46.05,50.5,"When I turned eighteen, my life in Amsterdam began…"],
+  [51.95,53.8,"…undocumented and illegal."],
+  [54.3,57.0,"This story is the story of what came before…"],
+  [57.7,59.4,"…how I became illegal."],
+  [60.9,63.6,"We all breathe the same air…"]
+];
+let ccOn=false, lastCue=-1;
+try{
+  const pref=localStorage.getItem("wabtsa-cc");
+  if(pref==="1" || (pref===null && Math.min(innerWidth,innerHeight)<700)){
+    ccOn=true;
+    $("cc").setAttribute("aria-pressed","true");
+  }
+}catch(_){}
+
+function fmt(t){
+  t=Math.max(0,Math.floor(t||0));
+  return `${Math.floor(t/60)}:${String(t%60).padStart(2,"0")}`;
+}
+
+function setPlaying(p){
+  $("play").textContent=p?"❚❚":"▶";
+  $("play").setAttribute("aria-label",p?"Pause":"Play");
+}
+
+function updateSub(){
+  const t=iv.currentTime||0;
+  const i=CUES.findIndex(c=>t>=c[0]&&t<c[1]);
+  const el=$("sub");
+  if(i!==lastCue){ lastCue=i; if(i>=0){ el.textContent=CUES[i][2]; } }
+  el.classList.toggle("on", ccOn && i>=0 && !iv.ended && !iv.paused);
+}
+
+/* ---------- intro video playback & timeline ---------- */
+function tick(){
+  if(!running) return;
+  const dur=iv.duration||73;
+  const cur=iv.currentTime||0;
+  $("fill").style.width=Math.min(100,cur/dur*100)+"%";
+  $("time").textContent=`${fmt(cur)} / ${fmt(dur)}`;
+  updateSub();
+  requestAnimationFrame(tick);
+}
+
+function startIntro(){
+  ambience.stop();
+  running=true;
+  show("intro");
+  iv.currentTime=0;
+  iv.classList.add("on");
+  iv.muted=false;
+  iv.play().then(()=>{
+    $("unmute").hidden=true;
+    setPlaying(true);
+  }).catch(()=>{
+    iv.muted=true;
+    iv.play().then(()=>{
+      setPlaying(true);
+      $("unmute").hidden=false;
+    }).catch(()=>{
+      setPlaying(false);
+      showControls();
+    });
+  });
+  requestAnimationFrame(tick);
+}
+
+iv.addEventListener("timeupdate",updateSub);
+iv.addEventListener("playing",()=>{ setPlaying(true); updateSub(); });
+iv.addEventListener("pause",()=>{ if(!iv.ended) setPlaying(false); updateSub(); });
+iv.onended=()=>{
+  if(!running) return;
+  toWindow();
+};
+
+function stopIntro(){
+  running=false;
+  hideControls();
+  iv.pause();
+  $("unmute").hidden=true;
+  $("sub").classList.remove("on");
+}
+
+/* ---------- auto-show/hide video controls on click/tap ---------- */
+let ctlTimer=null, lastPaneTap=0;
+function hideControls(){
+  clearTimeout(ctlTimer); ctlTimer=null;
+  document.body.classList.remove("show-ctl");
+}
+function showControls(){
+  if(!running || $("intro").classList.contains("off")) return;
+  document.body.classList.add("show-ctl");
+  clearTimeout(ctlTimer);
+  ctlTimer=setTimeout(hideControls,3000);
+}
+(()=>{
+  const introEl=$("intro");
+  function paneTap(e){
+    if(!running || introEl.classList.contains("off")) return;
+    if(e.target.closest(".ctl,.top,button,a")) return;
+    const now=Date.now(); if(now-lastPaneTap<420) return; lastPaneTap=now;
+    if(document.body.classList.contains("show-ctl")) hideControls(); else showControls();
+  }
+  introEl.addEventListener("pointerup",e=>{ if(e.pointerType==="mouse"&&e.button!==0) return; paneTap(e); });
+  introEl.addEventListener("click",paneTap);
+  document.querySelectorAll(".ctl,.top").forEach(bar=>{
+    bar.addEventListener("pointerdown",()=>{ if(document.body.classList.contains("show-ctl")) showControls(); });
+    bar.addEventListener("click",()=>{ if(document.body.classList.contains("show-ctl")) showControls(); });
+  });
+  addEventListener("keydown",e=>{
+    if(e.code==="Space" && running && !introEl.classList.contains("off")){
+      e.preventDefault();
+      $("play").click();
+      showControls();
+    }
+  });
+})();
+
+/* timeline scrubbing */
+(()=>{
+  const tl=$("tl");
+  let dragging=false;
+  function seek(e){
+    const r=tl.getBoundingClientRect();
+    if(!r.width) return;
+    const pct=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+    const dur=iv.duration||73;
+    try{ iv.currentTime=pct*dur; }catch(_){}
+    $("fill").style.width=(pct*100)+"%";
+    $("time").textContent=`${fmt(pct*dur)} / ${fmt(dur)}`;
+    showControls();
+  }
+  tl.addEventListener("pointerdown",e=>{
+    dragging=true;
+    try{ tl.setPointerCapture(e.pointerId); }catch(_){}
+    seek(e);
+  });
+  tl.addEventListener("pointermove",e=>{ if(dragging) seek(e); });
+  tl.addEventListener("pointerup",()=>{ dragging=false; });
+  tl.addEventListener("pointercancel",()=>{ dragging=false; });
+})();
+
+/* full screen: offered on web (hidden in native Capacitor iOS/Android app) */
+(()=>{
+  const IS_NATIVE_APP = !!((window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) || location.protocol === "capacitor:" || /; wv\)/.test(navigator.userAgent));
+  const b=$("fs"); if(!b||IS_NATIVE_APP) return;
+  const d=document, el=d.documentElement;
+  const req=el.requestFullscreen||el.webkitRequestFullscreen, ext=d.exitFullscreen||d.webkitExitFullscreen;
+  if(!(d.fullscreenEnabled||d.webkitFullscreenEnabled)||!req) return;
+  b.hidden=false;
+  const isFs=()=>d.fullscreenElement||d.webkitFullscreenElement;
+  const upd=()=>{ b.textContent=isFs()?"✕ Exit full screen":"⛶ Full screen"; };
+  b.addEventListener("click",()=>{
+    try{
+      if(isFs()) ext.call(d);
+      else {
+        const p=req.call(el); if(p&&p.catch) p.catch(()=>{});
+        try{ const o=screen.orientation; if(o&&o.lock) o.lock("landscape").catch(()=>{}); }catch(_){}
+      }
+    }catch(_){}
+  });
+  d.addEventListener("fullscreenchange",upd);
+  d.addEventListener("webkitfullscreenchange",upd);
+  upd();
+})();
+
+/* after the intro: the airport window. Young Sam's silhouette breathes in the glass; clicking him begins. */
+let prefetched=false;
+function prefetchRoom(){
+  if(prefetched) return; prefetched=true;
+  ["../room/index.html","../room/shared/shared.css","../room/shared/lib/three.min.js","../room/shared/shared.js","../room/app.js","../room/assets/room.jpg"].forEach(href=>{
+    const l=document.createElement("link"); l.rel="prefetch"; l.href=href; document.head.appendChild(l);
+  });
+}
+function toWindow(fromHistory=false){
+  stopIntro();
+  $("wrap").classList.remove("chosen","hover");
+  show("scene");
+  ambience.start();
+  prefetchRoom();
+  if(!fromHistory && location.hash!=="#window"){
+    try{ history.pushState({screen:"window"},"",location.pathname+location.search+"#window"); }catch(_){}
+  }
+}
+
+/* ---------- ambience: empty terminal room tone, strip-light hum, rain on glass, a distant jet ---------- */
+const ambience=(()=>{
+  let ctx=null, master=null, jetTimer=null, muted=false;
+  function noise(seconds,brown){
+    const b=ctx.createBuffer(1,ctx.sampleRate*seconds,ctx.sampleRate), d=b.getChannelData(0); let last=0;
+    for(let i=0;i<d.length;i++){ const w=Math.random()*2-1; if(brown){ last=(last+.02*w)/1.02; d[i]=last*3.5; } else d[i]=w; }
+    return b;
+  }
+  function loop(buf){ const s=ctx.createBufferSource(); s.buffer=buf; s.loop=true; return s; }
+  function build(){
+    ctx=new (window.AudioContext||window.webkitAudioContext)();
+    master=ctx.createGain(); master.gain.value=0; master.connect(ctx.destination);
+    // room tone
+    const room=loop(noise(6,true)), lp=ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=380;
+    const rg=ctx.createGain(); rg.gain.value=.55; room.connect(lp).connect(rg).connect(master); room.start();
+    // fluorescent hum
+    [100,200,300].forEach((f,i)=>{ const o=ctx.createOscillator(); o.frequency.value=f; const g=ctx.createGain(); g.gain.value=[.012,.006,.003][i]; o.connect(g).connect(master); o.start(); });
+    // rain on the window
+    const rain=loop(noise(4,false)), bp=ctx.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=2600; bp.Q.value=.6;
+    const rgn=ctx.createGain(); rgn.gain.value=.05; rain.connect(bp).connect(rgn).connect(master); rain.start();
+    const lfo=ctx.createOscillator(); lfo.frequency.value=.07; const lg=ctx.createGain(); lg.gain.value=.02; lfo.connect(lg).connect(rgn.gain); lfo.start();
+  }
+  function jet(){
+    if(!ctx) return;
+    const s=ctx.createBufferSource(); s.buffer=noise(10,true);
+    const f=ctx.createBiquadFilter(); f.type="lowpass"; f.frequency.value=200;
+    const g=ctx.createGain(); const t=ctx.currentTime;
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.9,t+4); g.gain.linearRampToValueAtTime(0,t+9.5);
+    f.frequency.setValueAtTime(140,t); f.frequency.linearRampToValueAtTime(420,t+4); f.frequency.linearRampToValueAtTime(160,t+9.5);
+    s.connect(f).connect(g).connect(master); s.start(); s.stop(t+10);
+    jetTimer=setTimeout(jet,22000+Math.random()*14000);
+  }
+  return {
+    unlock(){
+      try{ if(!ctx) build(); ctx.resume(); }catch(e){}
+    },
+    start(){
+      try{ if(!ctx) build(); ctx.resume(); }catch(e){ return; }
+      const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t);
+      master.gain.linearRampToValueAtTime(muted?0:.8,t+2.5);
+      clearTimeout(jetTimer); jetTimer=setTimeout(jet,6000);
+    },
+    stop(){
+      clearTimeout(jetTimer); if(!ctx) return;
+      const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t); master.gain.linearRampToValueAtTime(0,t+1.2);
+    }
+  };
+})();
+
+/* ---------- controls ---------- */
+["pointerdown","touchend","keydown"].forEach(ev=>{
+  document.addEventListener(ev,()=>{
+    ambience.unlock();
+    if(running && iv.muted){
+      iv.muted=false;
+      $("unmute").hidden=true;
+    }
+  },{passive:true});
+});
+
+$("play").onclick=()=>{
+  ambience.unlock();
+  if(iv.paused){
+    iv.muted=false;
+    $("unmute").hidden=true;
+    iv.play().then(()=>setPlaying(true)).catch(()=>{});
+  } else {
+    iv.pause();
+    setPlaying(false);
+  }
+  showControls();
+};
+$("unmute").onclick=()=>{
+  ambience.unlock();
+  iv.muted=false;
+  iv.play().catch(()=>{});
+  $("unmute").hidden=true;
+};
+$("skip").onclick=()=>toWindow(false);
+
+const yb=$("young"), wr=$("wrap");
+yb.addEventListener("pointerenter",()=>wr.classList.add("hover"));
+yb.addEventListener("pointerleave",()=>wr.classList.remove("hover"));
+yb.addEventListener("focus",()=>wr.classList.add("hover"));
+yb.addEventListener("blur",()=>wr.classList.remove("hover"));
+/* Click on young Sam = fade to black and enter the 2D Room directly */
+let enteringRoom=false;
+function afterYoungSam(){
+  if(enteringRoom) return; enteringRoom=true;
+  if(location.hash!=="#window"){
+    try{ history.replaceState({screen:"window"},"",location.pathname+location.search+"#window"); }catch(_){}
+  }
+  show("begin");
+  setTimeout(()=>{
+    location.href="../room/index.html"+(location.search||"");
+  },1050);
+}
+yb.onclick=()=>{ if(enteringRoom) return; wr.classList.add("chosen"); ambience.stop(); setTimeout(afterYoungSam,450); };
+
+$("cc").onclick=e=>{
+  ccOn=!ccOn;
+  e.currentTarget.setAttribute("aria-pressed",ccOn);
+  try{ localStorage.setItem("wabtsa-cc",ccOn?"1":"0"); }catch(_){}
+  updateSub();
+  showControls();
+};
+
+if(location.search){
+  document.querySelectorAll(".home-link").forEach(a=>{ a.href="../index.html"+location.search; });
+}
+
+window.addEventListener("popstate",()=>{
+  enteringRoom=false;
+  if(location.hash==="#window") toWindow(true);
+  else startIntro();
+});
+window.addEventListener("pageshow",e=>{
+  if(e.persisted){
+    enteringRoom=false;
+    if(location.hash==="#window") toWindow(true);
+  }
+});
+
+/* Start the intro video immediately (or restore the window screen when returning via Browser Back) */
+if(location.hash==="#window"){
+  toWindow(true);
+} else {
+  startIntro();
+}
+</script>
+</body>
+</html>

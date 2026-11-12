@@ -1,0 +1,19 @@
+- generic [ref=f1e2]:
+  - generic [ref=f1e3]:
+    - button "Tap for sound" [ref=f1e5] [cursor=pointer]
+    - generic:
+      - link "← Home":
+        - /url: ../index.html
+      - generic:
+        - button "Skip ›"
+        - button "⛶ Full screen"
+    - generic:
+      - button "Pause": ❚❚
+      - generic: 0:00 / 1:12
+      - button "Subtitles"
+  - generic:
+    - generic:
+      - generic:
+        - img "Grown-up Sam looks out of an airport window and sees his seventeen-year-old self reflected in the glass, with the control tower and a plane behind."
+      - button "Click young Sam to begin the story"
+      - generic: Click young Sam to begin

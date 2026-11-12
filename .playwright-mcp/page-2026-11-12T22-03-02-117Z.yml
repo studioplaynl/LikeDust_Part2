@@ -1,0 +1,36 @@
+- generic [active] [ref=f11e1]:
+  - generic:
+    - generic:
+      - link "← Back to the room":
+        - /url: "#"
+      - button "⛶ Full screen"
+  - generic:
+    - button "Pause": ❚❚
+    - generic:
+      - 'button "Jump to: Lie or truth"':
+        - generic: Lie or truth
+      - 'button "Jump to: Amsterdam"':
+        - generic: Amsterdam
+      - 'button "Jump to: Red light"':
+        - generic: Red light
+      - 'button "Jump to: The city''s veins"':
+        - generic: The city's veins
+      - 'button "Jump to: The bird"':
+        - generic: The bird
+    - generic: 0:00 / 3:37
+    - button "Ondertiteling"
+  - generic:
+    - paragraph: We All Breathe The Same Air · Chapter three
+    - heading "Amsterdam" [level=1]
+    - paragraph: "1997"
+    - button "▶ Play the chapter"
+    - paragraph: Sound on · 3½ minutes · the film stops five times and waits for you
+  - generic:
+    - paragraph: End of chapter three
+    - heading "My turn to give something back." [level=2]: My turn to givesomething back.
+    - paragraph
+    - generic:
+      - link "← Back to the room":
+        - /url: "#"
+      - button "↺ Watch again"
+  - button "Geluid aan" [ref=f11e6] [cursor=pointer]

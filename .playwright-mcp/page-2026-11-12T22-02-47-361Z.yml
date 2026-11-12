@@ -1,0 +1,21 @@
+- generic [active] [ref=f7e1]:
+  - generic [ref=f7e2]:
+    - generic "Interactive room" [ref=f7e3]
+    - generic:
+      - button "Sam" [ref=f7e4] [cursor=pointer]
+      - button "Chapter 1 · Schiphol" [ref=f7e5]
+  - generic:
+    - status
+  - generic:
+    - generic [ref=f7e6]:
+      - link "← Home" [ref=f7e7] [cursor=pointer]:
+        - /url: ../index.html?dev=1
+      - generic [ref=f7e8]: We All Breathe the Same Air · The Room
+    - generic [ref=f7e9]:
+      - generic "Completed chapters" [ref=f7e10]:
+        - generic "1 · Schiphol" [ref=f7e11]
+        - generic "2 · The AZC" [ref=f7e12]
+        - generic "3 · Amsterdam" [ref=f7e13]
+        - generic "4 · The Letter" [ref=f7e14]
+      - button "↺" [ref=f7e15] [cursor=pointer]
+  - generic: "keys 1–4: toggle chapter · 0: reset"

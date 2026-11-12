@@ -1,6 +1,9 @@
-# We All Breathe the Same Air · Room `www` Server & Dashboard
+# We All Breathe the Same Air · Website & App `www` Server Dashboard
 
-Local launcher and status dashboard for previewing the unified flat 2D Three.js room + 4 interactive video chapters (`Capacitor_Apps/app-room/www/`) packaged for Web, Cloudflare Pages, iOS, and Android.
+Local launcher and status dashboard for previewing the integrated website & app flow (`Capacitor_Apps/app-room/www/`) packaged for Web, Cloudflare Pages, iOS, and Android:
+1. **Landing Page (`/index.html`)** — Branches between **Part 2 (*We All Breathe The Same Air*)** (`Start` → `/intro/`, `Watch the intro` → full-screen cinema modal) and **Part 1 (*Like Dust*)** (`https://likedust.nl`, trailer modal, App Store).
+2. **Interactive Intro (`/intro/index.html`)** — Title card → Intro film (`vid/intro.mp4` with optional subtitles) → Airport window reflection (`Click young Sam` fades to black and enters `/room/` directly).
+3. **Flat 2D Room + 4 Interactive Video Chapters (`/room/index.html`)** — Three.js orthographic 2D room with Sam's chroma-keyed clips and object-silhouette transitions into `Hoofdstuk_1..4`.
 
 ## Quick Start
 
@@ -23,7 +26,9 @@ This starts the local `www` server and automatically opens the **Dashboard** pag
 | Service | URL | Folder Served |
 | :--- | :--- | :--- |
 | **Dashboard (Status + Start / Restart / Stop)** | http://localhost:8770/ | Built into `start_dashboard.py` |
-| **We All Breathe the Same Air (`www`)** | http://localhost:8771/ | `Capacitor_Apps/app-room/www/` |
+| **Full Experience — Landing Page (`/`)** | http://localhost:8771/ | `Capacitor_Apps/app-room/www/index.html` |
+| **Interactive Airport Intro (`/intro/`)** | http://localhost:8771/intro/ | `Capacitor_Apps/app-room/www/intro/index.html` |
+| **2D Room & 4 Video Chapters (`/room/`)** | http://localhost:8771/room/ | `Capacitor_Apps/app-room/www/room/index.html` |
 
 ### Why Does the Dashboard Use a Tiny Python Process?
 Browsers block plain `file://` HTML files from starting or restarting local server processes on your Mac. Running `start_dashboard.py` (on port `8770`) allows the **Start Server**, **Restart Server**, and **Stop** buttons inside the browser dashboard to control the `www` server (`8771`), while also providing:

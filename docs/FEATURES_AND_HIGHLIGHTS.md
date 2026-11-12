@@ -47,6 +47,6 @@ const DEV_DEFAULT = true; // Set to false before building for App Store / Google
 | **Room Top Bar** | `We All Breathe the Same Air · The Room`, 4 progress dots, reset `↺` button | **Hidden** |
 | **Room Bottom Hint** | `keys 1–4: toggle chapter · 0: reset` | **Hidden** |
 | **Chapter Tracking** | Dots in top bar | **4 Minimalist SVG Icons (passport, photo frame, bicycle, letter)** in top-right |
-| **Chapter Back Button**| `← Back to the room` button | **Hidden** |
+| **Chapter Back Button**| `← Back to room` top-left in video overlay menu | `← Back to room` top-left in video overlay menu |
 | **Assignment Skip** | `Skip ›` button displayed | **Never shown** |
 | **URL Testing Override**| Add `?dev=1` to force on | Add `?dev=0` to preview production mode |

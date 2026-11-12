@@ -16,7 +16,6 @@ const DEV_DEFAULT = false;
 This ensures:
 - Dev HUD bar (`We All Breathe the Same Air · The Room` and progress dots) is hidden.
 - Chapter progress is displayed cleanly via the **4 top-right icons (passport, photo frame, bicycle, letter)**.
-- `← Back to the room` button inside chapters is hidden.
 - `Skip ›` button during chapter assignments is completely removed.
 - Dev keyboard shortcuts (`1–4` to toggle chapters, `0` to reset) are disabled.
 

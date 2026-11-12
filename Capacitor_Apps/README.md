@@ -1,10 +1,11 @@
 # We All Breathe the Same Air · Capacitor App
 
-Unified Capacitor 7 application (Web + iOS + Android) combining the flat 2D room rendered in Three.js (`We All Breathe the Same Air-DEF 2`) with the four interactive video chapters (`Hoofdstuk 1–4`):
+Unified Capacitor 7 application (Web + iOS + Android) combining the branching landing page, interactive airport intro, flat 2D room rendered in Three.js (`We All Breathe the Same Air-DEF 2`), and the four interactive video chapters (`Hoofdstuk 1–4`):
 
 - **`app-room/`** (`com.likedust.wabtsa` · *We All Breathe the Same Air*)
-  - Flat 2D painted room (`1920 × 1080` orthographic stage in Three.js, zero 2.5D parallax distortion)
-  - Sam's chroma-keyed video clips on desktop & WebP sprite sheets on mobile (`LITE`)
+  - **Landing Page (`www/index.html`)** — Branches between **Part 2 (*We All Breathe The Same Air*)** and **Part 1 (*Like Dust* → `https://likedust.nl`)**
+  - **Interactive Intro (`www/intro/index.html`)** — Intro film + Schiphol airport window reflection where clicking **young Sam** transitions directly into the 2D Room
+  - **Flat 2D Room (`www/room/index.html`)** — `1920 × 1080` orthographic stage in Three.js (zero 2.5D parallax distortion), Sam's chroma-keyed video clips on desktop & WebP sprite sheets on mobile (`LITE`)
   - Dynamic volumetric sunbeams, floating dust motes, blackboard chalk progression, growing desk letter stack, evening sunset progression, and dove window finale
   - Object silhouette mask transitions into all 4 interactive video chapters (`Schiphol`, `The AZC`, `Amsterdam`, `The Letter`)
   - Landscape lock + inline unmuted chapter video playback on iOS & Android
@@ -23,7 +24,7 @@ From the **project root**, double-click **`Start_Dashboard.command`** in Finder 
 
 ## Store / Production Release Checklist (`DEV_MODE`)
 > **IMPORTANT — Before building for the App Store, Google Play, or final public deployment:**
-> Set `const DEV_DEFAULT = false;` at the top of `Capacitor_Apps/app-room/www/shared/shared.js`, then run `npm run sync` inside `Capacitor_Apps/app-room` (and `python3 build_cloudflare_pages.py` for web).
+> Set `const DEV_DEFAULT = false;` at the top of `Capacitor_Apps/app-room/www/room/shared/shared.js`, then run `npm run sync` inside `Capacitor_Apps/app-room` (and `python3 build_cloudflare_pages.py` for web).
 
 - **`DEV_DEFAULT = true` (current testing default):**
   - Shows the room top dev bar (`We All Breathe the Same Air · The Room`, 4 progress dots, `↺` reset button) and `keys 1–4: toggle chapter · 0: reset`.
@@ -31,7 +32,7 @@ From the **project root**, double-click **`Start_Dashboard.command`** in Finder 
   - Shows `Skip ›` during chapter assignments/markers.
 - **`DEV_DEFAULT = false` (Store / Production mode):**
   - Replaces the dev bar and dots with the **4 chapter icons** in the top-right (**passport, photo frame, bicycle, letter**).
-  - Hides `← Back to the room` and **never** shows `Skip ›` on chapter assignments.
+  - Keeps `← Back to room` top-left inside the auto-hiding video chapter overlay menu and **never** shows `Skip ›` on chapter assignments.
 - **Quick browser preview tip:** Append `?dev=0` (production UI) or `?dev=1` (dev UI) to `http://localhost:8771/` to preview either mode without editing files.
 
 ## Development Commands (inside `Capacitor_Apps/app-room/`)

@@ -161,6 +161,22 @@ DASHBOARD_HTML = """<!doctype html>
       transition: background 0.15s ease;
     }
     .btn-link:hover { background: var(--accent-hover); }
+    .btn-sublink {
+      flex: 0.65;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: #25221d;
+      color: var(--text);
+      border: 1px solid var(--border);
+      font-weight: 600;
+      font-size: 13.5px;
+      padding: 10px 14px;
+      border-radius: 9px;
+      text-decoration: none;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .btn-sublink:hover { background: #302c25; border-color: #453f36; }
     .btn-reset {
       appearance: none;
       border: 1px solid var(--border);
@@ -206,8 +222,8 @@ DASHBOARD_HTML = """<!doctype html>
   <div class="wrap">
     <header>
       <p class="eyebrow">We All Breathe The Same Air · Review Dashboard</p>
-      <h1>Like Dust Part 2 · Room Build</h1>
-      <p class="subtitle">Cloudflare Pages online review for the flat 2D Three.js room + 4 interactive video chapters.</p>
+      <h1>Like Dust Part 2 · Website &amp; App Build</h1>
+      <p class="subtitle">Cloudflare Pages online review for the branching landing page, interactive airport intro, flat 2D Three.js room, and 4 interactive video chapters.</p>
     </header>
 
     <div class="banner">
@@ -237,9 +253,9 @@ DASHBOARD_HTML = """<!doctype html>
             <h2 class="room-title">We All Breathe the Same Air</h2>
             <p class="room-appid">com.likedust.wabtsa</p>
           </div>
-          <span class="room-pill">Flat 2D · Three.js</span>
+          <span class="room-pill">Intro + Flat 2D Room · Three.js</span>
         </div>
-        <p class="room-desc">Flat 2D room in Three.js integrated with Sam's clips &amp; the 4 interactive video chapters</p>
+        <p class="room-desc">Branching Landing Page (Part 1 <em>Like Dust</em> &amp; Part 2 <em>We All Breathe The Same Air</em>) &rarr; Interactive Airport Intro &rarr; Flat 2D Three.js Room + 4 Video Chapters</p>
       </div>
 
       <div class="url-box">
@@ -247,9 +263,15 @@ DASHBOARD_HTML = """<!doctype html>
         <button type="button" class="copy-btn" data-room="main">Copy</button>
       </div>
 
-      <div class="room-actions">
+      <div class="room-actions" style="flex-wrap: wrap;">
         <a href="./room/" target="_blank" rel="noopener" class="btn-link" id="open-main">
-          Open Room App ↗
+          Open Full Experience ↗
+        </a>
+        <a href="./room/intro/" target="_blank" rel="noopener" class="btn-sublink" id="open-intro">
+          Intro Only ↗
+        </a>
+        <a href="./room/room/" target="_blank" rel="noopener" class="btn-sublink" id="open-room">
+          2D Room Direct ↗
         </a>
         <button type="button" class="btn-reset" data-room="main" title="Delete chapter progression and reset saved state">
           ↺ Reset Progress
@@ -271,17 +293,21 @@ DASHBOARD_HTML = """<!doctype html>
       let hideDev = urlParams.get("dev") === "0" || (!urlParams.has("dev") && localStorage.getItem("pages_dev0") === "1");
       devToggle.checked = hideDev;
 
-      function getFinalUrl() {
-        const base = new URL("./room/", location.href);
+      function getFinalUrl(relPath) {
+        const base = new URL(relPath || "./room/", location.href);
         if (hideDev) base.searchParams.set("dev", "0");
         else base.searchParams.delete("dev");
         return base.href;
       }
 
       function updateUrls() {
-        const finalUrl = getFinalUrl();
+        const finalUrl = getFinalUrl("./room/");
+        const introUrl = getFinalUrl("./room/intro/");
+        const roomUrl = getFinalUrl("./room/room/");
         const urlEl = document.getElementById("url-main");
         const openEl = document.getElementById("open-main");
+        const openIntroEl = document.getElementById("open-intro");
+        const openRoomEl = document.getElementById("open-room");
         const copyBtn = document.querySelector('.copy-btn[data-room="main"]');
 
         if (urlEl) {
@@ -289,6 +315,8 @@ DASHBOARD_HTML = """<!doctype html>
           urlEl.textContent = urlEl.href;
         }
         if (openEl) openEl.href = finalUrl;
+        if (openIntroEl) openIntroEl.href = introUrl;
+        if (openRoomEl) openRoomEl.href = roomUrl;
         if (copyBtn) copyBtn.setAttribute("data-copy", finalUrl);
       }
 

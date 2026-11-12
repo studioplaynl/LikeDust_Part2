@@ -40,7 +40,7 @@ ROOMS = [
         "id": "main",
         "name": "We All Breathe the Same Air",
         "appId": "com.likedust.wabtsa",
-        "description": "Flat 2D room in Three.js integrated with the 4 interactive video chapters (Capacitor_Apps/app-room/www)",
+        "description": "Branching Landing Page (Part 1 Like Dust & Part 2 We All Breathe The Same Air) → Interactive Intro → Flat 2D Three.js Room + 4 Video Chapters (Capacitor_Apps/app-room/www)",
         "port": 8771,
         "wwwDir": CAPACITOR_DIR / "app-room" / "www",
     },
@@ -265,8 +265,8 @@ DASHBOARD_HTML = """<!doctype html>
   <div class="wrap">
     <header>
       <p class="eyebrow">We All Breathe The Same Air · Capacitor App</p>
-      <h1>Room <code>www</code> Server Dashboard</h1>
-      <p class="subtitle">Live status &amp; local web server for the flat 2D Three.js room + 4 interactive video chapters.</p>
+      <h1>Website &amp; App <code>www</code> Server Dashboard</h1>
+      <p class="subtitle">Live status &amp; local web server for the branching landing page, interactive airport intro, flat 2D Three.js room, and 4 interactive video chapters.</p>
     </header>
 
     <div class="offline-banner" id="offlineBanner">
@@ -310,7 +310,7 @@ DASHBOARD_HTML = """<!doctype html>
           </div>
           <span class="port-pill" id="pill-main">Port 8771</span>
         </div>
-        <p class="room-desc">Flat 2D room in Three.js integrated with the 4 interactive video chapters (<code>Capacitor_Apps/app-room/www</code>)</p>
+        <p class="room-desc">Branching Landing Page (Part 1 <em>Like Dust</em> &amp; Part 2 <em>We All Breathe The Same Air</em>) &rarr; Interactive Airport Intro &rarr; Flat 2D Three.js Room + 4 Video Chapters (<code>Capacitor_Apps/app-room/www</code>)</p>
       </div>
 
       <div class="url-box">
@@ -318,9 +318,15 @@ DASHBOARD_HTML = """<!doctype html>
         <button type="button" class="copy-btn" data-room="main" data-copy="http://localhost:8771/">Copy</button>
       </div>
 
-      <div class="room-actions">
+      <div class="room-actions" style="flex-wrap: wrap;">
         <a href="http://localhost:8771/" target="_blank" rel="noopener" class="btn-link btn-primary" id="open-main">
-          Open Room App ↗
+          Open Full Experience ↗
+        </a>
+        <a href="http://localhost:8771/intro/" target="_blank" rel="noopener" class="btn-link" id="open-intro" style="flex:0.65;">
+          Intro Only ↗
+        </a>
+        <a href="http://localhost:8771/room/" target="_blank" rel="noopener" class="btn-link" id="open-room" style="flex:0.65;">
+          2D Room Direct ↗
         </a>
         <button type="button" class="btn-secondary reset-prog-btn" data-room="main" title="Delete chapter progression and reset saved state">
           ↺ Reset Progress
@@ -410,9 +416,13 @@ DASHBOARD_HTML = """<!doctype html>
         const room = lastRoomsData && lastRoomsData.main;
         const rawUrl = (room && room.url) || "http://localhost:8771/";
         const finalUrl = buildRoomUrl(rawUrl);
+        const introUrl = buildRoomUrl(rawUrl.replace(/\\/?$/, "/intro/"));
+        const roomDirectUrl = buildRoomUrl(rawUrl.replace(/\\/?$/, "/room/"));
 
         const urlEl = document.getElementById("url-main");
         const openEl = document.getElementById("open-main");
+        const openIntroEl = document.getElementById("open-intro");
+        const openRoomEl = document.getElementById("open-room");
         const copyBtn = document.querySelector('.copy-btn[data-room="main"]');
 
         if (urlEl) {
@@ -420,6 +430,8 @@ DASHBOARD_HTML = """<!doctype html>
           urlEl.textContent = finalUrl;
         }
         if (openEl) openEl.href = finalUrl;
+        if (openIntroEl) openIntroEl.href = introUrl;
+        if (openRoomEl) openRoomEl.href = roomDirectUrl;
         if (copyBtn) copyBtn.setAttribute("data-copy", finalUrl);
       }
 
@@ -428,11 +440,15 @@ DASHBOARD_HTML = """<!doctype html>
         const pill = document.getElementById("pill-" + id);
         const urlEl = document.getElementById("url-" + id);
         const openEl = document.getElementById("open-" + id);
+        const openIntroEl = document.getElementById("open-intro");
+        const openRoomEl = document.getElementById("open-room");
         const copyBtn = document.querySelector('.copy-btn[data-room="' + id + '"]');
 
         const running = !!(room && room.running);
         const rawUrl = (room && room.url) || "http://localhost:8771/";
         const finalUrl = buildRoomUrl(rawUrl);
+        const introUrl = buildRoomUrl(rawUrl.replace(/\\/?$/, "/intro/"));
+        const roomDirectUrl = buildRoomUrl(rawUrl.replace(/\\/?$/, "/room/"));
         const port = (room && room.port) || 8771;
 
         card.classList.toggle("online", running);
@@ -445,6 +461,15 @@ DASHBOARD_HTML = """<!doctype html>
 
         openEl.href = finalUrl;
         openEl.classList.toggle("disabled", !running);
+
+        if (openIntroEl) {
+          openIntroEl.href = introUrl;
+          openIntroEl.classList.toggle("disabled", !running);
+        }
+        if (openRoomEl) {
+          openRoomEl.href = roomDirectUrl;
+          openRoomEl.classList.toggle("disabled", !running);
+        }
 
         if (copyBtn) copyBtn.setAttribute("data-copy", finalUrl);
       }

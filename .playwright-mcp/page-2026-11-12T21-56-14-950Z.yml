@@ -1,0 +1,97 @@
+- generic [active] [ref=e1]:
+  - generic:
+    - link "Sam Yazdanpanna" [ref=e2] [cursor=pointer]:
+      - /url: "#top"
+    - generic [ref=e3]: Graphic novels · True story
+  - main [ref=e4]:
+    - region "Choose a story" [ref=e5]:
+      - generic [ref=e8]:
+        - generic [ref=e9]: Part 2
+        - heading "We All Breathe The Same Air" [level=2] [ref=e10]: We All BreatheThe Same Air
+        - paragraph [ref=e11]: The new interactive graphic novel by Sam Yazdanpanna. What came after. How I became illegal.
+        - link "Start" [ref=e13] [cursor=pointer]:
+          - /url: intro/index.html
+      - link "Part 1 Iran → Europe Like Dust The journey. Black and white. Enter" [ref=e14] [cursor=pointer]:
+        - /url: "#like-dust"
+        - generic [ref=e17]:
+          - generic [ref=e18]: Part 1
+          - generic [ref=e19]: Iran → Europe
+          - heading "Like Dust" [level=2] [ref=e20]: LikeDust
+          - paragraph [ref=e21]: The journey. Black and white.
+          - generic [ref=e22]: Enter
+    - generic [ref=e24]:
+      - generic [ref=e25]:
+        - generic [ref=e26]: Sam Yazdanpanna
+        - paragraph [ref=e27]:
+          - text: At seventeen, Sam had to leave Iran.
+          - emphasis [ref=e28]: Like Dust
+          - text: is the journey to Europe. We All Breathe The Same Air, his new graphic novel, is what came after.
+      - region [ref=e29]:
+        - generic [ref=e30]:
+          - generic [ref=e31]: Part 2
+          - text: New · interactive graphic novel
+          - heading "We All Breathe The Same Air" [level=3] [ref=e32]
+        - generic [ref=e33]:
+          - img "Grown-up Sam at an airport window sees his seventeen-year-old self reflected in the glass." [ref=e34]
+          - paragraph [ref=e35]: A smuggler named Yilmaz, a fake passport, a plane to the Netherlands. Interrogations, a refugee camp, a wait that never seemed to end. Love, a little bird, and a letter that changed everything.
+          - blockquote [ref=e36]: We all breathe the same air… but not all of us are equally free.
+          - link "Start" [ref=e38] [cursor=pointer]:
+            - /url: intro/index.html
+      - region [ref=e39]:
+        - generic [ref=e40]:
+          - generic [ref=e41]: Part 1
+          - text: Interactive novel
+          - heading "Like Dust" [level=3] [ref=e42]
+        - generic [ref=e43]:
+          - 'img "Black-and-white drawing: a border officer studies a passport while young Sam waits." [ref=e45]'
+          - paragraph [ref=e46]: Seventeen-year-old Sam travels from Iran to Europe, hoping to cross every kind of border. An interactive illustrated novel in black and white.
+          - generic [ref=e47]:
+            - generic [ref=e48]: iPhone · iPad · Mac · web
+            - generic [ref=e49]: Free · English · 13+
+          - generic [ref=e50]:
+            - button "Watch the trailer · 0:17" [ref=e51] [cursor=pointer]
+            - link "Read on likedust.nl" [ref=e54] [cursor=pointer]:
+              - /url: https://likedust.nl
+            - link "App Store" [ref=e55] [cursor=pointer]:
+              - /url: https://apps.apple.com/app/like-dust/id6608977988
+      - region "Made possible with support from" [ref=e56]:
+        - list [ref=e58]:
+          - listitem [ref=e59]:
+            - img "Amsterdams Fonds voor de Kunst" [ref=e60]
+          - listitem [ref=e61]:
+            - img "Fonds 21" [ref=e62]
+          - listitem [ref=e63]:
+            - img "het Cultuurfonds" [ref=e64]
+          - listitem [ref=e65]:
+            - img "Fonds voor Cultuurparticipatie" [ref=e66]
+          - listitem [ref=e67]:
+            - img "Stimuleringsfonds Creatieve Industrie" [ref=e68]
+          - listitem [ref=e69]:
+            - img "vfonds" [ref=e70]
+      - region "Credits" [ref=e71]:
+        - generic [ref=e73]:
+          - generic [ref=e74]:
+            - term [ref=e75]: Script
+            - definition [ref=e76]: Sam Yazdanpanna
+          - generic [ref=e77]:
+            - term [ref=e78]: Script consultant
+            - definition [ref=e79]: David Henrichs
+          - generic [ref=e80]:
+            - term [ref=e81]: Illustrations
+            - definition [ref=e82]: Maysam Barza
+          - generic [ref=e83]:
+            - term [ref=e84]: Motion
+            - definition [ref=e85]: Mostafa Kandaz
+          - generic [ref=e86]:
+            - term [ref=e87]: Sound
+            - definition [ref=e88]: Oliver RekkersSaid Rasouli
+          - generic [ref=e89]:
+            - term [ref=e90]: Interactive & web
+            - definition [ref=e91]: Maarten van de GlasSam Yazdanpanna
+          - generic [ref=e92]:
+            - term [ref=e93]: Producers
+            - definition [ref=e94]: MetafoorBas BroertjesSam Yazdanpanna
+      - generic [ref=e95]:
+        - generic [ref=e96]: © Sam Yazdanpanna
+        - link "likedust.nl" [ref=e97] [cursor=pointer]:
+          - /url: https://likedust.nl

@@ -1,0 +1,33 @@
+- generic [active] [ref=f12e1]:
+  - generic [ref=f12e2]: Ik werd voor een groot gebouw afgezet.
+  - generic:
+    - generic:
+      - link "← Back to the room":
+        - /url: "#"
+      - button "⛶ Full screen"
+  - generic:
+    - button "Pause": ❚❚
+    - generic:
+      - 'button "Jump to: Calling home"':
+        - generic: Calling home
+      - 'button "Jump to: The room"':
+        - generic: The room
+      - 'button "Jump to: That night"':
+        - generic: That night
+    - generic: 0:00 / 1:40
+    - button "Ondertiteling"
+  - generic:
+    - paragraph: We All Breathe The Same Air · Chapter two
+    - heading "The AZC" [level=1]
+    - paragraph: "1997"
+    - button "▶ Play the chapter"
+    - paragraph: Sound on · under 2 minutes · the film stops three times and waits for you
+  - generic:
+    - paragraph: End of chapter two
+    - heading "When will this nightmare end?" [level=2]: When will thisnightmare end?
+    - paragraph: Chapter three follows
+    - generic:
+      - link "← Back to the room":
+        - /url: "#"
+      - button "↺ Watch again"
+  - button "Geluid aan" [ref=f12e6] [cursor=pointer]
