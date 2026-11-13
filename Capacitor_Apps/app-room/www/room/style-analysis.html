@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Visual Style Analysis & Rerendering Proposal · The Room vs. Video Artwork</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Special+Elite&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap">
+  <style>
+    :root {
+      --bg: #0d0c0b;
+      --surface: #171513;
+      --surface-2: #211e1b;
+      --border: #332e28;
+      --paper: #efe6d2;
+      --muted: #a99f8a;
+      --lamp: #f2c76b;
+      --stamp: #c8332b;
+      --teal: #5ba4a4;
+      --green: #68b684;
+      --f-head: "Special Elite", "Courier New", monospace;
+      --f-mono: "IBM Plex Mono", monospace;
+      --f-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--paper);
+      font-family: var(--f-sans);
+      line-height: 1.6;
+      padding-bottom: 80px;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 48px 0 36px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(242, 199, 107, 0.08), transparent 70%);
+    }
+    .kicker {
+      font-family: var(--f-mono);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--lamp);
+      margin-bottom: 12px;
+    }
+    h1 {
+      font-family: var(--f-head);
+      font-size: clamp(28px, 4vw, 48px);
+      font-weight: 400;
+      margin: 0 0 12px;
+      line-height: 1.15;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 17px;
+      max-width: 780px;
+      margin: 0;
+    }
+
+    section {
+      margin-top: 48px;
+    }
+    h2 {
+      font-family: var(--f-head);
+      font-size: 26px;
+      font-weight: 400;
+      margin: 0 0 8px;
+      color: var(--paper);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    h2 .num {
+      font-family: var(--f-mono);
+      font-size: 13px;
+      background: var(--lamp);
+      color: var(--bg);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .sec-desc {
+      color: var(--muted);
+      margin: 0 0 24px;
+      font-size: 15px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+      gap: 24px;
+    }
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 20px;
+    }
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .panel-body {
+      padding: 20px;
+    }
+    .panel-title {
+      font-family: var(--f-mono);
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--lamp);
+      margin: 0 0 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .badge {
+      font-family: var(--f-mono);
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--paper);
+    }
+    .badge.warn {
+      background: rgba(200, 51, 43, 0.18);
+      border-color: rgba(200, 51, 43, 0.5);
+      color: #ff8b85;
+    }
+    .badge.good {
+      background: rgba(104, 182, 132, 0.16);
+      border-color: rgba(104, 182, 132, 0.45);
+      color: #90e0ab;
+    }
+
+    .img-frame {
+      background: #080706;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-bottom: 1px solid var(--border);
+    }
+    .img-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .img-frame.contain-h {
+      height: 260px;
+      background: repeating-conic-gradient(#141210 0% 25%, #1c1916 0% 50%) 50% / 20px 20px;
+    }
+    .img-frame.contain-h img {
+      width: auto;
+      height: 90%;
+      max-width: 92%;
+      object-fit: contain;
+    }
+
+    /* Interactive Before/After Slider */
+    .ba-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      overflow: hidden;
+      user-select: none;
+      background: #000;
+      border-bottom: 1px solid var(--border);
+    }
+    .ba-wrap img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+    .ba-after {
+      clip-path: inset(0 0 0 50%);
+    }
+    .ba-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 3px;
+      background: var(--lamp);
+      transform: translateX(-50%);
+      pointer-events: none;
+      box-shadow: 0 0 12px rgba(0,0,0,0.8);
+    }
+    .ba-handle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--lamp);
+      color: var(--bg);
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 14px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.75);
+      pointer-events: none;
+    }
+    .ba-slider {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: ew-resize;
+      margin: 0;
+    }
+    .ba-tag {
+      position: absolute;
+      top: 14px;
+      padding: 5px 10px;
+      background: rgba(13, 12, 11, 0.85);
+      border: 1px solid var(--border);
+      font-family: var(--f-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      border-radius: 4px;
+      pointer-events: none;
+    }
+    .ba-tag.left { left: 14px; color: var(--muted); }
+    .ba-tag.right { right: 14px; color: var(--lamp); border-color: rgba(242, 199, 107, 0.4); }
+
+    /* Trait comparison table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    th {
+      font-family: var(--f-mono);
+      font-size: 12px;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: var(--surface-2);
+    }
+    tr:last-child td { border-bottom: 0; }
+    code {
+      font-family: var(--f-mono);
+      font-size: 12.5px;
+      background: var(--surface-2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--lamp);
+    }
+
+    .callout {
+      border-left: 4px solid var(--lamp);
+      background: var(--surface);
+      padding: 18px 22px;
+      border-radius: 0 8px 8px 0;
+      margin: 20px 0;
+    }
+    .callout.danger {
+      border-left-color: var(--stamp);
+    }
+    .callout h4 {
+      margin: 0 0 6px;
+      font-family: var(--f-mono);
+      font-size: 14px;
+      text-transform: uppercase;
+      color: var(--lamp);
+    }
+    .callout.danger h4 {
+      color: #ff8b85;
+    }
+    .callout p {
+      margin: 0;
+      font-size: 14.5px;
+      color: var(--paper);
+    }
+
+    ul.tight {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    ul.tight li { margin-bottom: 6px; }
+    ul.tight li strong { color: var(--paper); }
+
+    @media (max-width: 640px) {
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <div class="kicker">We All Breathe the Same Air · Visual Direction Investigation</div>
+      <h1>Rerendering the Interactive 2D Room in the Video Artwork Style</h1>
+      <p class="subtitle">
+        A visual diagnosis of why the Three.js 2D Room (<code>www/room/</code>) looks cleaner and rounder than the 4 interactive video chapters, with proof-of-concept Gemini rerenders, sprite-sheet solutions, and model recommendations.
+      </p>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- SECTION 1: VISUAL DIAGNOSIS -->
+    <section>
+      <h2><span class="num">01</span> Visual Diagnosis: Video Artwork vs. Current Room</h2>
+      <p class="sec-desc">
+        Side-by-side inspection of keyframes from Chapters 1–4 against the assets in <code>www/room/assets/</code> reveals four concrete stylistic differences.
+      </p>
+
+      <div class="grid-3">
+        <div class="panel">
+          <div class="img-frame">
+            <img src="chapters/Hoofdstuk_3_Amsterdam/img/card.jpg" alt="Chapter 3 ING Card">
+          </div>
+          <div class="panel-body">
+            <div class="panel-title">Video Artwork · Props <span class="badge good">Target Style</span></div>
+            <p style="margin:0;font-size:14px;color:var(--muted);">
+              <strong style="color:var(--paper)">Thick, angular black ink outlines</strong> with broken hand-drawn strokes and <strong style="color:var(--paper)">broad chisel-tip marker fills</strong>. Color surfaces have flat, squarish brush marks and heavy paper grain.
+            </p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="img-frame">
+            <img src="analysis_img/ch2_locker.jpg" alt="Chapter 2 Sam at Locker">
+          </div>
+          <div class="panel-body">
+            <div class="panel-title">Video Artwork · Sam &amp; Interiors <span class="badge good">Target Style</span></div>
+            <p style="margin:0;font-size:14px;color:var(--muted);">
+              <strong style="color:var(--paper)">Faceted, polygonal shading blocks</strong> on skin, T-shirt folds, and metal lockers. Zero smooth airbrushing; shadows are carved with squared-off Copic marker strokes.
+            </p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="img-frame">
+            <img src="analysis_img/ch4_c4s2.jpg" alt="Chapter 4 Sam Portrait">
+          </div>
+          <div class="panel-body">
+            <div class="panel-title">Video Artwork · Facial Planes <span class="badge good">Target Style</span></div>
+            <p style="margin:0;font-size:14px;color:var(--muted);">
+              Cheeks, nose bridge, and jacket lapels are sculpted out of <strong style="color:var(--paper)">hard-edged geometric color blocks</strong> (3–4 discrete tonal steps) rather than soft gradients.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-top:20px;">
+        <div class="panel">
+          <div class="img-frame contain-h">
+            <img src="assets/bike.png" alt="Current Room Bike">
+          </div>
+          <div class="panel-body">
+            <div class="panel-title">Current Room · <code>bike.png</code> &amp; <code>passport.png</code> <span class="badge warn">Too Clean / Photo-Soft</span></div>
+            <p style="margin:0;font-size:14px;color:var(--muted);">
+              Rendered as a soft, semi-photorealistic painted cutout with <strong style="color:var(--paper)">no black ink outline</strong> and smooth cylindrical shading on the tubes and tires.
+            </p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="img-frame contain-h">
+            <img src="assets/man.png" alt="Current Room Sam">
+          </div>
+          <div class="panel-body">
+            <div class="panel-title">Current Room · <code>man.png</code> &amp; <code>sp/*.webp</code> <span class="badge warn">Round Airbrushed Gradients</span></div>
+            <p style="margin:0;font-size:14px;color:var(--muted);">
+              Sam has <strong style="color:var(--paper)">smooth airbrushed gradients</strong> on his cheek, nose, and jacket sleeves, rounder cartoon proportions, and higher golden-brown saturation.
+            </p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="img-frame contain-h">
+            <img src="assets/bedfront.png" alt="Current Room Bunk Bed">
+          </div>
+          <div class="panel-body">
+            <div class="panel-title">Current Room · <code>room.jpg</code> &amp; <code>bedfront.png</code> <span class="badge warn">Soft Tubular Highlights</span></div>
+            <p style="margin:0;font-size:14px;color:var(--muted);">
+              While the brick wall has texture, the bunk bed frame, mattress, and desk use <strong style="color:var(--paper)">soft digital airbrush highlights</strong> instead of angular comic ink &amp; square marker strokes.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel" style="margin-top:20px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Visual Dimension</th>
+              <th>Video Chapters (Hoofdstuk 1–4)</th>
+              <th>Current Interactive Room (<code>www/room/</code>)</th>
+              <th>What Needs to Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Linework &amp; Contours</strong></td>
+              <td>Bold, variable-width black ink lines; sharp angular corners; rough sketchy cross-hatching in shadows.</td>
+              <td>Thin, smooth anti-aliased lines on Sam; zero black ink outlines on <code>bike.png</code>, <code>passport.png</code>, <code>money.png</code>.</td>
+              <td>Add decisive, angular hand-inked black contours and interior crease lines to all room props and furniture.</td>
+            </tr>
+            <tr>
+              <td><strong>Shading &amp; Brushwork</strong></td>
+              <td><strong>Squarish chisel-tip marker look</strong>: flat polygonal facets, 3–4 stepped value blocks, visible broad-nib strokes.</td>
+              <td>Continuous, soft airbrush gradients and rounded specular highlights on faces, fabric, and metal tubes.</td>
+              <td>Replace smooth gradients with hard/semi-hard polygonal marker blocks and directional chisel-marker strokes.</td>
+            </tr>
+            <tr>
+              <td><strong>Surface Texture</strong></td>
+              <td>Gritty dry marker streak texture + tactile paper grain across all fills.</td>
+              <td>Clean digital paint on foreground objects and sprites.</td>
+              <td>Bake dry marker tooth &amp; subtle paper grain into restyled assets (plus optional screen-space grain in Three.js).</td>
+            </tr>
+            <tr>
+              <td><strong>Color Palette</strong></td>
+              <td>Muted, high-contrast graphic novel palette (earthy olive-ochre, slate blue-grey, deep ink blacks).</td>
+              <td>Slightly warmer, cleaner digital illustration saturation on Sam's jacket and room props.</td>
+              <td>Shift midtones toward desaturated olive/ochre and deepen shadow blacks to anchor objects to the room.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION 2: GEMINI PROOF OF CONCEPT -->
+    <section>
+      <h2><span class="num">02</span> Proof of Concept: Gemini Image-to-Image Rerendering</h2>
+      <p class="sec-desc">
+        Drag the slider below to compare the current <code>room.jpg</code> against our <strong>Gemini proof-of-concept rerender</strong>, generated by feeding the chapter artwork as style references while locking the exact room geometry and perspective.
+      </p>
+
+      <div class="panel">
+        <div class="ba-wrap" id="baRoom">
+          <img src="assets/room.jpg" alt="Original Room">
+          <img class="ba-after" id="baRoomAfter" src="analysis_img/poc_room_marker.jpg" alt="Gemini Marker Restyle">
+          <div class="ba-line" id="baRoomLine"></div>
+          <div class="ba-handle" id="baRoomHandle">↔</div>
+          <div class="ba-tag left">Current Room (<code>assets/room.jpg</code>)</div>
+          <div class="ba-tag right">Gemini Marker Style PoC</div>
+          <input type="range" min="0" max="100" value="50" class="ba-slider" id="baRoomSlider" aria-label="Compare original room and Gemini marker restyle">
+        </div>
+        <div class="panel-body">
+          <div class="panel-title">1:1 Geometry-Preserving Style Transfer on <code>room.jpg</code> <span class="badge good">Feasibility: High</span></div>
+          <p style="margin:0;font-size:14px;color:var(--muted);">
+            Notice how Gemini preserves the <strong>exact pixel coordinates</strong> of the skylight, barred window, curtain, bunk bed posts, desk, stool, and blackboard chalk equations—meaning all hardcoded coordinates in <code>app.js</code> (<code>LAYERS</code>, <code>CHAPTERS[i].hit</code>, <code>BEAMS</code>, <code>boardPlane</code>, and <code>stackPlane</code>) continue to line up without code rewrites.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:24px;">
+        <div class="panel">
+          <div class="img-frame">
+            <img src="analysis_img/poc_props_sam_marker.jpg" alt="Gemini Restyled Sam and Bike">
+          </div>
+          <div class="panel-body">
+            <div class="panel-title">PoC A · Gemini Image-to-Image on Static Cutouts (<code>man.png</code>, <code>bike.png</code>) <span class="badge good">Best for Static Layers</span></div>
+            <p style="margin:0;font-size:14px;color:var(--muted);">
+              Feeding <code>man.png</code> and <code>bike.png</code> with <code>card.jpg</code> &amp; <code>ch2_locker.jpg</code> as style references transforms the soft photographic bicycle and airbrushed character into crisp, hand-inked graphic novel illustrations with faceted marker shading.
+            </p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="img-frame contain-h" style="gap:24px;padding:16px;">
+            <img src="analysis_img/sp_bike.png" alt="Original Sprite Frame" style="height:92%;width:auto;">
+            <span style="font-family:var(--f-mono);color:var(--lamp);font-size:20px;">→</span>
+            <img src="analysis_img/sp_bike_shader.png" alt="Chisel Marker Filtered Sprite Frame" style="height:92%;width:auto;">
+          </div>
+          <div class="panel-body">
+            <div class="panel-title">PoC B · Deterministic Marker + Ink Pass on Sprite Sheets (<code>sp/*.webp</code>) <span class="badge good">Zero Temporal Flicker</span></div>
+            <p style="margin:0;font-size:14px;color:var(--muted);">
+              For the 8 animated sprite sheets (549 total frames), a deterministic <strong>Square-Footprint Mode/Kuwahara + Stepped Marker Quantization + Ink Contour pass</strong> (either baked into <code>sp/*.webp</code> or run live in <code>spriteFS</code> GLSL) flattens round gradients into squarish marker blocks with zero frame-to-frame flicker.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: TECHNICAL ARCHITECTURE & PROPOSED FIX PIPELINE -->
+    <section>
+      <h2><span class="num">03</span> Technical Constraints &amp; Proposed 3-Part Fix Pipeline</h2>
+      <p class="sec-desc">
+        <code>www/room/app.js</code> is a tightly calibrated 1920×1080 Three.js stage with 17 static image layers, 3 dynamic 2D canvas planes, and 8 pre-keyed WebP sprite-sheet animations. Here is how to rerender every asset group safely.
+      </p>
+
+      <div class="grid-3">
+        <div class="panel">
+          <div class="panel-body">
+            <div class="panel-title">Step 1 · Room Base &amp; Depth Cutouts <span class="badge">5 Files</span></div>
+            <p style="font-size:13.5px;color:var(--muted);margin:0 0 10px;">
+              <strong>Files:</strong> <code>room.jpg</code>, <code>bedfront.png</code>, <code>post.png</code>, <code>seat.png</code>, <code>board_clean.png</code>
+            </p>
+            <ul class="tight">
+              <li><strong>Constraint:</strong> <code>bedfront.png</code> (<code>[1056,440,244,362]</code>), <code>post.png</code> (<code>[1210,510,50,538]</code>), and <code>seat.png</code> (<code>[1140,777,105,178]</code>) are depth-sorted cutouts of <code>room.jpg</code> so Sam can sit behind the bedpost and walk in front of the bed.</li>
+              <li><strong>Fix:</strong> Generate the restyled 1920×1080 <code>room.jpg</code> first. Then <strong>programmatically crop</strong> <code>bedfront.png</code>, <code>post.png</code>, and <code>seat.png</code> from the new <code>room.jpg</code> and apply the original alpha masks for a 100% seamless depth split.</li>
+              <li><strong>Blackboard:</strong> Crop <code>[1640,120,280,600]</code> from the new <code>room.jpg</code> and paint over the chalk lines with the surrounding marker slate texture to produce <code>board_clean.png</code>.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-body">
+            <div class="panel-title">Step 2 · Interactive Chapter Props <span class="badge">13 Files</span></div>
+            <p style="font-size:13.5px;color:var(--muted);margin:0 0 10px;">
+              <strong>Files:</strong> <code>bike.png</code>, <code>passport.png</code>, <code>frame.png</code>, <code>money.png</code>, <code>paper.png</code>, <code>reject_open.png</code>, <code>reject_rolled.png</code>, <code>reject_roll.png</code>, <code>bird.png</code> (+ <code>bird_h34..39.png</code>)
+            </p>
+            <ul class="tight">
+              <li><strong>Constraint:</strong> The Three.js object shader (<code>objFS</code>) uses each PNG's alpha channel to compute the golden hover halo (<code>uGlow</code>), and <code>reject_open.png</code> unrolls vertically via <code>uClipY</code>.</li>
+              <li><strong>Fix:</strong> Place all props on a single high-res <strong>contact sheet</strong> (or process individually with locked aspect ratio) using Gemini Image-to-Image + style references (<code>card.jpg</code>, <code>p12.jpg</code>).</li>
+              <li><strong>Alpha Preservation:</strong> Intersect/refine the generated mask with the original silhouette so hitboxes (<code>CHAPTERS[i].hit</code>) and unroll coordinates (<code>y=487..612</code>) stay exact.</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-body">
+            <div class="panel-title">Step 3 · Sam &amp; Pigeon Sprite Sheets <span class="badge">8 WebP Sheets + man.png</span></div>
+            <p style="font-size:13.5px;color:var(--muted);margin:0 0 10px;">
+              <strong>Files:</strong> <code>man.png</code> + <code>sp/standup.webp</code>, <code>idle.webp</code>, <code>think.webp</code>, <code>frame.webp</code>, <code>bike.webp</code>, <code>money.webp</code>, <code>sad.webp</code>, <code>pigeon.webp</code>
+            </p>
+            <ul class="tight">
+              <li><strong>Constraint:</strong> 7×61 frames (12fps) + 1×121 frames (24fps). Furthermore, <code>standup.webp</code> frames 4–11 use <code>stoolMaskGLSL</code> (which keys out the stool under Sam's legs by checking <code>rgb.b - rgb.r</code> for jeans and <code>rgb.r</code> for jacket).</li>
+              <li><strong>Fix Option A (Recommended — Instant &amp; Flicker-Free):</strong> Upgrade <code>spriteFS</code> &amp; <code>objFS</code> in <code>app.js</code> (or batch-process <code>sp/*.webp</code>) with an <strong>Anisotropic Kuwahara + Stepped Marker Quantization + Sobel Ink Edge pass</strong>, keeping <code>man.png</code> and <code>standup.webp</code> 100% aligned at frame 0 and frame 22.</li>
+              <li><strong>Fix Option B (Keyframe AI + EbSynth):</strong> Restyle 2 keyframes per clip with Gemini and propagate across the source MP4s in <code>We All Breathe the Same Air-DEF 2/assets/*.mp4</code> using optical flow (EbSynth), then repack into <code>sp/*.webp</code>.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout danger">
+        <h4>Why Not Run Gemini Frame-by-Frame on All 549 Sprite-Sheet Cells?</h4>
+        <p>
+          Generative diffusion/autoregressive image models sample brush strokes independently per image. Running Gemini separately on 61 frames of <code>idle.webp</code> or <code>standup.webp</code> causes the square marker strokes and ink outlines to "boil" and shift position every 1/12th of a second, and breaks the color-channel stool mask (<code>stoolMaskGLSL</code>) in <code>standup.webp</code>. Combining <strong>Gemini Image-to-Image for the static room &amp; props</strong> with a <strong>coherent shader/post-process marker pass (or keyframe optical-flow propagation) for the sprite sheets</strong> gives you the best of both worlds.
+        </p>
+      </div>
+    </section>
+
+    <!-- SECTION 4: MODEL RECOMMENDATIONS -->
+    <section>
+      <h2><span class="num">04</span> Model Recommendations for Asset Generation</h2>
+      <p class="sec-desc">
+        Which model should you select in the Antigravity model dropdown, and which underlying Gemini image generation model is best for producing the final assets?
+      </p>
+
+      <div class="grid-2">
+        <div class="panel">
+          <div class="panel-body">
+            <div class="panel-title">1. Antigravity Chat Model Selector (Your Screenshot) <span class="badge good">Workflow &amp; Shader Coding</span></div>
+            <p style="font-size:14px;color:var(--muted);margin:0 0 14px;">
+              When driving the asset conversion scripts, alpha-mask extraction, sprite-sheet repacking, and Three.js GLSL shader updates in Antigravity:
+            </p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Model in Dropdown</th>
+                  <th>Recommendation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Gemini 4 Argon (Medium)</strong><br><span style="font-size:12px;color:var(--green);">★ Currently Selected &amp; Recommended</span></td>
+                  <td><strong>Best overall choice.</strong> Fast multimodal vision inspection (comparing generated assets against chapter frames), accurate Python image-processing scripting, and delegating to the built-in <code>image-generator</code> subagent.</td>
+                </tr>
+                <tr>
+                  <td><strong>Gemini 4 Carbon (Medium)</strong></td>
+                  <td>Use if you want deeper reasoning on complex GLSL shader math (e.g., tuning a custom Kuwahara + marker-stroke fragment shader in <code>app.js</code>), though Argon is already more than capable and faster.</td>
+                </tr>
+                <tr>
+                  <td><strong>Gemini 3.8 Flash (Fast)</strong></td>
+                  <td>Great for rapid batch scripting or quick CSS/HTML tweaks, but less thorough on subtle visual art-direction critique than Argon/Carbon.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-body">
+            <div class="panel-title">2. Gemini Image Generation Model (API / AI Studio / Subagent) <span class="badge good">Actual Image Synthesis</span></div>
+            <p style="font-size:14px;color:var(--muted);margin:0 0 14px;">
+              For the actual image-to-image style transfer of <code>room.jpg</code> and the 13 interactive props:
+            </p>
+            <table>
+              <thead>
+                <tr>
+                  <th>Image Model</th>
+                  <th>When to Use &amp; Why</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Nano Banana Pro</strong><br><code>gemini-3-pro-image-preview</code><br><span style="font-size:12px;color:var(--green);">★ Best for Hero Room &amp; Multi-Reference Style Transfer</span></td>
+                  <td><strong>Top recommendation for <code>room.jpg</code> and prop contact sheets.</strong> Supports up to 14 reference images in a single prompt (so you can pass 3–4 chapter keyframes + the source asset simultaneously) and outputs crisp <strong>2K / 4K resolution</strong> while preserving exact architectural geometry.</td>
+                </tr>
+                <tr>
+                  <td><strong>Nano Banana 2</strong><br><code>gemini-3.1-flash-image-preview</code><br><span style="font-size:12px;color:var(--lamp);">★ Best for Fast Prop Iteration</span></td>
+                  <td><strong>Best for rapid iteration</strong> on individual small props (<code>passport.png</code>, <code>money.png</code>, <code>bird.png</code>, <code>reject_open.png</code>) where you want to generate 3–4 variations quickly and pick the best marker texture.</td>
+                </tr>
+                <tr>
+                  <td><strong>Imagen 4</strong><br><code>imagen-4.0-generate-001</code></td>
+                  <td><strong>Do NOT use for rerendering existing room assets.</strong> Imagen 4 is text-to-image only and cannot lock onto the existing pixel geometry of <code>room.jpg</code> or <code>bike.png</code>.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout">
+        <h4>Recommended Prompt Template for Gemini Image-to-Image (Nano Banana Pro / 2)</h4>
+        <p style="font-family:var(--f-mono);font-size:13px;color:var(--paper);line-height:1.65;">
+          "Restyle the attached target image [room.jpg / prop] to match the exact visual art style of the attached reference images from our graphic novel video chapters. Keep the exact 1:1 geometry, object positions, perspective, and silhouette identical to the target image. Render with rough, expressive hand-drawn black ink outlines with angular squared-off corners, cross-hatched ink shadows, and broad chisel-tip Copic color marker strokes. Replace all smooth airbrushed gradients with flat, faceted, squarish blocks of color and visible directional marker brush texture on gritty paper grain."
+        </p>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    const slider = document.getElementById("baRoomSlider");
+    const afterImg = document.getElementById("baRoomAfter");
+    const line = document.getElementById("baRoomLine");
+    const handle = document.getElementById("baRoomHandle");
+    if (slider) {
+      const update = () => {
+        const v = slider.value;
+        afterImg.style.clipPath = `inset(0 0 0 ${v}%)`;
+        line.style.left = `${v}%`;
+        handle.style.left = `${v}%`;
+      };
+      slider.addEventListener("input", update);
+      update();
+    }
+  </script>
+</body>
+</html>
+
