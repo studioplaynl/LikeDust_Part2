@@ -1,516 +1,966 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>We All Breathe The Same Air</title>
-<link rel="icon" href="data:,">
-<meta name="description" content="We All Breathe The Same Air: interactive intro to the graphic novel by Sam Yazdanpanna.">
-<meta property="og:title" content="We All Breathe The Same Air">
-<meta property="og:description" content="We All Breathe The Same Air: interactive intro to the graphic novel by Sam Yazdanpanna.">
-<meta property="og:image" content="img/reflect.jpg">
-<meta name="theme-color" content="#000000">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<link rel="stylesheet" href="../fonts/fonts.css">
-<style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;padding:0;-webkit-text-size-adjust:100%}img{max-width:100%}[hidden]{display:none!important}</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>We All Breathe The Same Air</title>
+  <link rel="icon" href="data:,">
+  <meta name="description"
+    content="We All Breathe The Same Air: interactive intro to the graphic novel by Sam Yazdanpanna.">
+  <meta property="og:title" content="We All Breathe The Same Air">
+  <meta property="og:description"
+    content="We All Breathe The Same Air: interactive intro to the graphic novel by Sam Yazdanpanna.">
+  <meta property="og:image" content="img/reflect.jpg">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <link rel="stylesheet" href="../fonts/fonts.css">
+  <style>
+    :root {
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px)
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      -webkit-text-size-adjust: 100%
+    }
+
+    img {
+      max-width: 100%
+    }
+
+    [hidden] {
+      display: none !important
+    }
+  </style>
 </head>
+
 <body>
-<style>
-/* Layout: one full-screen cinema stage. Starts immediately with the intro video (click/tap reveals chapter-style controls) → the airport window, where clicking young Sam's silhouette enters the 2D Room. */
-:root{
-  --ink:#000;
-  --steel:#151a1e;
-  --chalk:#ece8de;
-  --chalk-dim:#a3a59e;
-  --amber:#D6A93E;
-  --ochre:#D6A93E;
-  --ochre-dim:#a8873a;
-  --shade:rgba(0,0,0,.62);
-  --amber-glow:rgba(214,169,62,.5);
-  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
-  --f-body:"Literata",Georgia,serif;
-  color-scheme:dark;
-}
-html,body{
-  height:100%;
-  background:var(--ink);
-  color:var(--chalk);
-  -webkit-user-select:none;
-  -moz-user-select:none;
-  user-select:none;
-  -webkit-touch-callout:none;
-}
-body{overflow:hidden;font-family:var(--f-body)}
-img{-webkit-user-drag:none;user-drag:none;-webkit-user-select:none;user-select:none}
-input,textarea{-webkit-user-select:text;user-select:text}
-.stage{position:fixed;inset:0;overflow:hidden;background:var(--ink)}
-.screen{position:absolute;inset:0;transition:opacity 1.2s ease}
-.screen.off{opacity:0;pointer-events:none}
-.btn{font-family:var(--f-display);font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:1rem;color:#000;background:var(--chalk);border:0;padding:14px 30px;cursor:pointer;transition:background .2s,transform .2s}
-.btn:hover{background:var(--amber);transform:translateY(-1px)}
-.ghost{font:700 .78rem var(--f-display);letter-spacing:.2em;text-transform:uppercase;color:var(--chalk);background:var(--shade);border:1px solid rgba(236,232,222,.35);padding:9px 14px;cursor:pointer;text-decoration:none;display:inline-block;backdrop-filter:blur(4px)}
-.ghost:hover,.ghost[aria-pressed="true"]{border-color:var(--ochre);color:var(--ochre)}
-.btn:focus-visible,.ghost:focus-visible,.play:focus-visible{outline:2px solid var(--ochre);outline-offset:4px}
-#young,#young:focus,#young:focus-visible{outline:none;-webkit-tap-highlight-color:transparent}
-
-/* intro video */
-#intro video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;opacity:0;transition:opacity 1s ease}
-#intro video.on{opacity:1}
-
-/* chapter-style video controls (auto-hide, click/tap reveals) */
-.top{
-  position:fixed;
-  top:calc(12px + env(safe-area-inset-top,0px));
-  left:max(16px,env(safe-area-inset-left,0px));
-  right:max(16px,env(safe-area-inset-right,0px));
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:10px;
-  z-index:20;
-}
-.tools{display:flex;gap:8px;align-items:center}
-.ctl{
-  position:fixed;
-  left:0;
-  right:0;
-  bottom:0;
-  z-index:20;
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:10px max(16px,env(safe-area-inset-right,0px)) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
-  background:linear-gradient(to top,rgba(0,0,0,.82),rgba(0,0,0,0));
-}
-.ctl,.top{opacity:0!important;pointer-events:none!important;transition:opacity .35s ease!important}
-body.show-ctl #intro:not(.off) .ctl,
-body.show-ctl #intro:not(.off) .top{opacity:1!important;pointer-events:auto!important}
-
-.play{
-  width:36px;
-  height:36px;
-  border-radius:50%;
-  border:1px solid rgba(236,232,222,.4);
-  background:var(--shade);
-  color:var(--chalk);
-  cursor:pointer;
-  font-size:.9rem;
-  flex:0 0 auto;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-}
-.play:hover{border-color:var(--ochre);color:var(--ochre)}
-.tl{position:relative;flex:1 1 auto;height:22px;min-width:0;cursor:pointer;touch-action:none}
-.tl .rail{position:absolute;left:0;right:0;top:10px;height:2px;background:rgba(236,232,222,.2)}
-.tl .fill{position:absolute;left:0;top:10px;height:2px;background:var(--ochre);width:0}
-.time{font:600 .78rem var(--f-display);letter-spacing:.12em;color:var(--chalk-dim);font-variant-numeric:tabular-nums;flex:0 0 auto}
-
-@media (max-height:500px) and (orientation:landscape){
-  .top{top:calc(4px + env(safe-area-inset-top,0px))}
-  .top .ghost{padding:5px 9px;font-size:.62rem}
-  .ctl{padding-top:4px;padding-bottom:calc(6px + env(safe-area-inset-bottom,0px))}
-  .play{width:30px;height:30px}
-}
-@media (max-width:640px){
-  .ghost{padding:7px 10px;font-size:.68rem}
-  #fs{display:none!important}
-}
-
-/* window scene */
-#scene{display:grid;place-items:center}
-.wrap{position:relative;width:min(100vw,calc(100vh * 16 / 9));height:min(100vh,calc(100vw * 9 / 16));aspect-ratio:16/9;max-width:100%;overflow:hidden}
-.zoom{position:absolute;inset:0;animation:breathe 12s ease-in-out infinite;transform-origin:68% 40%;will-change:transform;backface-visibility:hidden}
-.zoom > img.bgimg{width:100%;height:100%;object-fit:cover;display:block}
-@keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
-#young{position:absolute;left:48%;top:0;width:46%;height:96%;border:0;background:transparent;cursor:pointer;border-radius:45% 45% 10% 10%}
-.sil{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.88;animation:silBreathe 5s ease-in-out infinite;transition:opacity .6s ease;will-change:opacity;backface-visibility:hidden}
-@keyframes silBreathe{0%,100%{opacity:.68}50%{opacity:1}}
-.wrap.hover .sil{animation:none;opacity:1}
-.wrap.chosen .sil{animation:none;opacity:1}
-.hint{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(18px + env(safe-area-inset-bottom,0px));font-family:var(--f-display);letter-spacing:.24em;text-transform:uppercase;font-size:.85rem;color:var(--chalk);text-shadow:0 2px 12px #000;white-space:nowrap}
-.hint b{color:var(--amber);font-weight:700}
-
-/* begin (fade to black before room) */
-#begin{display:grid;place-items:center;background:#000}
-
-/* paper + film grain laid over the picture */
-.fx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.fx .paper{position:absolute;inset:0;z-index:40;background:url(img/paper.jpg) center/cover;mix-blend-mode:soft-light;opacity:.6}
-.fx .grain{position:absolute;inset:-120px;z-index:40;background:url(img/grain.png);mix-blend-mode:overlay;opacity:.18;animation:grain .5s steps(1) infinite}
-@keyframes grain{0%{transform:translate(0,0)}17%{transform:translate(-37px,22px)}33%{transform:translate(29px,-41px)}50%{transform:translate(-18px,-9px)}67%{transform:translate(44px,31px)}83%{transform:translate(-50px,48px)}100%{transform:translate(12px,-26px)}}
-@media (prefers-reduced-motion:reduce){.fx .grain{animation:none}}
-@media (hover:none),(pointer:coarse){.fx{display:none}}
-@media (max-width:600px){.hint{font-size:.72rem}}
-@media (prefers-reduced-motion:reduce){.zoom,.sil{animation:none}.sil{opacity:1}}
-</style>
-
-<div class="stage">
-  <section class="screen" id="intro">
-    <video id="iv" playsinline webkit-playsinline preload="auto" disablepictureinpicture poster="img/reflect.jpg" src="../vid/intro.mp4"></video>
-
-    <div class="top" id="topBar">
-      <a class="ghost home-link" href="../index.html">← Home</a>
-      <span class="tools">
-        <button class="ghost" id="skip" type="button">Skip ›</button>
-        <button class="ghost" id="fs" type="button" hidden>⛶ Full screen</button>
-      </span>
-    </div>
-
-    <div class="ctl" id="ctl">
-      <button class="play" id="play" type="button" aria-label="Pause">❚❚</button>
-      <div class="tl" id="tl"><div class="rail"></div><div class="fill" id="fill"></div></div>
-      <span class="time" id="time">0:00 / 1:13</span>
-    </div>
-  </section>
-
-  <section class="screen off" id="scene">
-    <div class="wrap" id="wrap">
-      <div class="zoom"><img class="bgimg" src="img/reflect.jpg" alt="Grown-up Sam looks out of an airport window and sees his seventeen-year-old self reflected in the glass, with the control tower and a plane behind.">
-      <img class="sil" src="img/young-silhouette.png" alt=""></div>
-      <button id="young" type="button" aria-label="Click young Sam to begin the story"></button>
-      <div class="hint">Click <b>young Sam</b> to begin</div>
-    </div>
-  </section>
-
-  <section class="screen off" id="begin"></section>
-  <div class="fx" aria-hidden="true"><i class="paper"></i><i class="grain"></i></div>
-</div>
-
-<script>
-const $=id=>document.getElementById(id);
-const iv=$("iv");
-let running=false;
-
-function show(n){ ["intro","scene","begin"].forEach(s=>$(s).classList.toggle("off",s!==n)); }
-
-/* Intro video already has burned-in subtitles; overlay subtitles and CC button are disabled */
-let ccOn=false;
-
-function fmt(t){
-  t=Math.max(0,Math.floor(t||0));
-  return `${Math.floor(t/60)}:${String(t%60).padStart(2,"0")}`;
-}
-
-function setPlaying(p){
-  $("play").textContent=p?"❚❚":"▶";
-  $("play").setAttribute("aria-label",p?"Pause":"Play");
-}
-
-function updateSub(){
-  // Intro video has subtitles baked in; no-op
-}
-
-/* ---------- intro video playback & timeline ---------- */
-function tick(){
-  if(!running) return;
-  const dur=iv.duration||73;
-  const cur=iv.currentTime||0;
-  $("fill").style.width=Math.min(100,cur/dur*100)+"%";
-  $("time").textContent=`${fmt(cur)} / ${fmt(dur)}`;
-  updateSub();
-  requestAnimationFrame(tick);
-}
-
-const MAX_WAIT_MS=5000;
-let introWatchdog=null;
-function clearIntroWatchdog(){ clearTimeout(introWatchdog); introWatchdog=null; }
-
-function startIntro(){
-  ambience.stop();
-  running=true;
-  show("intro");
-  iv.currentTime=0;
-  iv.classList.add("on");
-  iv.muted=false;
-  iv.volume=1;
-  clearIntroWatchdog();
-  introWatchdog=setTimeout(()=>{
-    if(running && (iv.paused || iv.currentTime===0 || iv.readyState<2)) toWindow();
-  },MAX_WAIT_MS);
-  iv.play().then(()=>{
-    setPlaying(true);
-  }).catch(()=>{
-    iv.muted=true;
-    iv.play().then(()=>{
-      setPlaying(true);
-    }).catch(()=>{
-      setPlaying(false);
-      showControls();
-    });
-  });
-  requestAnimationFrame(tick);
-}
-
-iv.addEventListener("timeupdate",()=>{ if(iv.currentTime>0) clearIntroWatchdog(); updateSub(); });
-iv.addEventListener("playing",()=>{ clearIntroWatchdog(); setPlaying(true); updateSub(); });
-iv.addEventListener("pause",()=>{ if(!iv.ended) setPlaying(false); updateSub(); });
-iv.addEventListener("error",()=>{ if(running) toWindow(); });
-iv.onended=()=>{
-  if(!running) return;
-  toWindow();
-};
-
-function stopIntro(){
-  running=false;
-  clearIntroWatchdog();
-  hideControls();
-  iv.pause();
-}
-
-/* ---------- auto-show/hide video controls on click/tap ---------- */
-let ctlTimer=null, lastPaneTap=0;
-function hideControls(){
-  clearTimeout(ctlTimer); ctlTimer=null;
-  document.body.classList.remove("show-ctl");
-}
-function showControls(){
-  if(!running || $("intro").classList.contains("off")) return;
-  document.body.classList.add("show-ctl");
-  clearTimeout(ctlTimer);
-  ctlTimer=setTimeout(hideControls,3000);
-}
-(()=>{
-  const introEl=$("intro");
-  function paneTap(e){
-    if(!running || introEl.classList.contains("off")) return;
-    if(e.target.closest(".ctl,.top,button,a")) return;
-    const now=Date.now(); if(now-lastPaneTap<420) return; lastPaneTap=now;
-    if(document.body.classList.contains("show-ctl")) hideControls(); else showControls();
-  }
-  introEl.addEventListener("pointerup",e=>{ if(e.pointerType==="mouse"&&e.button!==0) return; paneTap(e); });
-  introEl.addEventListener("click",paneTap);
-  document.querySelectorAll(".ctl,.top").forEach(bar=>{
-    bar.addEventListener("pointerdown",()=>{ if(document.body.classList.contains("show-ctl")) showControls(); });
-    bar.addEventListener("click",()=>{ if(document.body.classList.contains("show-ctl")) showControls(); });
-  });
-  addEventListener("keydown",e=>{
-    if(e.code==="Space" && running && !introEl.classList.contains("off")){
-      e.preventDefault();
-      $("play").click();
-      showControls();
+  <style>
+    /* Layout: one full-screen cinema stage. Starts immediately with the intro video (click/tap reveals chapter-style controls) → the airport window, where clicking young Sam's silhouette enters the 2D Room. */
+    :root {
+      --ink: #000;
+      --steel: #151a1e;
+      --chalk: #ece8de;
+      --chalk-dim: #a3a59e;
+      --amber: #D6A93E;
+      --ochre: #D6A93E;
+      --ochre-dim: #a8873a;
+      --shade: rgba(0, 0, 0, .62);
+      --amber-glow: rgba(214, 169, 62, .5);
+      --f-display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+      --f-body: "Literata", Georgia, serif;
+      color-scheme: dark;
     }
-  });
-})();
 
-/* timeline scrubbing */
-(()=>{
-  const tl=$("tl");
-  let dragging=false;
-  function seek(e){
-    const r=tl.getBoundingClientRect();
-    if(!r.width) return;
-    const pct=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
-    const dur=iv.duration||73;
-    try{ iv.currentTime=pct*dur; }catch(_){}
-    $("fill").style.width=(pct*100)+"%";
-    $("time").textContent=`${fmt(pct*dur)} / ${fmt(dur)}`;
-    showControls();
-  }
-  tl.addEventListener("pointerdown",e=>{
-    dragging=true;
-    try{ tl.setPointerCapture(e.pointerId); }catch(_){}
-    seek(e);
-  });
-  tl.addEventListener("pointermove",e=>{ if(dragging) seek(e); });
-  tl.addEventListener("pointerup",()=>{ dragging=false; });
-  tl.addEventListener("pointercancel",()=>{ dragging=false; });
-})();
+    html,
+    body {
+      height: 100%;
+      background: var(--ink);
+      color: var(--chalk);
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
 
-/* full screen: offered on web (hidden in native Capacitor iOS/Android app) */
-(()=>{
-  const IS_NATIVE_APP = !!((window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) || location.protocol === "capacitor:" || /; wv\)/.test(navigator.userAgent));
-  const b=$("fs"); if(!b||IS_NATIVE_APP) return;
-  const d=document, el=d.documentElement;
-  const req=el.requestFullscreen||el.webkitRequestFullscreen, ext=d.exitFullscreen||d.webkitExitFullscreen;
-  if(!(d.fullscreenEnabled||d.webkitFullscreenEnabled)||!req) return;
-  b.hidden=false;
-  const isFs=()=>d.fullscreenElement||d.webkitFullscreenElement;
-  const upd=()=>{ b.textContent=isFs()?"✕ Exit full screen":"⛶ Full screen"; };
-  b.addEventListener("click",()=>{
-    try{
-      if(isFs()) ext.call(d);
-      else {
-        const p=req.call(el); if(p&&p.catch) p.catch(()=>{});
-        try{ const o=screen.orientation; if(o&&o.lock) o.lock("landscape").catch(()=>{}); }catch(_){}
+    body {
+      overflow: hidden;
+      font-family: var(--f-body)
+    }
+
+    img {
+      -webkit-user-drag: none;
+      user-drag: none;
+      -webkit-user-select: none;
+      user-select: none
+    }
+
+    input,
+    textarea {
+      -webkit-user-select: text;
+      user-select: text
+    }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      background: var(--ink)
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      transition: opacity 1.2s ease
+    }
+
+    .screen.off {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    .btn {
+      font-family: var(--f-display);
+      font-weight: 700;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      font-size: 1rem;
+      color: #000;
+      background: var(--chalk);
+      border: 0;
+      padding: 14px 30px;
+      cursor: pointer;
+      transition: background .2s, transform .2s
+    }
+
+    .btn:hover {
+      background: var(--amber);
+      transform: translateY(-1px)
+    }
+
+    .ghost {
+      font: 700 .78rem var(--f-display);
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--chalk);
+      background: var(--shade);
+      border: 1px solid rgba(236, 232, 222, .35);
+      padding: 9px 14px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      backdrop-filter: blur(4px)
+    }
+
+    .ghost:hover,
+    .ghost[aria-pressed="true"] {
+      border-color: var(--ochre);
+      color: var(--ochre)
+    }
+
+    .btn:focus-visible,
+    .ghost:focus-visible,
+    .play:focus-visible {
+      outline: 2px solid var(--ochre);
+      outline-offset: 4px
+    }
+
+    #young,
+    #young:focus,
+    #young:focus-visible {
+      outline: none;
+      -webkit-tap-highlight-color: transparent
+    }
+
+    /* intro video */
+    #intro video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      background: #000;
+      opacity: 0;
+      transition: opacity 1s ease
+    }
+
+    #intro video.on {
+      opacity: 1
+    }
+
+    /* chapter-style video controls (auto-hide, click/tap reveals) */
+    .top {
+      position: fixed;
+      top: calc(12px + env(safe-area-inset-top, 0px));
+      left: max(16px, env(safe-area-inset-left, 0px));
+      right: max(16px, env(safe-area-inset-right, 0px));
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      z-index: 20;
+    }
+
+    .tools {
+      display: flex;
+      gap: 8px;
+      align-items: center
+    }
+
+    .ctl {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 20;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+      background: linear-gradient(to top, rgba(0, 0, 0, .82), rgba(0, 0, 0, 0));
+    }
+
+    .ctl,
+    .top {
+      opacity: 0 !important;
+      pointer-events: none !important;
+      transition: opacity .35s ease !important
+    }
+
+    body.show-ctl #intro:not(.off) .ctl,
+    body.show-ctl #intro:not(.off) .top {
+      opacity: 1 !important;
+      pointer-events: auto !important
+    }
+
+    .play {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid rgba(236, 232, 222, .4);
+      background: var(--shade);
+      color: var(--chalk);
+      cursor: pointer;
+      font-size: .9rem;
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .play:hover {
+      border-color: var(--ochre);
+      color: var(--ochre)
+    }
+
+    .tl {
+      position: relative;
+      flex: 1 1 auto;
+      height: 22px;
+      min-width: 0;
+      cursor: pointer;
+      touch-action: none
+    }
+
+    .tl .rail {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 10px;
+      height: 2px;
+      background: rgba(236, 232, 222, .2)
+    }
+
+    .tl .fill {
+      position: absolute;
+      left: 0;
+      top: 10px;
+      height: 2px;
+      background: var(--ochre);
+      width: 0
+    }
+
+    .time {
+      font: 600 .78rem var(--f-display);
+      letter-spacing: .12em;
+      color: var(--chalk-dim);
+      font-variant-numeric: tabular-nums;
+      flex: 0 0 auto
+    }
+
+    @media (max-height:500px) and (orientation:landscape) {
+      .top {
+        top: calc(4px + env(safe-area-inset-top, 0px))
       }
-    }catch(_){}
-  });
-  d.addEventListener("fullscreenchange",upd);
-  d.addEventListener("webkitfullscreenchange",upd);
-  upd();
-})();
 
-/* after the intro: the airport window. Young Sam's silhouette breathes in the glass; clicking him begins. */
-let prefetched=false;
-function prefetchRoom(){
-  if(prefetched) return; prefetched=true;
-  ["../room/index.html","../room/shared/shared.css","../room/shared/lib/three.min.js","../room/shared/shared.js","../room/app.js","../room/assets/room.jpg"].forEach(href=>{
-    const l=document.createElement("link"); l.rel="prefetch"; l.href=href; document.head.appendChild(l);
-  });
-}
-function decodeSceneImg(img){
-  const waitLoad=()=>new Promise(resolve=>{
-    if(img.complete && img.naturalWidth>0) return resolve();
-    let retried=false;
-    const done=()=>{ img.removeEventListener("load",done); img.removeEventListener("error",onErr); resolve(); };
-    const onErr=()=>{
-      if(!retried){ retried=true; img.src=img.getAttribute("src"); return; }
-      done();
+      .top .ghost {
+        padding: 5px 9px;
+        font-size: .62rem
+      }
+
+      .ctl {
+        padding-top: 4px;
+        padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px))
+      }
+
+      .play {
+        width: 30px;
+        height: 30px
+      }
+    }
+
+    @media (max-width:640px) {
+      .ghost {
+        padding: 7px 10px;
+        font-size: .68rem
+      }
+
+      #fs {
+        display: none !important
+      }
+    }
+
+    /* window scene */
+    #scene {
+      display: grid;
+      place-items: center
+    }
+
+    .wrap {
+      position: relative;
+      width: min(100vw, calc(100vh * 16 / 9));
+      height: min(100vh, calc(100vw * 9 / 16));
+      aspect-ratio: 16/9;
+      max-width: 100%;
+      overflow: hidden
+    }
+
+    .zoom {
+      position: absolute;
+      inset: 0;
+      animation: breathe 12s ease-in-out infinite;
+      transform-origin: 68% 40%;
+      will-change: transform;
+      backface-visibility: hidden
+    }
+
+    .zoom>img.bgimg {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block
+    }
+
+    @keyframes breathe {
+
+      0%,
+      100% {
+        transform: scale(1)
+      }
+
+      50% {
+        transform: scale(1.03)
+      }
+    }
+
+    #young {
+      position: absolute;
+      left: 48%;
+      top: 0;
+      width: 46%;
+      height: 96%;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      border-radius: 45% 45% 10% 10%
+    }
+
+    .sil {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      opacity: .92;
+      transition: opacity 2.2s cubic-bezier(.4, 0, .2, 1);
+      will-change: opacity;
+      backface-visibility: hidden
+    }
+
+    .wrap.hover .sil {
+      opacity: .02 !important;
+      transition: opacity .45s ease !important
+    }
+
+    .wrap.chosen .sil {
+      opacity: 0 !important;
+      transition: opacity .35s ease !important
+    }
+
+    .hint {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+      font-family: var(--f-display);
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      font-size: .85rem;
+      color: var(--chalk);
+      text-shadow: 0 2px 12px #000;
+      white-space: nowrap
+    }
+
+    .hint b {
+      color: var(--amber);
+      font-weight: 700
+    }
+
+    /* begin (fade to black before room) */
+    #begin {
+      display: grid;
+      place-items: center;
+      background: #000
+    }
+
+    /* paper + film grain laid over the picture */
+    .fx {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden
+    }
+
+    .fx .paper {
+      position: absolute;
+      inset: 0;
+      z-index: 40;
+      background: url(img/paper.jpg) center/cover;
+      mix-blend-mode: soft-light;
+      opacity: .6
+    }
+
+    .fx .grain {
+      position: absolute;
+      inset: -120px;
+      z-index: 40;
+      background: url(img/grain.png);
+      mix-blend-mode: overlay;
+      opacity: .18;
+      animation: grain .5s steps(1) infinite
+    }
+
+    @keyframes grain {
+      0% {
+        transform: translate(0, 0)
+      }
+
+      17% {
+        transform: translate(-37px, 22px)
+      }
+
+      33% {
+        transform: translate(29px, -41px)
+      }
+
+      50% {
+        transform: translate(-18px, -9px)
+      }
+
+      67% {
+        transform: translate(44px, 31px)
+      }
+
+      83% {
+        transform: translate(-50px, 48px)
+      }
+
+      100% {
+        transform: translate(12px, -26px)
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      .fx .grain {
+        animation: none
+      }
+    }
+
+    @media (hover:none),
+    (pointer:coarse) {
+      .fx {
+        display: none
+      }
+    }
+
+    @media (max-width:600px) {
+      .hint {
+        font-size: .72rem
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      .zoom {
+        animation: none
+      }
+
+      .sil {
+        opacity: .1 !important;
+        transition: none !important
+      }
+    }
+  </style>
+
+  <div class="stage">
+    <section class="screen" id="intro">
+      <video id="iv" playsinline webkit-playsinline preload="auto" disablepictureinpicture poster="img/reflect.jpg"
+        src="../vid/intro.mp4"></video>
+      <video id="iv" playsinline webkit-playsinline preload="auto" disablepictureinpicture
+        src="../vid/intro.mp4"></video>
+
+      <div class="top" id="topBar">
+        <a class="ghost home-link" href="../index.html">← Home</a>
+        <span class="tools">
+          <button class="ghost" id="skip" type="button">Skip ›</button>
+          <button class="ghost" id="fs" type="button" hidden>⛶ Full screen</button>
+        </span>
+      </div>
+
+      <div class="ctl" id="ctl">
+        <button class="play" id="play" type="button" aria-label="Pause">❚❚</button>
+        <div class="tl" id="tl">
+          <div class="rail"></div>
+          <div class="fill" id="fill"></div>
+        </div>
+        <span class="time" id="time">0:00 / 1:13</span>
+      </div>
+    </section>
+
+    <section class="screen off" id="scene">
+      <div class="wrap" id="wrap">
+        <div class="zoom"><img class="bgimg" src="img/reflect.jpg"
+            alt="Grown-up Sam looks out of an airport window and sees his seventeen-year-old self reflected in the glass, with the control tower and a plane behind.">
+          <img class="sil" src="img/young-silhouette.png" alt="">
+        </div>
+        <button id="young" type="button" aria-label="Click young Sam to begin the story"></button>
+        <div class="hint">Click <b>young Sam</b> to begin</div>
+      </div>
+    </section>
+
+    <section class="screen off" id="begin"></section>
+    <div class="fx" aria-hidden="true"><i class="paper"></i><i class="grain"></i></div>
+  </div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const iv = $("iv");
+    let running = false;
+
+    function show(n) { ["intro", "scene", "begin"].forEach(s => $(s).classList.toggle("off", s !== n)); }
+
+    /* Intro video already has burned-in subtitles; overlay subtitles and CC button are disabled */
+    let ccOn = false;
+
+    function fmt(t) {
+      t = Math.max(0, Math.floor(t || 0));
+      return `${Math.floor(t / 60)}:${String(t % 60).padStart(2, "0")}`;
+    }
+
+    function setPlaying(p) {
+      $("play").textContent = p ? "❚❚" : "▶";
+      $("play").setAttribute("aria-label", p ? "Pause" : "Play");
+    }
+
+    function updateSub() {
+      // Intro video has subtitles baked in; no-op
+    }
+
+    /* ---------- intro video playback & timeline ---------- */
+    function tick() {
+      if (!running) return;
+      const dur = iv.duration || 73;
+      const cur = iv.currentTime || 0;
+      $("fill").style.width = Math.min(100, cur / dur * 100) + "%";
+      $("time").textContent = `${fmt(cur)} / ${fmt(dur)}`;
+      updateSub();
+      requestAnimationFrame(tick);
+    }
+
+    const MAX_WAIT_MS = 5000;
+    let introWatchdog = null;
+    function clearIntroWatchdog() { clearTimeout(introWatchdog); introWatchdog = null; }
+
+    function startIntro() {
+      silhouette.stop();
+      ambience.stop();
+      running = true;
+      show("intro");
+      iv.classList.remove("on");
+      iv.currentTime = 0;
+      iv.classList.add("on");
+      iv.muted = false;
+      iv.volume = 1;
+      clearIntroWatchdog();
+      introWatchdog = setTimeout(() => {
+        if (running && (iv.paused || iv.currentTime === 0 || iv.readyState < 2)) toWindow();
+      }, MAX_WAIT_MS);
+      iv.play().then(() => {
+        setPlaying(true);
+      }).catch(() => {
+        iv.muted = true;
+        iv.play().then(() => {
+          setPlaying(true);
+        }).catch(() => {
+          setPlaying(false);
+          showControls();
+        });
+      });
+      requestAnimationFrame(tick);
+    }
+
+    iv.addEventListener("timeupdate", () => { if (iv.currentTime > 0) clearIntroWatchdog(); updateSub(); });
+    iv.addEventListener("playing", () => { clearIntroWatchdog(); setPlaying(true); updateSub(); });
+    iv.addEventListener("timeupdate", () => { if (iv.currentTime > 0) { iv.classList.add("on"); clearIntroWatchdog(); } updateSub(); });
+    iv.addEventListener("playing", () => { iv.classList.add("on"); clearIntroWatchdog(); setPlaying(true); updateSub(); });
+    iv.addEventListener("pause", () => { if (!iv.ended) setPlaying(false); updateSub(); });
+    iv.addEventListener("error", () => { if (running) toWindow(); });
+    iv.onended = () => {
+      if (!running) return;
+      toWindow();
     };
-    img.addEventListener("load",done);
-    img.addEventListener("error",onErr);
-  });
-  return waitLoad().then(()=>img.decode ? img.decode().catch(()=>{}) : undefined);
-}
-const sceneImgsReady=Promise.all([...document.querySelectorAll("#scene img")].map(decodeSceneImg));
-function ensureSceneReady(){
-  return Promise.race([sceneImgsReady,new Promise(r=>setTimeout(r,MAX_WAIT_MS))]);
-}
-let windowToken=0;
-function toWindow(fromHistory=false){
-  const token=++windowToken;
-  stopIntro();
-  $("wrap").classList.remove("chosen","hover");
-  ensureSceneReady().then(()=>{
-    if(token!==windowToken) return;
-    requestAnimationFrame(()=>{
-      if(token!==windowToken) return;
-      show("scene");
-      ambience.start();
-      prefetchRoom();
-      if(!fromHistory && location.hash!=="#window"){
-        try{ history.pushState({screen:"window"},"",location.pathname+location.search+"#window"); }catch(_){}
+
+    function stopIntro() {
+      running = false;
+      clearIntroWatchdog();
+      hideControls();
+      iv.pause();
+      iv.classList.remove("on");
+      silhouette.stop();
+    }
+
+    /* ---------- auto-show/hide video controls on click/tap ---------- */
+    let ctlTimer = null, lastPaneTap = 0;
+    function hideControls() {
+      clearTimeout(ctlTimer); ctlTimer = null;
+      document.body.classList.remove("show-ctl");
+    }
+    function showControls() {
+      if (!running || $("intro").classList.contains("off")) return;
+      document.body.classList.add("show-ctl");
+      clearTimeout(ctlTimer);
+      ctlTimer = setTimeout(hideControls, 3000);
+    }
+    (() => {
+      const introEl = $("intro");
+      function paneTap(e) {
+        if (!running || introEl.classList.contains("off")) return;
+        if (e.target.closest(".ctl,.top,button,a")) return;
+        const now = Date.now(); if (now - lastPaneTap < 420) return; lastPaneTap = now;
+        if (document.body.classList.contains("show-ctl")) hideControls(); else showControls();
       }
-    });
-  });
-}
-
-/* ---------- ambience: empty terminal room tone, strip-light hum, rain on glass, a distant jet ---------- */
-const ambience=(()=>{
-  let ctx=null, master=null, jetTimer=null, active=false;
-  function noise(seconds,brown){
-    const b=ctx.createBuffer(1,ctx.sampleRate*seconds,ctx.sampleRate), d=b.getChannelData(0); let last=0;
-    for(let i=0;i<d.length;i++){ const w=Math.random()*2-1; if(brown){ last=(last+.02*w)/1.02; d[i]=last*3.5; } else d[i]=w; }
-    return b;
-  }
-  function loop(buf){ const s=ctx.createBufferSource(); s.buffer=buf; s.loop=true; return s; }
-  function build(){
-    ctx=new (window.AudioContext||window.webkitAudioContext)();
-    master=ctx.createGain(); master.gain.value=0; master.connect(ctx.destination);
-    // room tone
-    const room=loop(noise(6,true)), lp=ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=380;
-    const rg=ctx.createGain(); rg.gain.value=.55; room.connect(lp).connect(rg).connect(master); room.start();
-    // fluorescent hum
-    [100,200,300].forEach((f,i)=>{ const o=ctx.createOscillator(); o.frequency.value=f; const g=ctx.createGain(); g.gain.value=[.012,.006,.003][i]; o.connect(g).connect(master); o.start(); });
-    // rain on the window
-    const rain=loop(noise(4,false)), bp=ctx.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=2600; bp.Q.value=.6;
-    const rgn=ctx.createGain(); rgn.gain.value=.05; rain.connect(bp).connect(rgn).connect(master); rain.start();
-    const lfo=ctx.createOscillator(); lfo.frequency.value=.07; const lg=ctx.createGain(); lg.gain.value=.02; lfo.connect(lg).connect(rgn.gain); lfo.start();
-  }
-  function jet(){
-    if(!ctx) return;
-    const s=ctx.createBufferSource(); s.buffer=noise(10,true);
-    const f=ctx.createBiquadFilter(); f.type="lowpass"; f.frequency.value=200;
-    const g=ctx.createGain(); const t=ctx.currentTime;
-    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.9,t+4); g.gain.linearRampToValueAtTime(0,t+9.5);
-    f.frequency.setValueAtTime(140,t); f.frequency.linearRampToValueAtTime(420,t+4); f.frequency.linearRampToValueAtTime(160,t+9.5);
-    s.connect(f).connect(g).connect(master); s.start(); s.stop(t+10);
-    jetTimer=setTimeout(jet,22000+Math.random()*14000);
-  }
-  return {
-    unlock(){
-      try{
-        if(!ctx) build();
-        if(ctx.state!=="running") ctx.resume().catch(()=>{});
-        if(active){
-          const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t);
-          master.gain.linearRampToValueAtTime(.8,t+1.5);
+      introEl.addEventListener("pointerup", e => { if (e.pointerType === "mouse" && e.button !== 0) return; paneTap(e); });
+      introEl.addEventListener("click", paneTap);
+      document.querySelectorAll(".ctl,.top").forEach(bar => {
+        bar.addEventListener("pointerdown", () => { if (document.body.classList.contains("show-ctl")) showControls(); });
+        bar.addEventListener("click", () => { if (document.body.classList.contains("show-ctl")) showControls(); });
+      });
+      addEventListener("keydown", e => {
+        if (e.code === "Space" && running && !introEl.classList.contains("off")) {
+          e.preventDefault();
+          $("play").click();
+          showControls();
         }
-      }catch(e){}
-    },
-    start(){
-      active=true;
-      try{ if(!ctx) build(); if(ctx.state!=="running") ctx.resume().catch(()=>{}); }catch(e){ return; }
-      const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t);
-      master.gain.linearRampToValueAtTime(.8,t+2.5);
-      clearTimeout(jetTimer); jetTimer=setTimeout(jet,6000);
-    },
-    stop(){
-      active=false;
-      clearTimeout(jetTimer); if(!ctx) return;
-      const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t); master.gain.linearRampToValueAtTime(0,t+1.2);
+      });
+    })();
+
+    /* timeline scrubbing */
+    (() => {
+      const tl = $("tl");
+      let dragging = false;
+      function seek(e) {
+        const r = tl.getBoundingClientRect();
+        if (!r.width) return;
+        const pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+        const dur = iv.duration || 73;
+        try { iv.currentTime = pct * dur; } catch (_) { }
+        $("fill").style.width = (pct * 100) + "%";
+        $("time").textContent = `${fmt(pct * dur)} / ${fmt(dur)}`;
+        showControls();
+      }
+      tl.addEventListener("pointerdown", e => {
+        dragging = true;
+        try { tl.setPointerCapture(e.pointerId); } catch (_) { }
+        seek(e);
+      });
+      tl.addEventListener("pointermove", e => { if (dragging) seek(e); });
+      tl.addEventListener("pointerup", () => { dragging = false; });
+      tl.addEventListener("pointercancel", () => { dragging = false; });
+    })();
+
+    /* full screen: offered on web (hidden in native Capacitor iOS/Android app) */
+    (() => {
+      const IS_NATIVE_APP = !!((window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) || location.protocol === "capacitor:" || /; wv\)/.test(navigator.userAgent));
+      const b = $("fs"); if (!b || IS_NATIVE_APP) return;
+      const d = document, el = d.documentElement;
+      const req = el.requestFullscreen || el.webkitRequestFullscreen, ext = d.exitFullscreen || d.webkitExitFullscreen;
+      if (!(d.fullscreenEnabled || d.webkitFullscreenEnabled) || !req) return;
+      b.hidden = false;
+      const isFs = () => d.fullscreenElement || d.webkitFullscreenElement;
+      const upd = () => { b.textContent = isFs() ? "✕ Exit full screen" : "⛶ Full screen"; };
+      b.addEventListener("click", () => {
+        try {
+          if (isFs()) ext.call(d);
+          else {
+            const p = req.call(el); if (p && p.catch) p.catch(() => { });
+            try { const o = screen.orientation; if (o && o.lock) o.lock("landscape").catch(() => { }); } catch (_) { }
+          }
+        } catch (_) { }
+      });
+      d.addEventListener("fullscreenchange", upd);
+      d.addEventListener("webkitfullscreenchange", upd);
+      upd();
+    })();
+
+    /* after the intro: the airport window. Young Sam's silhouette breathes in the glass; clicking him begins. */
+    let prefetched = false;
+    function prefetchRoom() {
+      if (prefetched) return; prefetched = true;
+      ["../room/index.html", "../room/shared/shared.css", "../room/shared/lib/three.min.js", "../room/shared/shared.js", "../room/app.js", "../room/assets/room.jpg"].forEach(href => {
+        const l = document.createElement("link"); l.rel = "prefetch"; l.href = href; document.head.appendChild(l);
+      });
     }
-  };
-})();
-
-/* ---------- controls ---------- */
-["pointerdown","pointermove","touchstart","touchend","keydown","click"].forEach(ev=>{
-  document.addEventListener(ev,()=>{
-    ambience.unlock();
-    if(running && iv.muted){
-      iv.muted=false;
-      iv.volume=1;
+    function decodeSceneImg(img) {
+      const waitLoad = () => new Promise(resolve => {
+        if (img.complete) return resolve();
+        let retried = false;
+        const done = () => { img.removeEventListener("load", done); img.removeEventListener("error", onErr); resolve(); };
+        const onErr = () => {
+          if (!retried) { retried = true; img.src = img.getAttribute("src"); return; }
+          done();
+        };
+        img.addEventListener("load", done);
+        img.addEventListener("error", onErr);
+      });
+      return waitLoad().then(() => img.decode ? img.decode().catch(() => { }) : undefined);
     }
-  },{passive:true});
-});
+    const sceneImgsReady = Promise.all([...document.querySelectorAll("#scene img")].map(decodeSceneImg));
+    const SCENE_READY_MAX_WAIT = 250;
+    function ensureSceneReady() {
+      return Promise.race([sceneImgsReady, new Promise(r => setTimeout(r, SCENE_READY_MAX_WAIT))]);
+    }
+    let windowToken = 0;
+    function toWindow(fromHistory = false) {
+      const token = ++windowToken;
+      stopIntro();
+      $("wrap").classList.remove("chosen", "hover");
+      ensureSceneReady().then(() => {
+        if (token !== windowToken) return;
+        requestAnimationFrame(() => {
+          if (token !== windowToken) return;
+          show("scene");
+          silhouette.start();
+          ambience.start();
+          prefetchRoom();
+          if (!fromHistory && location.hash !== "#window") {
+            try { history.pushState({ screen: "window" }, "", location.pathname + location.search + "#window"); } catch (_) { }
+          }
+        });
+      });
+    }
 
-$("play").onclick=()=>{
-  ambience.unlock();
-  if(iv.paused){
-    iv.muted=false;
-    iv.volume=1;
-    iv.play().then(()=>setPlaying(true)).catch(()=>{});
-  } else {
-    iv.pause();
-    setPlaying(false);
-  }
-  showControls();
-};
-$("skip").onclick=()=>toWindow(false);
+    /* ---------- young Sam silhouette breathing controller (organic, consistent, natural) ---------- */
+    const silhouette = (() => {
+      const sil = document.querySelector("#scene .sil");
+      const wr = $("wrap");
+      let timer = null;
+      let active = false;
+      let hovering = false;
 
-const yb=$("young"), wr=$("wrap");
-yb.addEventListener("pointerenter",()=>wr.classList.add("hover"));
-yb.addEventListener("pointerleave",()=>wr.classList.remove("hover"));
-yb.addEventListener("focus",()=>wr.classList.add("hover"));
-yb.addEventListener("blur",()=>wr.classList.remove("hover"));
-/* Click on young Sam = fade to black and enter the 2D Room directly */
-let enteringRoom=false;
-function afterYoungSam(){
-  if(enteringRoom) return; enteringRoom=true;
-  if(location.hash!=="#window"){
-    try{ history.replaceState({screen:"window"},"",location.pathname+location.search+"#window"); }catch(_){}
-  }
-  show("begin");
-  setTimeout(()=>{
-    location.href="../room/index.html"+(location.search||"");
-  },1050);
-}
-yb.onclick=()=>{ if(enteringRoom) return; wr.classList.add("chosen"); ambience.stop(); setTimeout(afterYoungSam,450); };
+      function clear() { clearTimeout(timer); timer = null; }
 
-if(location.search){
-  document.querySelectorAll(".home-link").forEach(a=>{ a.href="../index.html"+location.search; });
-}
+      function setOpacity(val, durationMs) {
+        if (!sil) return;
+        sil.style.transition = `opacity ${durationMs}ms cubic-bezier(.4,0,.2,1)`;
+        sil.style.opacity = val;
+      }
 
-window.addEventListener("popstate",()=>{
-  enteringRoom=false;
-  $("wrap").classList.remove("chosen","hover");
-  if(location.hash==="#window") toWindow(true);
-  else { ++windowToken; startIntro(); }
-});
-window.addEventListener("pageshow",()=>{
-  enteringRoom=false;
-  $("wrap").classList.remove("chosen","hover");
-  if(location.hash==="#window") toWindow(true);
-});
+      // Phase 1: Inhale / Emerge (young Sam emerges from shadow into clear reflection)
+      function emerge() {
+        if (!active || hovering || wr.classList.contains("chosen")) return;
+        const dur = Math.round(2200 + Math.random() * 600); // 2.2s - 2.8s
+        const target = +(0.04 + Math.random() * 0.08).toFixed(2); // 0.04 - 0.12 (clear visibility)
+        setOpacity(target, dur);
+        timer = setTimeout(() => hold(target), dur);
+      }
 
-/* Start the intro video immediately (or restore the window screen when returning via Browser Back) */
-if(location.hash==="#window"){
-  toWindow(true);
-} else {
-  startIntro();
-}
-</script>
+      // Phase 2: Hold (young Sam lingers visibly, giving comfortable time to see and click)
+      function hold(current) {
+        if (!active || hovering || wr.classList.contains("chosen")) return;
+        const dur = Math.round(2400 + Math.random() * 1000); // 2.4s - 3.4s
+        const drift = Math.max(0, +(current - 0.02 + Math.random() * 0.04).toFixed(2));
+        setOpacity(drift, dur);
+        timer = setTimeout(dissolve, dur);
+      }
+
+      // Phase 3: Exhale / Dissolve (young Sam fades softly back into shadow)
+      function dissolve() {
+        if (!active || hovering || wr.classList.contains("chosen")) return;
+        const dur = Math.round(2000 + Math.random() * 500); // 2.0s - 2.5s
+        const target = +(0.88 + Math.random() * 0.06).toFixed(2); // 0.88 - 0.94 (in shadow)
+        setOpacity(target, dur);
+        timer = setTimeout(rest, dur);
+      }
+
+      // Phase 4: Rest (brief quiet pause in shadow before next breath)
+      function rest() {
+        if (!active || hovering || wr.classList.contains("chosen")) return;
+        const dur = Math.round(1200 + Math.random() * 800); // 1.2s - 2.0s
+        timer = setTimeout(emerge, dur);
+      }
+
+      return {
+        start() {
+          if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+          active = true;
+          clear();
+          if (sil) {
+            sil.style.transition = "none";
+            sil.style.opacity = "0.92";
+            void sil.offsetHeight; // force reflow
+          }
+          timer = setTimeout(emerge, 350);
+        },
+        stop() {
+          active = false;
+          clear();
+          if (sil) sil.style.transition = "";
+        },
+        setHover(isHover) {
+          hovering = isHover;
+          if (!active || wr.classList.contains("chosen")) return;
+          if (hovering) {
+            clear();
+            setOpacity(0.02, 400);
+          } else {
+            clear();
+            timer = setTimeout(() => hold(0.08), 250);
+          }
+        }
+      };
+    })();
+
+    /* ---------- ambience: empty terminal room tone, strip-light hum, rain on glass, a distant jet ---------- */
+    const ambience = (() => {
+      let ctx = null, master = null, jetTimer = null, active = false;
+      function noise(seconds, brown) {
+        const b = ctx.createBuffer(1, ctx.sampleRate * seconds, ctx.sampleRate), d = b.getChannelData(0); let last = 0;
+        for (let i = 0; i < d.length; i++) { const w = Math.random() * 2 - 1; if (brown) { last = (last + .02 * w) / 1.02; d[i] = last * 3.5; } else d[i] = w; }
+        return b;
+      }
+      function loop(buf) { const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; return s; }
+      function build() {
+        ctx = new (window.AudioContext || window.webkitAudioContext)();
+        master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
+        // room tone
+        const room = loop(noise(6, true)), lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 380;
+        const rg = ctx.createGain(); rg.gain.value = .55; room.connect(lp).connect(rg).connect(master); room.start();
+        // fluorescent hum
+        [100, 200, 300].forEach((f, i) => { const o = ctx.createOscillator(); o.frequency.value = f; const g = ctx.createGain(); g.gain.value = [.012, .006, .003][i]; o.connect(g).connect(master); o.start(); });
+        // rain on the window
+        const rain = loop(noise(4, false)), bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 2600; bp.Q.value = .6;
+        const rgn = ctx.createGain(); rgn.gain.value = .05; rain.connect(bp).connect(rgn).connect(master); rain.start();
+        const lfo = ctx.createOscillator(); lfo.frequency.value = .07; const lg = ctx.createGain(); lg.gain.value = .02; lfo.connect(lg).connect(rgn.gain); lfo.start();
+      }
+      function jet() {
+        if (!ctx) return;
+        const s = ctx.createBufferSource(); s.buffer = noise(10, true);
+        const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 200;
+        const g = ctx.createGain(); const t = ctx.currentTime;
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.9, t + 4); g.gain.linearRampToValueAtTime(0, t + 9.5);
+        f.frequency.setValueAtTime(140, t); f.frequency.linearRampToValueAtTime(420, t + 4); f.frequency.linearRampToValueAtTime(160, t + 9.5);
+        s.connect(f).connect(g).connect(master); s.start(); s.stop(t + 10);
+        jetTimer = setTimeout(jet, 22000 + Math.random() * 14000);
+      }
+      return {
+        unlock() {
+          try {
+            if (!ctx) build();
+            if (ctx.state !== "running") ctx.resume().catch(() => { });
+            if (active) {
+              const t = ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t);
+              master.gain.linearRampToValueAtTime(.8, t + 1.5);
+            }
+          } catch (e) { }
+        },
+        start() {
+          active = true;
+          try { if (!ctx) build(); if (ctx.state !== "running") ctx.resume().catch(() => { }); } catch (e) { return; }
+          const t = ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t);
+          master.gain.linearRampToValueAtTime(.8, t + 2.5);
+          clearTimeout(jetTimer); jetTimer = setTimeout(jet, 6000);
+        },
+        stop() {
+          active = false;
+          clearTimeout(jetTimer); if (!ctx) return;
+          const t = ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t); master.gain.linearRampToValueAtTime(0, t + 1.2);
+        }
+      };
+    })();
+
+    /* ---------- controls ---------- */
+    ["pointerdown", "pointermove", "touchstart", "touchend", "keydown", "click"].forEach(ev => {
+      document.addEventListener(ev, () => {
+        ambience.unlock();
+        if (running && iv.muted) {
+          iv.muted = false;
+          iv.volume = 1;
+        }
+      }, { passive: true });
+    });
+
+    $("play").onclick = () => {
+      ambience.unlock();
+      if (iv.paused) {
+        iv.muted = false;
+        iv.volume = 1;
+        iv.play().then(() => setPlaying(true)).catch(() => { });
+      } else {
+        iv.pause();
+        setPlaying(false);
+      }
+      showControls();
+    };
+    $("skip").onclick = () => toWindow(false);
+
+    const yb = $("young"), wr = $("wrap");
+    yb.addEventListener("pointerenter", () => { wr.classList.add("hover"); silhouette.setHover(true); });
+    yb.addEventListener("pointerleave", () => { wr.classList.remove("hover"); silhouette.setHover(false); });
+    yb.addEventListener("focus", () => { wr.classList.add("hover"); silhouette.setHover(true); });
+    yb.addEventListener("blur", () => { wr.classList.remove("hover"); silhouette.setHover(false); });
+    /* Click on young Sam = fade to black and enter the 2D Room directly */
+    let enteringRoom = false;
+    function afterYoungSam() {
+      if (enteringRoom) return; enteringRoom = true;
+      if (location.hash !== "#window") {
+        try { history.replaceState({ screen: "window" }, "", location.pathname + location.search + "#window"); } catch (_) { }
+      }
+      show("begin");
+      setTimeout(() => {
+        location.href = "../room/index.html" + (location.search || "");
+      }, 1050);
+    }
+    yb.onclick = () => { if (enteringRoom) return; wr.classList.add("chosen"); silhouette.stop(); ambience.stop(); setTimeout(afterYoungSam, 450); };
+
+    if (location.search) {
+      document.querySelectorAll(".home-link").forEach(a => { a.href = "../index.html" + location.search; });
+    }
+
+    window.addEventListener("popstate", () => {
+      enteringRoom = false;
+      silhouette.stop();
+      $("wrap").classList.remove("chosen", "hover");
+      if (location.hash === "#window") toWindow(true);
+      else { ++windowToken; startIntro(); }
+    });
+    window.addEventListener("pageshow", () => {
+      enteringRoom = false;
+      silhouette.stop();
+      $("wrap").classList.remove("chosen", "hover");
+      if (location.hash === "#window") toWindow(true);
+    });
+
+    /* Start the intro video immediately (or restore the window screen when returning via Browser Back) */
+    if (location.hash === "#window") {
+      toWindow(true);
+    } else {
+      startIntro();
+    }
+  </script>
 </body>
+
 </html>
