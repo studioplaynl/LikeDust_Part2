@@ -510,6 +510,8 @@ function preload(i){ const nv=vids[1-cur]; if(SEGS[i] && nv.getAttribute("src")!
 function setPlaying(p){ playing=p; $("play").textContent=p?"❚❚":"▶"; $("play").setAttribute("aria-label",p?t("pause"):t("play")); }
 function loadSeg(i, jumpToEndFrame, customTime){
   const myNav=++navId;
+  vids.forEach(x=>{ try{ x.pause(); }catch(_){} });
+  setPlaying(false);
   endInteraction();
   segI=i;
   syncMarkerDone(i);
@@ -585,11 +587,23 @@ function loadSeg(i, jumpToEndFrame, customTime){
     }
   });
 }
-vids.forEach(el=>el.addEventListener("ended",()=>{ if(el===v() && !inInteraction) onSegEnd(false); }));
+vids.forEach(el=>el.addEventListener("ended",()=>{ if(el===v() && !inInteraction && playing) onSegEnd(false); }));
 function onSegEnd(keepCtl){ setPlaying(false); if(keepCtl && document.body.classList.contains("show-ctl")) showControls(); else hideControls(); const a=SEGS[segI].after; if(a){ inInteraction=true; document.body.classList.add("inter"); INTERACT[a](); } else end(); }
-function next(){ const done=SEGS[segI].after; if(done) $("mk-"+done).classList.add("done"); loadSeg(segI+1); }
+function next(){ if(!inInteraction) return; const done=SEGS[segI].after; if(done) $("mk-"+done).classList.add("done"); loadSeg(segI+1); }
 function end(){ const n=myNumber(false); if(n){ $("endnumv").textContent=n; $("endnum").hidden=false; } $("cardEnd").classList.remove("off"); }
-function endInteraction(){ timers.forEach(clearTimeout); timers.clear(); if(cleanup){ cleanup(); cleanup=null; } ui.innerHTML=""; frame.classList.remove("gray"); inInteraction=false; document.body.classList.remove("inter"); }
+function endInteraction(){
+  timers.forEach(clearTimeout);
+  timers.clear();
+  if(cleanup){ try{ cleanup(); }catch(_){} cleanup=null; }
+  ui.querySelectorAll("video, audio").forEach(m=>{
+    try{ m.pause(); m.removeAttribute("src"); m.load(); m.onended=null; m.onerror=null; }catch(_){}
+  });
+  if(typeof snd!=="undefined" && snd.stopAll) snd.stopAll();
+  ui.innerHTML="";
+  frame.classList.remove("gray");
+  inInteraction=false;
+  document.body.classList.remove("inter");
+}
 
 $("play").onclick=()=>{ if(inInteraction) return; snd.unlock(); if(v().paused){ v().play().then(()=>setPlaying(true)).catch(()=>{}); } else { v().pause(); setPlaying(false); } };
 $("go").onclick=()=>{ snd.unlock(); $("cardStart").classList.add("off"); segI=0; cur=0; vids[0].src=SEGS[0].src; vids[0].classList.remove("hide"); vids[1].classList.add("hide");
@@ -624,7 +638,13 @@ const snd=(()=>{
       if(on){ play("riot"); return; }
       if(a.paused) return; let v=1; const step=()=>{ v-=.1; try{ a.volume=Math.max(0,v); }catch(e){} if(v>0) riotT=setTimeout(step,100); else halt("riot"); }; step(); },
     /* a long-distance ringback: one long tone, then silence, again and again */
-    ring(on,onEach){ clearTimeout(ringT); if(!on){ halt("ring"); return; } const loop=()=>{ play("ring"); onEach&&onEach(); ringT=setTimeout(loop,3200); }; loop(); } }; })();
+    ring(on,onEach){ clearTimeout(ringT); if(!on){ halt("ring"); return; } const loop=()=>{ play("ring"); onEach&&onEach(); ringT=setTimeout(loop,3200); }; loop(); },
+    stopAll(){
+      clearTimeout(beatT); beatT=null;
+      clearTimeout(ringT); ringT=null;
+      clearTimeout(riotT); riotT=null;
+      for(const n in els){ (els[n]||[]).forEach(a=>{ try{ a.pause(); a.currentTime=0; }catch(_){} }); }
+    } }; })();
 
 /* ---------- tap that also works on iPhone ----------
    Fires on touchend (no waiting for iOS's synthetic click); a click right after a touch is ignored. */
@@ -893,6 +913,7 @@ locker(){
       later(()=>snd.flies(),9300);
       lc.onended=()=>later(go,2200);
       later(go,17500); },1100); });
+  cleanup=()=>{ try{ lc.pause(); lc.removeAttribute("src"); lc.load(); }catch(_){} };
 },
 
 /* CH2 · THAT NIGHT — hold to stay out of sight while the noise and the dogs pass */
