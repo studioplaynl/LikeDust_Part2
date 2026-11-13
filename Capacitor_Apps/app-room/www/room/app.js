@@ -144,7 +144,6 @@
 
   let stageScale = 1;
   let uiScale = 1;
-  let rotateOk = false;
 
   function fit() {
     const W = wrap.clientWidth || innerWidth || 1;
@@ -181,9 +180,6 @@
     stageGroup.scale.set(S, S, 1);
 
     hotsEl.style.transform = `translate(${tx}px,${ty}px) scale(${s}) translate(${C.dx}px,${C.dy}px) translate(${C.cx}px,${C.cy}px) scale(${C.z}) translate(${-C.cx}px,${-C.cy}px)`;
-
-    const port = H > W && W <= 1024;
-    $("rotate").hidden = !port || rotateOk;
   }
 
   addEventListener("resize", fit);
@@ -2161,11 +2157,6 @@
     st.reset();
     hudUi.update();
     syncRoomFromSavedState(true);
-  };
-
-  $("rotateOk").onclick = () => {
-    rotateOk = true;
-    fit();
   };
 
   /* ===== Idle 15s Room Reaction (Sam looks around / thinks) ===== */
