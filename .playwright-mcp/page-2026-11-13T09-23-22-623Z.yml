@@ -1,0 +1,17 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic "Interactive room" [ref=e3]
+    - generic:
+      - button "Chapter 1 · Schiphol" [ref=e4] [cursor=pointer]
+      - button "Chapter 2 · The Asylum Centre" [ref=e5] [cursor=pointer]
+      - button "Chapter 3 · Amsterdam" [ref=e6] [cursor=pointer]
+  - generic:
+    - status
+  - generic:
+    - link "← Home" [ref=e8] [cursor=pointer]:
+      - /url: ../index.html?dev=1
+    - generic "Completed chapters" [ref=e10]:
+      - generic "1 · Schiphol" [ref=e11]
+      - generic "2 · The AZC" [ref=e12]
+      - generic "3 · Amsterdam" [ref=e13]
+      - generic "4 · The Letter" [ref=e14]

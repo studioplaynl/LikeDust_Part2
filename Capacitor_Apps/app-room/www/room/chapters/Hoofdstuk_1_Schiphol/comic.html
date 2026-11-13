@@ -1,380 +1,938 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Schiphol Chapter One · Comic</title>
-<meta name="claude:viewport-fit-sides" content="cover">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800&family=Literata:ital,opsz,wght@0,7..72,400;1,7..72,400&family=Reenie+Beanie&display=swap">
-<style>
-/* Layout: the full comic page always visible (never cropped); the current panel is lit, the rest dimmed. Narration sits beside the page (below on phones). Three interactions live inside the page. */
-:root{
-  --ink:#000; --chalk:#ece8de; --chalk-dim:#a3a59e;
-  --ochre:#D6A93E; --ochre-dim:#a8873a; --shade:rgba(0,0,0,.62);
-  --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
-  --f-body:"Literata",Georgia,serif;
-  --f-chalk:"Reenie Beanie","Comic Sans MS",cursive;
-  color-scheme:dark;
-}
-html,body{height:100%;background:var(--ink);color:var(--chalk)}
-body{overflow:hidden;font-family:var(--f-body)}
-.stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;gap:clamp(18px,3vw,48px);
-  padding:calc(56px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
-.page{position:relative;height:100%;aspect-ratio:1139/1695;max-width:100%;flex:0 0 auto;overflow:hidden;background:#000;touch-action:manipulation;cursor:pointer}
-.page img.pg{position:absolute;inset:0;width:100%;height:100%;display:block;transition:opacity .7s ease}
-.spot{position:absolute;box-shadow:0 0 0 200vmax rgba(0,0,0,.78);outline:1px solid rgba(214,169,62,.0);transition:left .9s cubic-bezier(.6,.05,.2,1),top .9s cubic-bezier(.6,.05,.2,1),width .9s cubic-bezier(.6,.05,.2,1),height .9s cubic-bezier(.6,.05,.2,1),box-shadow .6s;pointer-events:none;z-index:2}
-.spot.full{box-shadow:0 0 0 200vmax rgba(0,0,0,0)}
-.ui{position:absolute;inset:0;z-index:4}
+<!doctype html>
+<html lang="en">
 
-.side{flex:0 1 34ch;min-width:0;display:flex;flex-direction:column;gap:18px}
-.where{margin:0;font:500 .78rem var(--f-display);letter-spacing:.24em;text-transform:uppercase;color:var(--ochre-dim)}
-.line{margin:0;font-size:clamp(1.05rem,1.7vw,1.45rem);line-height:1.5;color:var(--chalk);min-height:6.5em;text-wrap:pretty;transition:opacity .4s}
-.line.dim{opacity:0}
-.nav{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.count{font:600 .8rem var(--f-display);letter-spacing:.14em;color:var(--chalk-dim);font-variant-numeric:tabular-nums}
-.hint{margin:0;font:500 .72rem var(--f-display);letter-spacing:.2em;text-transform:uppercase;color:var(--chalk-dim)}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <style>
+    :root {
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px)
+    }
 
-.ghost{font:700 .8rem var(--f-display);letter-spacing:.2em;text-transform:uppercase;color:var(--chalk);background:var(--shade);border:1px solid rgba(236,232,222,.35);padding:9px 14px;cursor:pointer}
-.ghost:hover{border-color:var(--ochre);color:var(--ochre)}
-.ghost[aria-pressed="true"]{border-color:var(--ochre);color:var(--ochre)}
-.btn{font:700 1rem var(--f-display);letter-spacing:.18em;text-transform:uppercase;color:#000;background:var(--chalk);border:0;padding:14px 30px;cursor:pointer}
-.btn:hover{background:var(--ochre)}
-.btn:focus-visible,.ghost:focus-visible,.hold:focus-visible,.page:focus-visible{outline:2px solid var(--ochre);outline-offset:4px}
-.top{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:max(16px,env(safe-area-inset-left,0px));right:max(16px,env(safe-area-inset-right,0px));display:flex;justify-content:space-between;align-items:center;gap:10px;z-index:20}
-.top .chap{font:500 .75rem var(--f-display);letter-spacing:.22em;text-transform:uppercase;color:var(--chalk-dim)}
-.top .chap b{color:var(--ochre);font-weight:700}
-.top .tools{display:flex;gap:8px}
-.bar{position:fixed;left:0;top:0;height:2px;background:var(--ochre);z-index:21;transition:width .6s}
+    body {
+      margin: 0;
+      font: 14px -apple-system, BlinkMacSystemFont, sans-serif
+    }
 
-.card{position:fixed;inset:0;z-index:30;display:grid;place-content:center;justify-items:center;gap:22px;text-align:center;background:#000;padding-inline:16px;transition:opacity 1s}
-.card.off{opacity:0;pointer-events:none}
-.eyebrow{margin:0;font:500 .85rem var(--f-display);letter-spacing:.24em;text-transform:uppercase;color:var(--ochre-dim)}
-.h-title{margin:0;color:var(--ochre);font:800 clamp(2.4rem,8vw,6rem)/.9 var(--f-display);text-transform:uppercase;text-wrap:balance}
-.card p.place{margin:0;font-style:italic;color:var(--chalk-dim);font-size:1.1rem}
+    img {
+      max-width: 100%
+    }
 
-/* motion: the panel opens into its animated shot (full 16:9 frame, never cropped) */
-.mvbg{position:fixed;inset:0;background:#000;opacity:0;z-index:14;transition:opacity .8s;pointer-events:none}
-.mvbg.on{opacity:.88;pointer-events:auto;cursor:pointer}
-video.mv{position:fixed;z-index:15;object-fit:cover;background:#000;opacity:0;pointer-events:none;box-shadow:0 20px 80px rgba(0,0,0,.8);
-  transition:left .9s cubic-bezier(.6,.05,.2,1),top .9s cubic-bezier(.6,.05,.2,1),width .9s cubic-bezier(.6,.05,.2,1),height .9s cubic-bezier(.6,.05,.2,1),opacity .6s}
-video.mv.on{opacity:1;pointer-events:auto;cursor:pointer}
-.mvtag{position:fixed;z-index:16;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);font:600 .72rem var(--f-display);letter-spacing:.22em;text-transform:uppercase;color:var(--chalk-dim);opacity:0;transition:opacity .6s;pointer-events:none;white-space:nowrap}
-.mvtag.on{opacity:1}
-.mbtn{margin-left:auto}
-/* interaction overlays (positioned inside .page) */
-.hold{position:absolute;transform:translate(-50%,-50%);width:clamp(84px,22%,140px);aspect-ratio:1;border-radius:50%;border:0;background:rgba(0,0,0,.35);cursor:pointer;display:grid;place-items:center;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;z-index:5}
-.hold svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
-.hold .lbl{font:700 clamp(.65rem,1.2vw,.85rem)/1.2 var(--f-display);letter-spacing:.16em;text-transform:uppercase;color:var(--chalk);text-shadow:0 1px 6px #000;text-align:center}
-.hold.pulse circle.base{animation:ring 2.4s ease-in-out infinite}
-@keyframes ring{0%,100%{stroke-opacity:.35}50%{stroke-opacity:.95}}
-.vig{position:absolute;inset:0;pointer-events:none;z-index:3;background:radial-gradient(ellipse at var(--cx,50%) var(--cy,75%),transparent calc(60% - var(--v,0)*50%),#000 calc(95% - var(--v,0)*35%))}
-.stamp{position:absolute;transform:translate(-50%,-50%) rotate(-12deg) scale(2.4);z-index:6;font:800 clamp(1.6rem,5vw,3.6rem) var(--f-display);letter-spacing:.08em;color:#c0402c;border:5px solid #c0402c;padding:2px 18px;opacity:0;transition:transform .18s cubic-bezier(.3,1.6,.6,1),opacity .1s;pointer-events:none}
-.stamp.on{opacity:.95;transform:translate(-50%,-50%) rotate(-12deg) scale(1)}
-.shake{animation:shake .35s}
-@keyframes shake{20%{transform:translate(-6px,3px)}40%{transform:translate(5px,-4px)}60%{transform:translate(-3px,2px)}80%{transform:translate(2px,-1px)}}
-canvas.grime{position:absolute;inset:0;width:100%;height:100%;z-index:5;cursor:crosshair;touch-action:none}
-.scratch div{position:absolute;font:clamp(1.2rem,2.6vw,2.2rem)/1 var(--f-chalk);color:rgba(236,232,222,.88);transform:rotate(-5deg);white-space:nowrap;opacity:0;transition:opacity 2.4s;z-index:6;pointer-events:none}
-.scratch div.on{opacity:1}
-.write{display:flex;flex-wrap:wrap;gap:10px}
-.write input{flex:1 1 180px;min-width:0;font:1.5rem var(--f-chalk);color:var(--chalk);background:#111;border:1px solid rgba(236,232,222,.35);padding:6px 12px}
-.write input:focus{outline:2px solid var(--ochre)}
-.finder{position:absolute;z-index:5;pointer-events:none}
-.finder i{position:absolute;width:22px;height:22px;border:2px solid var(--chalk)}
-.finder i:nth-child(1){left:-6px;top:-6px;border-right:0;border-bottom:0}
-.finder i:nth-child(2){right:-6px;top:-6px;border-left:0;border-bottom:0}
-.finder i:nth-child(3){left:-6px;bottom:-6px;border-right:0;border-top:0}
-.finder i:nth-child(4){right:-6px;bottom:-6px;border-left:0;border-top:0}
-.finder span{position:absolute;top:-24px;left:0;font:600 .72rem var(--f-display);letter-spacing:.2em;color:var(--ochre)}
-.flash{position:absolute;inset:0;background:#fff;opacity:0;z-index:7;pointer-events:none}
-.flash.go{animation:flash 1.1s ease-out}
-@keyframes flash{0%{opacity:1}100%{opacity:0}}
-.task{font:600 .78rem var(--f-display);letter-spacing:.2em;text-transform:uppercase;color:var(--ochre)}
+    [hidden] {
+      display: none !important
+    }
+  </style>
+  <title>Schiphol Chapter One · Comic</title>
+  <meta name="claude:viewport-fit-sides" content="cover">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;700;800&family=Literata:ital,opsz,wght@0,7..72,400;1,7..72,400&family=Reenie+Beanie&display=swap">
+  <style>
+    /* Layout: the full comic page always visible (never cropped); the current panel is lit, the rest dimmed. Narration sits beside the page (below on phones). Three interactions live inside the page. */
+    :root {
+      --ink: #000;
+      --chalk: #ece8de;
+      --chalk-dim: #a3a59e;
+      --ochre: #D6A93E;
+      --ochre-dim: #a8873a;
+      --shade: rgba(0, 0, 0, .62);
+      --f-display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+      --f-body: "Literata", Georgia, serif;
+      --f-chalk: "Reenie Beanie", "Comic Sans MS", cursive;
+      color-scheme: dark;
+    }
 
-@media (max-width:820px), (max-aspect-ratio:1/1){
-  .stage{flex-direction:column;gap:12px;padding-top:calc(52px + env(safe-area-inset-top,0px))}
-  .page{height:auto;width:auto;flex:1 1 auto;min-height:0;max-height:100%}
-  .side{flex:0 0 auto;width:min(100%,60ch)}
-  .line{min-height:4.6em;font-size:1rem}
-  .hint{display:none}
-  .top .chap .long{display:none}
-  .top .ghost{padding:7px 10px;font-size:.7rem}
-}
-@media (prefers-reduced-motion:reduce){.spot{transition:none}.hold.pulse circle.base{animation:none}}
-</style>
-</head><body>
-<div class="bar" id="bar"></div>
-<div class="top">
-  <span class="chap"><span class="long">We All Breathe The Same Air · </span>Chapter <b>one</b></span>
-  <span class="tools"><a class="ghost" href="index.html" style="text-decoration:none">▶ Film version</a><button class="ghost" id="restart" type="button">↺ Restart</button></span>
-</div>
+    html,
+    body {
+      height: 100%;
+      background: var(--ink);
+      color: var(--chalk);
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
 
-<div class="stage">
-  <div class="page" id="page" tabindex="0" aria-label="Comic page. Click or press the right arrow for the next panel.">
-    <img class="pg" id="pg" alt="">
-    <div class="spot full" id="spot"></div>
-    <div class="ui" id="ui"></div>
+    body {
+      overflow: hidden;
+      font-family: var(--f-body)
+    }
+
+    img {
+      -webkit-user-drag: none;
+      user-drag: none;
+      -webkit-user-select: none;
+      user-select: none
+    }
+
+    input,
+    textarea {
+      -webkit-user-select: text;
+      user-select: text
+    }
+
+    .stage {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(18px, 3vw, 48px);
+      padding: calc(56px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))
+    }
+
+    .page {
+      position: relative;
+      height: 100%;
+      aspect-ratio: 1139/1695;
+      max-width: 100%;
+      flex: 0 0 auto;
+      overflow: hidden;
+      background: #000;
+      touch-action: manipulation;
+      cursor: pointer
+    }
+
+    .page img.pg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      transition: opacity .7s ease
+    }
+
+    .spot {
+      position: absolute;
+      box-shadow: 0 0 0 200vmax rgba(0, 0, 0, .78);
+      outline: 1px solid rgba(214, 169, 62, .0);
+      transition: left .9s cubic-bezier(.6, .05, .2, 1), top .9s cubic-bezier(.6, .05, .2, 1), width .9s cubic-bezier(.6, .05, .2, 1), height .9s cubic-bezier(.6, .05, .2, 1), box-shadow .6s;
+      pointer-events: none;
+      z-index: 2
+    }
+
+    .spot.full {
+      box-shadow: 0 0 0 200vmax rgba(0, 0, 0, 0)
+    }
+
+    .ui {
+      position: absolute;
+      inset: 0;
+      z-index: 4
+    }
+
+    .side {
+      flex: 0 1 34ch;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 18px
+    }
+
+    .where {
+      margin: 0;
+      font: 500 .78rem var(--f-display);
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: var(--ochre-dim)
+    }
+
+    .line {
+      margin: 0;
+      font-size: clamp(1.05rem, 1.7vw, 1.45rem);
+      line-height: 1.5;
+      color: var(--chalk);
+      min-height: 6.5em;
+      text-wrap: pretty;
+      transition: opacity .4s
+    }
+
+    .line.dim {
+      opacity: 0
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap
+    }
+
+    .count {
+      font: 600 .8rem var(--f-display);
+      letter-spacing: .14em;
+      color: var(--chalk-dim);
+      font-variant-numeric: tabular-nums
+    }
+
+    .hint {
+      margin: 0;
+      font: 500 .72rem var(--f-display);
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--chalk-dim)
+    }
+
+    .ghost {
+      font: 700 .8rem var(--f-display);
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--chalk);
+      background: var(--shade);
+      border: 1px solid rgba(236, 232, 222, .35);
+      padding: 9px 14px;
+      cursor: pointer
+    }
+
+    .ghost:hover {
+      border-color: var(--ochre);
+      color: var(--ochre)
+    }
+
+    .ghost[aria-pressed="true"] {
+      border-color: var(--ochre);
+      color: var(--ochre)
+    }
+
+    .btn {
+      font: 700 1rem var(--f-display);
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: #000;
+      background: var(--chalk);
+      border: 0;
+      padding: 14px 30px;
+      cursor: pointer
+    }
+
+    .btn:hover {
+      background: var(--ochre)
+    }
+
+    .btn:focus-visible,
+    .ghost:focus-visible,
+    .hold:focus-visible,
+    .page:focus-visible {
+      outline: 2px solid var(--ochre);
+      outline-offset: 4px
+    }
+
+    .top {
+      position: fixed;
+      top: calc(12px + env(safe-area-inset-top, 0px));
+      left: max(16px, env(safe-area-inset-left, 0px));
+      right: max(16px, env(safe-area-inset-right, 0px));
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      z-index: 20
+    }
+
+    .top .chap {
+      font: 500 .75rem var(--f-display);
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--chalk-dim)
+    }
+
+    .top .chap b {
+      color: var(--ochre);
+      font-weight: 700
+    }
+
+    .top .tools {
+      display: flex;
+      gap: 8px
+    }
+
+    .bar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      height: 2px;
+      background: var(--ochre);
+      z-index: 21;
+      transition: width .6s
+    }
+
+    .card {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-content: center;
+      justify-items: center;
+      gap: 22px;
+      text-align: center;
+      background: #000;
+      padding-inline: 16px;
+      transition: opacity 1s
+    }
+
+    .card.off {
+      opacity: 0;
+      pointer-events: none
+    }
+
+    .eyebrow {
+      margin: 0;
+      font: 500 .85rem var(--f-display);
+      letter-spacing: .24em;
+      text-transform: uppercase;
+      color: var(--ochre-dim)
+    }
+
+    .h-title {
+      margin: 0;
+      color: var(--ochre);
+      font: 800 clamp(2.4rem, 8vw, 6rem)/.9 var(--f-display);
+      text-transform: uppercase;
+      text-wrap: balance
+    }
+
+    .card p.place {
+      margin: 0;
+      font-style: italic;
+      color: var(--chalk-dim);
+      font-size: 1.1rem
+    }
+
+    /* motion: the panel opens into its animated shot (full 16:9 frame, never cropped) */
+    .mvbg {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      opacity: 0;
+      z-index: 14;
+      transition: opacity .8s;
+      pointer-events: none
+    }
+
+    .mvbg.on {
+      opacity: .88;
+      pointer-events: auto;
+      cursor: pointer
+    }
+
+    video.mv {
+      position: fixed;
+      z-index: 15;
+      object-fit: cover;
+      background: #000;
+      opacity: 0;
+      pointer-events: none;
+      box-shadow: 0 20px 80px rgba(0, 0, 0, .8);
+      transition: left .9s cubic-bezier(.6, .05, .2, 1), top .9s cubic-bezier(.6, .05, .2, 1), width .9s cubic-bezier(.6, .05, .2, 1), height .9s cubic-bezier(.6, .05, .2, 1), opacity .6s
+    }
+
+    video.mv.on {
+      opacity: 1;
+      pointer-events: auto;
+      cursor: pointer
+    }
+
+    .mvtag {
+      position: fixed;
+      z-index: 16;
+      left: 50%;
+      bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%);
+      font: 600 .72rem var(--f-display);
+      letter-spacing: .22em;
+      text-transform: uppercase;
+      color: var(--chalk-dim);
+      opacity: 0;
+      transition: opacity .6s;
+      pointer-events: none;
+      white-space: nowrap
+    }
+
+    .mvtag.on {
+      opacity: 1
+    }
+
+    .mbtn {
+      margin-left: auto
+    }
+
+    /* interaction overlays (positioned inside .page) */
+    .hold {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      width: clamp(84px, 22%, 140px);
+      aspect-ratio: 1;
+      border-radius: 50%;
+      border: 0;
+      background: rgba(0, 0, 0, .35);
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      z-index: 5
+    }
+
+    .hold svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg)
+    }
+
+    .hold .lbl {
+      font: 700 clamp(.65rem, 1.2vw, .85rem)/1.2 var(--f-display);
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--chalk);
+      text-shadow: 0 1px 6px #000;
+      text-align: center
+    }
+
+    .hold.pulse circle.base {
+      animation: ring 2.4s ease-in-out infinite
+    }
+
+    @keyframes ring {
+
+      0%,
+      100% {
+        stroke-opacity: .35
+      }
+
+      50% {
+        stroke-opacity: .95
+      }
+    }
+
+    .vig {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 3;
+      background: radial-gradient(ellipse at var(--cx, 50%) var(--cy, 75%), transparent calc(60% - var(--v, 0)*50%), #000 calc(95% - var(--v, 0)*35%))
+    }
+
+    .stamp {
+      position: absolute;
+      transform: translate(-50%, -50%) rotate(-12deg) scale(2.4);
+      z-index: 6;
+      font: 800 clamp(1.6rem, 5vw, 3.6rem) var(--f-display);
+      letter-spacing: .08em;
+      color: #c0402c;
+      border: 5px solid #c0402c;
+      padding: 2px 18px;
+      opacity: 0;
+      transition: transform .18s cubic-bezier(.3, 1.6, .6, 1), opacity .1s;
+      pointer-events: none
+    }
+
+    .stamp.on {
+      opacity: .95;
+      transform: translate(-50%, -50%) rotate(-12deg) scale(1)
+    }
+
+    .shake {
+      animation: shake .35s
+    }
+
+    @keyframes shake {
+      20% {
+        transform: translate(-6px, 3px)
+      }
+
+      40% {
+        transform: translate(5px, -4px)
+      }
+
+      60% {
+        transform: translate(-3px, 2px)
+      }
+
+      80% {
+        transform: translate(2px, -1px)
+      }
+    }
+
+    canvas.grime {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 5;
+      cursor: crosshair;
+      touch-action: none
+    }
+
+    .scratch div {
+      position: absolute;
+      font: clamp(1.2rem, 2.6vw, 2.2rem)/1 var(--f-chalk);
+      color: rgba(236, 232, 222, .88);
+      transform: rotate(-5deg);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 2.4s;
+      z-index: 6;
+      pointer-events: none
+    }
+
+    .scratch div.on {
+      opacity: 1
+    }
+
+    .write {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px
+    }
+
+    .write input {
+      flex: 1 1 180px;
+      min-width: 0;
+      font: 1.5rem var(--f-chalk);
+      color: var(--chalk);
+      background: #111;
+      border: 1px solid rgba(236, 232, 222, .35);
+      padding: 6px 12px
+    }
+
+    .write input:focus {
+      outline: 2px solid var(--ochre)
+    }
+
+    .finder {
+      position: absolute;
+      z-index: 5;
+      pointer-events: none
+    }
+
+    .finder i {
+      position: absolute;
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--chalk)
+    }
+
+    .finder i:nth-child(1) {
+      left: -6px;
+      top: -6px;
+      border-right: 0;
+      border-bottom: 0
+    }
+
+    .finder i:nth-child(2) {
+      right: -6px;
+      top: -6px;
+      border-left: 0;
+      border-bottom: 0
+    }
+
+    .finder i:nth-child(3) {
+      left: -6px;
+      bottom: -6px;
+      border-right: 0;
+      border-top: 0
+    }
+
+    .finder i:nth-child(4) {
+      right: -6px;
+      bottom: -6px;
+      border-left: 0;
+      border-top: 0
+    }
+
+    .finder span {
+      position: absolute;
+      top: -24px;
+      left: 0;
+      font: 600 .72rem var(--f-display);
+      letter-spacing: .2em;
+      color: var(--ochre)
+    }
+
+    .flash {
+      position: absolute;
+      inset: 0;
+      background: #fff;
+      opacity: 0;
+      z-index: 7;
+      pointer-events: none
+    }
+
+    .flash.go {
+      animation: flash 1.1s ease-out
+    }
+
+    @keyframes flash {
+      0% {
+        opacity: 1
+      }
+
+      100% {
+        opacity: 0
+      }
+    }
+
+    .task {
+      font: 600 .78rem var(--f-display);
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--ochre)
+    }
+
+    @media (max-width:820px),
+    (max-aspect-ratio:1/1) {
+      .stage {
+        flex-direction: column;
+        gap: 12px;
+        padding-top: calc(52px + env(safe-area-inset-top, 0px))
+      }
+
+      .page {
+        height: auto;
+        width: auto;
+        flex: 1 1 auto;
+        min-height: 0;
+        max-height: 100%
+      }
+
+      .side {
+        flex: 0 0 auto;
+        width: min(100%, 60ch)
+      }
+
+      .line {
+        min-height: 4.6em;
+        font-size: 1rem
+      }
+
+      .hint {
+        display: none
+      }
+
+      .top .chap .long {
+        display: none
+      }
+
+      .top .ghost {
+        padding: 7px 10px;
+        font-size: .7rem
+      }
+    }
+
+    @media (prefers-reduced-motion:reduce) {
+      .spot {
+        transition: none
+      }
+
+      .hold.pulse circle.base {
+        animation: none
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bar" id="bar"></div>
+  <div class="top">
+    <span class="chap"><span class="long">We All Breathe The Same Air · </span>Chapter <b>one</b></span>
+    <span class="tools"><a class="ghost" href="index.html" style="text-decoration:none">▶ Film version</a><button
+        class="ghost" id="restart" type="button">↺ Restart</button></span>
   </div>
-  <div class="side">
-    <p class="where" id="where">Schiphol · 1997</p>
-    <p class="line" id="line"></p>
-    <div id="act"></div>
-    <div class="nav">
-      <button class="ghost" id="prev" type="button" aria-label="Previous panel">←</button>
-      <button class="ghost" id="next" type="button" aria-label="Next panel">Next →</button>
-      <button class="ghost" id="auto" type="button" aria-pressed="false">▶ Auto</button>
-      <span class="count" id="count"></span>
+
+  <div class="stage">
+    <div class="page" id="page" tabindex="0"
+      aria-label="Comic page. Click or press the right arrow for the next panel.">
+      <img class="pg" id="pg" alt="">
+      <div class="spot full" id="spot"></div>
+      <div class="ui" id="ui"></div>
     </div>
-    <p class="hint">Click the page or use ← → to read</p>
+    <div class="side">
+      <p class="where" id="where">Schiphol · 1997</p>
+      <p class="line" id="line"></p>
+      <div id="act"></div>
+      <div class="nav">
+        <button class="ghost" id="prev" type="button" aria-label="Previous panel">←</button>
+        <button class="ghost" id="next" type="button" aria-label="Next panel">Next →</button>
+        <button class="ghost" id="auto" type="button" aria-pressed="false">▶ Auto</button>
+        <span class="count" id="count"></span>
+      </div>
+      <p class="hint">Click the page or use ← → to read</p>
+    </div>
   </div>
-</div>
 
-<div class="mvbg" id="mvbg"></div><video class="mv" id="mv" muted playsinline preload="auto"></video><div class="mvtag" id="mvtag">Motion · click to return to the page</div>
-<div class="card" id="cardStart">
-  <p class="eyebrow">We All Breathe The Same Air · Chapter one</p>
-  <h1 class="h-title">Schiphol</h1>
-  <p class="place">Amsterdam, 1997</p>
-  <button class="btn" id="go" type="button">▶ Begin</button>
-  <p class="eyebrow" style="font-size:.72rem">Sound on · 15 pages · five moving shots · three moments ask something of you</p>
-</div>
-<div class="card off" id="cardEnd">
-  <p class="eyebrow">End of chapter one</p>
-  <h2 class="h-title">A number<br>for a name.</h2>
-  <p class="place">Chapter two: the AZC</p>
-  <button class="ghost" id="again" type="button">↺ Read chapter one again</button>
-</div>
+  <div class="mvbg" id="mvbg"></div><video class="mv" id="mv" muted playsinline preload="auto"></video>
+  <div class="mvtag" id="mvtag">Motion · click to return to the page</div>
+  <div class="card" id="cardStart">
+    <p class="eyebrow">We All Breathe The Same Air · Chapter one</p>
+    <h1 class="h-title">Schiphol</h1>
+    <p class="place">Amsterdam, 1997</p>
+    <button class="btn" id="go" type="button">▶ Begin</button>
+    <p class="eyebrow" style="font-size:.72rem">Sound on · 15 pages · five moving shots · three moments ask something of
+      you</p>
+  </div>
+  <div class="card off" id="cardEnd">
+    <p class="eyebrow">End of chapter one</p>
+    <h2 class="h-title">A number<br>for a name.</h2>
+    <p class="place">Chapter two: the AZC</p>
+    <button class="ghost" id="again" type="button">↺ Read chapter one again</button>
+  </div>
 
-<script>
-/* ============================================================
-   CHAPTER ONE · pages 5–19 of the graphic novel
-   Each step: p = page, b = panel box in % [left, top, right, bottom]
-   (null = whole page), t = voice-over line, i = interaction.
-   Lines come from We_All_Breathe_VoiceOver_DEFINITIEF_EN, in film order.
-   ============================================================ */
-const F=null;
-const STEPS=[
- {p:5,b:[0,0,100,13.5],t:"Schiphol. The air was heavy with stories I didn't want to tell.",w:"Schiphol · 1997"},
- {p:5,b:[0,14.5,58.5,38.5],t:"I was swallowed up and shut in. Walls whispered in a strange language."},
- {p:5,b:[0,38.5,58.5,51.5],t:"He looked at me as if he knew what secrets I carried with me."},
- {p:5,b:[58.5,14.5,100,51.5],t:"Welcome to freedom, I thought. But even freedom has guards."},
- {p:5,b:[0,52,100,100],t:"The officer opened the passport Yilmaz had given me.",i:"breath"},
- {p:6,b:[0,0,100,29.5],t:"And then the underbelly of Schiphol swallowed me. Black corridors."},
- {p:6,b:[0,30,100,52.5],t:"Darker than my fear."},
- {p:6,b:[0,53,100,100],t:"Time leaked away slowly. Drop by drop. I had never felt so alone.",v:"room"},
- {p:7,b:[0,0,50.5,32.5],t:"Even once I was finally no longer alone in this room."},
- {p:7,b:[50.5,0,100,32.5],t:"His smile was soft, but his questions were not.",v:"interview"},
- {p:7,b:[0,33,100,100],t:"In my head, I heard Yilmaz."},
- {p:7,b:[0,33,100,56.5],t:"The man kept asking. I kept silent."},
- {p:12,b:[0,0,35.5,28.5],t:"After about an hour of saying nothing, they took me to a waiting room.",w:"Schiphol · waiting room"},
- {p:12,b:[35.5,0,100,28.5],t:"In the room, the air was heavy with fear and uncertain silence."},
- {p:12,b:[0,29,100,55.5],t:"We sat there together, but everyone was utterly alone. Even the child didn't dare say a word. Everyone's fear a mirror for the other."},
- {p:12,b:[23.5,29,100,55.5],t:"After what felt like an eternity, a guard with a dog appeared again. I don't know who was more afraid of the dog — the child or me."},
- {p:12,b:[0,56,100,100],t:"They put us in a cold bus. With windows that hid more than they revealed."},
- {p:13,b:[0,0,100,28.5],t:"My heart pounded in my throat. While the engine growled softly, my thoughts screamed.",w:"On the road"},
- {p:13,b:[0,29,100,46.5],t:"Every few minutes a plane roared overhead. Their shadows an omen of my fate."},
- {p:13,b:[0,47,100,66.5],t:"Then the bus took a turn."},
- {p:13,b:[0,67,100,77.5],t:"Slowly, the planes overhead grew smaller."},
- {p:13,b:[0,78,100,100],t:"For a moment we felt relief. But everyone stayed quiet and afraid."},
- {p:14,b:[0,0,100,41.5],t:"They took us to a dark building."},
- {p:8,b:[0,0,100,23.5],t:"And there I stood. Completely naked. Wrapped in nothing but fear.",w:"The dark building"},
- {p:8,b:[0,0,44.5,23.5],t:"Words weren't necessary. The officer's hard stare and his weapon said enough."},
- {p:8,b:[0,24,100,56.5],t:"They searched everything. Everything…"},
- {p:8,b:[0,57,100,75.5],t:"As the cold closed around my body, I felt shame burning. But I said nothing. My silence was the only thing I still had."},
- {p:8,b:[0,76,100,100],t:"After the search, they left me alone in the room. Part of my dignity stayed behind there.",v:"alone"},
- {p:9,b:[0,0,100,25.5],t:"They threw me in a cell.",w:"The cell"},
- {p:9,b:[0,26,100,51.5],t:"A bare, empty space."},
- {p:9,b:[0,52,100,74.5],t:"But full of the voices and thoughts of people who had sat here before me."},
- {p:9,b:[0,75,100,100],t:"The walls spoke. Raw stories whose endings I would never know."},
- {p:10,b:F,t:"I read every line and listened to every story. What had become of those desperate wishes? What would become of me?",i:"wall"},
- {p:11,b:F,t:"The longing, the fear, the yearning and the grief in every story mirrored all the fear I carried with me. It exhausted me completely."},
- {p:14,b:[0,42,100,67.5],t:"The next day they took me to a soulless building. A place of staying or disappearing.",w:"The next day"},
- {p:14,b:[0,68,100,100],t:"Inside, the cold air was stiff with rules. Every new person told me all the things I wasn't allowed to do."},
- {p:15,b:[0,0,100,37.5],t:"A big hall with bunk beds. In every bed a stranger with his own story, with whom I now had to share the night.",w:"The dormitory",v:"dorm"},
- {p:15,b:[0,38,100,66.5],t:"I felt so small and invisible. The only thing I had was a 100 dollar bill. Given to me by my mother."},
- {p:15,b:[0,67,100,100],t:"I hid it under my pillow as if it would protect me. I tried to sleep. But every sound sounded like danger.",v:"awake"},
- {p:16,b:[0,0,100,22.5],t:"The few hours that I slept were full of confusing dreams."},
- {p:16,b:[0,23,100,100],t:"Money through the bars. A hand that takes, a hand that reaches."},
- {p:17,b:F,t:"“Welcome to Netherland, Sam.”"},
- {p:18,b:[0,0,55.5,100],t:"An IND officer with a skull for a face."},
- {p:18,b:[55.5,0,100,100],t:"Far too early to be woken up."},
- {p:19,b:[0,0,100,28.5],t:"Without saying a word, I did what I was asked.",w:"Registration"},
- {p:19,b:[36.5,28.5,100,48.5],t:"I had to get my photo taken.",i:"photo"},
- {p:19,b:[36.5,49,100,76.5],t:"A photo for a yellow card."},
- {p:19,b:[0,77,100,100],t:"With a number that would be my identity from now on."},
-];
+  <script>
+    /* ============================================================
+       CHAPTER ONE · pages 5–19 of the graphic novel
+       Each step: p = page, b = panel box in % [left, top, right, bottom]
+       (null = whole page), t = voice-over line, i = interaction.
+       Lines come from We_All_Breathe_VoiceOver_DEFINITIEF_EN, in film order.
+       ============================================================ */
+    const F = null;
+    const STEPS = [
+      { p: 5, b: [0, 0, 100, 13.5], t: "Schiphol. The air was heavy with stories I didn't want to tell.", w: "Schiphol · 1997" },
+      { p: 5, b: [0, 14.5, 58.5, 38.5], t: "I was swallowed up and shut in. Walls whispered in a strange language." },
+      { p: 5, b: [0, 38.5, 58.5, 51.5], t: "He looked at me as if he knew what secrets I carried with me." },
+      { p: 5, b: [58.5, 14.5, 100, 51.5], t: "Welcome to freedom, I thought. But even freedom has guards." },
+      { p: 5, b: [0, 52, 100, 100], t: "The officer opened the passport Yilmaz had given me.", i: "breath" },
+      { p: 6, b: [0, 0, 100, 29.5], t: "And then the underbelly of Schiphol swallowed me. Black corridors." },
+      { p: 6, b: [0, 30, 100, 52.5], t: "Darker than my fear." },
+      { p: 6, b: [0, 53, 100, 100], t: "Time leaked away slowly. Drop by drop. I had never felt so alone.", v: "room" },
+      { p: 7, b: [0, 0, 50.5, 32.5], t: "Even once I was finally no longer alone in this room." },
+      { p: 7, b: [50.5, 0, 100, 32.5], t: "His smile was soft, but his questions were not.", v: "interview" },
+      { p: 7, b: [0, 33, 100, 100], t: "In my head, I heard Yilmaz." },
+      { p: 7, b: [0, 33, 100, 56.5], t: "The man kept asking. I kept silent." },
+      { p: 12, b: [0, 0, 35.5, 28.5], t: "After about an hour of saying nothing, they took me to a waiting room.", w: "Schiphol · waiting room" },
+      { p: 12, b: [35.5, 0, 100, 28.5], t: "In the room, the air was heavy with fear and uncertain silence." },
+      { p: 12, b: [0, 29, 100, 55.5], t: "We sat there together, but everyone was utterly alone. Even the child didn't dare say a word. Everyone's fear a mirror for the other." },
+      { p: 12, b: [23.5, 29, 100, 55.5], t: "After what felt like an eternity, a guard with a dog appeared again. I don't know who was more afraid of the dog — the child or me." },
+      { p: 12, b: [0, 56, 100, 100], t: "They put us in a cold bus. With windows that hid more than they revealed." },
+      { p: 13, b: [0, 0, 100, 28.5], t: "My heart pounded in my throat. While the engine growled softly, my thoughts screamed.", w: "On the road" },
+      { p: 13, b: [0, 29, 100, 46.5], t: "Every few minutes a plane roared overhead. Their shadows an omen of my fate." },
+      { p: 13, b: [0, 47, 100, 66.5], t: "Then the bus took a turn." },
+      { p: 13, b: [0, 67, 100, 77.5], t: "Slowly, the planes overhead grew smaller." },
+      { p: 13, b: [0, 78, 100, 100], t: "For a moment we felt relief. But everyone stayed quiet and afraid." },
+      { p: 14, b: [0, 0, 100, 41.5], t: "They took us to a dark building." },
+      { p: 8, b: [0, 0, 100, 23.5], t: "And there I stood. Completely naked. Wrapped in nothing but fear.", w: "The dark building" },
+      { p: 8, b: [0, 0, 44.5, 23.5], t: "Words weren't necessary. The officer's hard stare and his weapon said enough." },
+      { p: 8, b: [0, 24, 100, 56.5], t: "They searched everything. Everything…" },
+      { p: 8, b: [0, 57, 100, 75.5], t: "As the cold closed around my body, I felt shame burning. But I said nothing. My silence was the only thing I still had." },
+      { p: 8, b: [0, 76, 100, 100], t: "After the search, they left me alone in the room. Part of my dignity stayed behind there.", v: "alone" },
+      { p: 9, b: [0, 0, 100, 25.5], t: "They threw me in a cell.", w: "The cell" },
+      { p: 9, b: [0, 26, 100, 51.5], t: "A bare, empty space." },
+      { p: 9, b: [0, 52, 100, 74.5], t: "But full of the voices and thoughts of people who had sat here before me." },
+      { p: 9, b: [0, 75, 100, 100], t: "The walls spoke. Raw stories whose endings I would never know." },
+      { p: 10, b: F, t: "I read every line and listened to every story. What had become of those desperate wishes? What would become of me?", i: "wall" },
+      { p: 11, b: F, t: "The longing, the fear, the yearning and the grief in every story mirrored all the fear I carried with me. It exhausted me completely." },
+      { p: 14, b: [0, 42, 100, 67.5], t: "The next day they took me to a soulless building. A place of staying or disappearing.", w: "The next day" },
+      { p: 14, b: [0, 68, 100, 100], t: "Inside, the cold air was stiff with rules. Every new person told me all the things I wasn't allowed to do." },
+      { p: 15, b: [0, 0, 100, 37.5], t: "A big hall with bunk beds. In every bed a stranger with his own story, with whom I now had to share the night.", w: "The dormitory", v: "dorm" },
+      { p: 15, b: [0, 38, 100, 66.5], t: "I felt so small and invisible. The only thing I had was a 100 dollar bill. Given to me by my mother." },
+      { p: 15, b: [0, 67, 100, 100], t: "I hid it under my pillow as if it would protect me. I tried to sleep. But every sound sounded like danger.", v: "awake" },
+      { p: 16, b: [0, 0, 100, 22.5], t: "The few hours that I slept were full of confusing dreams." },
+      { p: 16, b: [0, 23, 100, 100], t: "Money through the bars. A hand that takes, a hand that reaches." },
+      { p: 17, b: F, t: "“Welcome to Netherland, Sam.”" },
+      { p: 18, b: [0, 0, 55.5, 100], t: "An IND officer with a skull for a face." },
+      { p: 18, b: [55.5, 0, 100, 100], t: "Far too early to be woken up." },
+      { p: 19, b: [0, 0, 100, 28.5], t: "Without saying a word, I did what I was asked.", w: "Registration" },
+      { p: 19, b: [36.5, 28.5, 100, 48.5], t: "I had to get my photo taken.", i: "photo" },
+      { p: 19, b: [36.5, 49, 100, 76.5], t: "A photo for a yellow card." },
+      { p: 19, b: [0, 77, 100, 100], t: "With a number that would be my identity from now on." },
+    ];
 
-const $=id=>document.getElementById(id);
-const page=$("page"), pg=$("pg"), spot=$("spot"), ui=$("ui"), line=$("line"), act=$("act");
-let idx=0, busy=false, autoOn=false, autoT=null, curPage=0, cleanup=null, wallLine=null;
+    const $ = id => document.getElementById(id);
+    const page = $("page"), pg = $("pg"), spot = $("spot"), ui = $("ui"), line = $("line"), act = $("act");
+    let idx = 0, busy = false, autoOn = false, autoT = null, curPage = 0, cleanup = null, wallLine = null;
 
-/* preload */
-const PAGES=[...new Set(STEPS.map(s=>s.p))]; PAGES.forEach(p=>{const im=new Image(); im.src=`pages/p${p}.jpg`;});
+    /* preload */
+    const PAGES = [...new Set(STEPS.map(s => s.p))]; PAGES.forEach(p => { const im = new Image(); im.src = `pages/p${p}.jpg`; });
 
-/* ---------- sound ---------- */
-const snd=(()=>{
-  let ctx,master,muted=false,room=null,beatT=null,bpm=70;
-  function init(){ if(ctx) return; ctx=new (window.AudioContext||window.webkitAudioContext)(); master=ctx.createGain(); master.gain.value=.9; master.connect(ctx.destination); }
-  function nb(s){ const b=ctx.createBuffer(1,ctx.sampleRate*s,ctx.sampleRate),d=b.getChannelData(0); let l=0; for(let i=0;i<d.length;i++){const w=Math.random()*2-1; l=(l+.02*w)/1.02; d[i]=w*.5+l*3;} return b; }
-  function burst(dur,freq,gain,type="bandpass"){ if(!ctx) return; const s=ctx.createBufferSource(); s.buffer=nb(dur+.1); const f=ctx.createBiquadFilter(); f.type=type; f.frequency.value=freq; const g=ctx.createGain(),t=ctx.currentTime; g.gain.setValueAtTime(gain,t); g.gain.exponentialRampToValueAtTime(.001,t+dur); s.connect(f).connect(g).connect(master); s.start(); s.stop(t+dur+.1); }
-  function thump(t,f=55,gain=.9){ const o=ctx.createOscillator(),g=ctx.createGain(); o.frequency.setValueAtTime(f*1.6,t); o.frequency.exponentialRampToValueAtTime(f,t+.08); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(gain,t+.01); g.gain.exponentialRampToValueAtTime(.001,t+.25); o.connect(g).connect(master); o.start(t); o.stop(t+.3); }
-  return{
-    unlock(){ try{init(); ctx.resume();}catch(e){} },
-    roomOn(){ if(!ctx||room) return; const s=ctx.createBufferSource(); s.buffer=nb(6); s.loop=true; const f=ctx.createBiquadFilter(); f.type="lowpass"; f.frequency.value=300; const g=ctx.createGain(); g.gain.value=.22; s.connect(f).connect(g).connect(master); s.start(); room=s; },
-    heart(on,rate){ if(!ctx) return; if(rate) bpm=rate; clearTimeout(beatT); if(!on) return; const loop=()=>{ const t=ctx.currentTime; thump(t,52,.8); thump(t+.22,48,.5); beatT=setTimeout(loop,60000/bpm); }; loop(); },
-    rate(r){ bpm=r; },
-    page(){ burst(.35,1800,.12); },
-    gasp(){ burst(.7,1400,.5); },
-    stamp(){ if(!ctx) return; thump(ctx.currentTime,70,1); burst(.12,3000,.6,"highpass"); },
-    shutter(){ burst(.05,4000,.8,"highpass"); setTimeout(()=>burst(.08,2500,.6,"highpass"),90); },
-    scrape(){ burst(.08,5000+Math.random()*2000,.06,"highpass"); },
-    toggle(){ muted=!muted; if(master) master.gain.value=muted?0:.9; return muted; }
-  };
-})();
+    /* ---------- sound ---------- */
+    const snd = (() => {
+      let ctx, master, muted = false, room = null, beatT = null, bpm = 70;
+      function init() { if (ctx) return; ctx = new (window.AudioContext || window.webkitAudioContext)(); master = ctx.createGain(); master.gain.value = .9; master.connect(ctx.destination); }
+      function nb(s) { const b = ctx.createBuffer(1, ctx.sampleRate * s, ctx.sampleRate), d = b.getChannelData(0); let l = 0; for (let i = 0; i < d.length; i++) { const w = Math.random() * 2 - 1; l = (l + .02 * w) / 1.02; d[i] = w * .5 + l * 3; } return b; }
+      function burst(dur, freq, gain, type = "bandpass") { if (!ctx) return; const s = ctx.createBufferSource(); s.buffer = nb(dur + .1); const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = freq; const g = ctx.createGain(), t = ctx.currentTime; g.gain.setValueAtTime(gain, t); g.gain.exponentialRampToValueAtTime(.001, t + dur); s.connect(f).connect(g).connect(master); s.start(); s.stop(t + dur + .1); }
+      function thump(t, f = 55, gain = .9) { const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.setValueAtTime(f * 1.6, t); o.frequency.exponentialRampToValueAtTime(f, t + .08); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(gain, t + .01); g.gain.exponentialRampToValueAtTime(.001, t + .25); o.connect(g).connect(master); o.start(t); o.stop(t + .3); }
+      return {
+        unlock() { try { init(); ctx.resume(); } catch (e) { } },
+        roomOn() { if (!ctx || room) return; const s = ctx.createBufferSource(); s.buffer = nb(6); s.loop = true; const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 300; const g = ctx.createGain(); g.gain.value = .22; s.connect(f).connect(g).connect(master); s.start(); room = s; },
+        heart(on, rate) { if (!ctx) return; if (rate) bpm = rate; clearTimeout(beatT); if (!on) return; const loop = () => { const t = ctx.currentTime; thump(t, 52, .8); thump(t + .22, 48, .5); beatT = setTimeout(loop, 60000 / bpm); }; loop(); },
+        rate(r) { bpm = r; },
+        page() { burst(.35, 1800, .12); },
+        gasp() { burst(.7, 1400, .5); },
+        stamp() { if (!ctx) return; thump(ctx.currentTime, 70, 1); burst(.12, 3000, .6, "highpass"); },
+        shutter() { burst(.05, 4000, .8, "highpass"); setTimeout(() => burst(.08, 2500, .6, "highpass"), 90); },
+        scrape() { burst(.08, 5000 + Math.random() * 2000, .06, "highpass"); },
+        toggle() { muted = !muted; if (master) master.gain.value = muted ? 0 : .9; return muted; }
+      };
+    })();
 
-/* ---------- reader ---------- */
-function setSpot(b){
-  if(!b){ spot.classList.add("full"); Object.assign(spot.style,{left:"0%",top:"0%",width:"100%",height:"100%"}); return; }
-  spot.classList.remove("full");
-  Object.assign(spot.style,{left:b[0]+"%",top:b[1]+"%",width:(b[2]-b[0])+"%",height:(b[3]-b[1])+"%"});
-}
-function lastWhere(i){ for(let k=i;k>=0;k--) if(STEPS[k].w) return STEPS[k].w; return ""; }
-function show(i){
-  if(mvOpen){ mvToken++; mvOpen=false; mv.pause(); mv.classList.remove("on"); mvbg.classList.remove("on"); mvtag.classList.remove("on"); busy=false; }
-  if(cleanup){ cleanup(); cleanup=null; }
-  ui.innerHTML=""; act.innerHTML="";
-  idx=Math.max(0,Math.min(STEPS.length-1,i)); const s=STEPS[idx];
-  $("where").textContent=lastWhere(idx);
-  $("count").textContent=`${idx+1} / ${STEPS.length} · page ${s.p}`;
-  $("bar").style.width=((idx+1)/STEPS.length*100)+"%";
-  line.classList.add("dim");
-  const go=()=>{ setSpot(s.b); setTimeout(()=>{ line.textContent=s.t; line.classList.remove("dim"); },350); if(s.i) INTERACT[s.i](s); else if(s.v){ act.innerHTML=`<button class="ghost" id="replay" type="button">▶ Play motion again</button>`; $("replay").onclick=()=>motion(s); setTimeout(()=>motion(s),1000); } else scheduleAuto(); };
-  if(s.p!==curPage){ curPage=s.p; pg.style.opacity=0; snd.page(); setTimeout(()=>{ pg.src=`pages/p${s.p}.jpg`; pg.alt=`Page ${s.p} of the graphic novel`; pg.onload=()=>{ pg.style.opacity=1; go(); }; },450); }
-  else go();
-}
-function next(){ if(busy) return; if(idx>=STEPS.length-1) return end(); show(idx+1); }
-function prev(){ if(busy) return; show(idx-1); }
-function scheduleAuto(){ clearTimeout(autoT); if(!autoOn) return; const s=STEPS[idx]; autoT=setTimeout(next, 2600+s.t.length*45); }
-function end(){ clearTimeout(autoT); $("cardEnd").classList.remove("off"); }
-function lock(on){ busy=on; $("next").disabled=on; $("prev").disabled=on; }
+    /* ---------- reader ---------- */
+    function setSpot(b) {
+      if (!b) { spot.classList.add("full"); Object.assign(spot.style, { left: "0%", top: "0%", width: "100%", height: "100%" }); return; }
+      spot.classList.remove("full");
+      Object.assign(spot.style, { left: b[0] + "%", top: b[1] + "%", width: (b[2] - b[0]) + "%", height: (b[3] - b[1]) + "%" });
+    }
+    function lastWhere(i) { for (let k = i; k >= 0; k--) if (STEPS[k].w) return STEPS[k].w; return ""; }
+    function show(i) {
+      if (mvOpen) { mvToken++; mvOpen = false; mv.pause(); mv.classList.remove("on"); mvbg.classList.remove("on"); mvtag.classList.remove("on"); busy = false; }
+      if (cleanup) { cleanup(); cleanup = null; }
+      ui.innerHTML = ""; act.innerHTML = "";
+      idx = Math.max(0, Math.min(STEPS.length - 1, i)); const s = STEPS[idx];
+      $("where").textContent = lastWhere(idx);
+      $("count").textContent = `${idx + 1} / ${STEPS.length} · page ${s.p}`;
+      $("bar").style.width = ((idx + 1) / STEPS.length * 100) + "%";
+      line.classList.add("dim");
+      const go = () => { setSpot(s.b); setTimeout(() => { line.textContent = s.t; line.classList.remove("dim"); }, 350); if (s.i) INTERACT[s.i](s); else if (s.v) { act.innerHTML = `<button class="ghost" id="replay" type="button">▶ Play motion again</button>`; $("replay").onclick = () => motion(s); setTimeout(() => motion(s), 1000); } else scheduleAuto(); };
+      if (s.p !== curPage) { curPage = s.p; pg.style.opacity = 0; snd.page(); setTimeout(() => { pg.src = `pages/p${s.p}.jpg`; pg.alt = `Page ${s.p} of the graphic novel`; pg.onload = () => { pg.style.opacity = 1; go(); }; }, 450); }
+      else go();
+    }
+    function next() { if (busy) return; if (idx >= STEPS.length - 1) return end(); show(idx + 1); }
+    function prev() { if (busy) return; show(idx - 1); }
+    function scheduleAuto() { clearTimeout(autoT); if (!autoOn) return; const s = STEPS[idx]; autoT = setTimeout(next, 2600 + s.t.length * 45); }
+    function end() { clearTimeout(autoT); $("cardEnd").classList.remove("off"); }
+    function lock(on) { busy = on; $("next").disabled = on; $("prev").disabled = on; }
 
-page.addEventListener("click",e=>{ if(e.target.closest(".hold,.grime,input,button,form")) return; next(); });
-$("next").onclick=next; $("prev").onclick=prev;
-document.addEventListener("keydown",e=>{ if(e.target.tagName==="INPUT") return; if(e.key==="ArrowRight") next(); if(e.key==="ArrowLeft") prev(); });
-$("auto").onclick=e=>{ autoOn=!autoOn; e.currentTarget.setAttribute("aria-pressed",autoOn); e.currentTarget.textContent=autoOn?"❚❚ Auto":"▶ Auto"; if(autoOn&&!busy) scheduleAuto(); else clearTimeout(autoT); };
-$("go").onclick=()=>{ snd.unlock(); snd.roomOn(); $("cardStart").classList.add("off"); show(0); };
-$("again").onclick=()=>{ $("cardEnd").classList.add("off"); curPage=0; show(0); };
-$("restart").onclick=()=>{ lock(false); $("cardEnd").classList.add("off"); curPage=0; show(0); };
-["pointerdown","touchstart","touchend","keydown","click"].forEach(ev=>{
-  document.addEventListener(ev,()=>{ snd.unlock(); snd.roomOn(); },{passive:true});
-});
+    page.addEventListener("click", e => { if (e.target.closest(".hold,.grime,input,button,form")) return; next(); });
+    $("next").onclick = next; $("prev").onclick = prev;
+    document.addEventListener("keydown", e => { if (e.target.tagName === "INPUT") return; if (e.key === "ArrowRight") next(); if (e.key === "ArrowLeft") prev(); });
+    $("auto").onclick = e => { autoOn = !autoOn; e.currentTarget.setAttribute("aria-pressed", autoOn); e.currentTarget.textContent = autoOn ? "❚❚ Auto" : "▶ Auto"; if (autoOn && !busy) scheduleAuto(); else clearTimeout(autoT); };
+    $("go").onclick = () => { snd.unlock(); snd.roomOn(); $("cardStart").classList.add("off"); show(0); };
+    $("again").onclick = () => { $("cardEnd").classList.add("off"); curPage = 0; show(0); };
+    $("restart").onclick = () => { lock(false); $("cardEnd").classList.add("off"); curPage = 0; show(0); };
+    ["pointerdown", "touchstart", "touchend", "keydown", "click"].forEach(ev => {
+      document.addEventListener(ev, () => { snd.unlock(); snd.roomOn(); }, { passive: true });
+    });
 
-/* ---------- motion ---------- */
-const mv=$("mv"), mvbg=$("mvbg"), mvtag=$("mvtag"); let mvOpen=false, mvToken=0;
-function rectOf(el){ const r=el.getBoundingClientRect(); return {left:r.left+"px",top:r.top+"px",width:r.width+"px",height:r.height+"px"}; }
-function motion(s){
-  if(mvOpen||STEPS[idx]!==s) return;
-  const my=++mvToken; mvOpen=true; busy=true; clearTimeout(autoT);
-  mv.style.transition="none"; Object.assign(mv.style,rectOf(spot)); mv.src=`motion/${s.v}.mp4`; mv.currentTime=0;
-  const vw=innerWidth*.92, vh=innerHeight*.8; let w=vw, h=w*9/16; if(h>vh){ h=vh; w=h*16/9; }
-  requestAnimationFrame(()=>requestAnimationFrame(()=>{ if(my!==mvToken) return;
-    mv.style.transition=""; mv.classList.add("on"); mvbg.classList.add("on"); mvtag.classList.add("on");
-    Object.assign(mv.style,{left:(innerWidth-w)/2+"px",top:(innerHeight-h)/2+"px",width:w+"px",height:h+"px"});
-    mv.play().catch(()=>{});
-  }));
-  mv.onended=()=>closeMotion(my);
-  mv.onerror=()=>closeMotion(my);
-  setTimeout(()=>{ if(my===mvToken&&mv.currentTime===0) closeMotion(my); },4000);
-  setTimeout(()=>closeMotion(my),14000);
-}
-function closeMotion(my){
-  if(!mvOpen||(my!==undefined&&my!==mvToken)) return;
-  mvToken++; mvOpen=false; Object.assign(mv.style,rectOf(spot)); mv.classList.remove("on"); mvbg.classList.remove("on"); mvtag.classList.remove("on");
-  setTimeout(()=>{ mv.pause(); if(!mvOpen) busy=false; scheduleAuto(); },900);
-}
-mv.onclick=()=>closeMotion(); mvbg.onclick=()=>closeMotion();
-document.addEventListener("keydown",e=>{ if(mvOpen&&(e.key==="Escape"||e.key==="ArrowRight")){ e.stopImmediatePropagation(); closeMotion(); } },true);
-addEventListener("resize",()=>{ if(mvOpen) closeMotion(); });
+    /* ---------- motion ---------- */
+    const mv = $("mv"), mvbg = $("mvbg"), mvtag = $("mvtag"); let mvOpen = false, mvToken = 0;
+    function rectOf(el) { const r = el.getBoundingClientRect(); return { left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px" }; }
+    function motion(s) {
+      if (mvOpen || STEPS[idx] !== s) return;
+      const my = ++mvToken; mvOpen = true; busy = true; clearTimeout(autoT);
+      mv.style.transition = "none"; Object.assign(mv.style, rectOf(spot)); mv.src = `motion/${s.v}.mp4`; mv.currentTime = 0;
+      const vw = innerWidth * .92, vh = innerHeight * .8; let w = vw, h = w * 9 / 16; if (h > vh) { h = vh; w = h * 16 / 9; }
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        if (my !== mvToken) return;
+        mv.style.transition = ""; mv.classList.add("on"); mvbg.classList.add("on"); mvtag.classList.add("on");
+        Object.assign(mv.style, { left: (innerWidth - w) / 2 + "px", top: (innerHeight - h) / 2 + "px", width: w + "px", height: h + "px" });
+        mv.play().catch(() => { });
+      }));
+      mv.onended = () => closeMotion(my);
+      mv.onerror = () => closeMotion(my);
+      setTimeout(() => { if (my === mvToken && mv.currentTime === 0) closeMotion(my); }, 4000);
+      setTimeout(() => closeMotion(my), 14000);
+    }
+    function closeMotion(my) {
+      if (!mvOpen || (my !== undefined && my !== mvToken)) return;
+      mvToken++; mvOpen = false; Object.assign(mv.style, rectOf(spot)); mv.classList.remove("on"); mvbg.classList.remove("on"); mvtag.classList.remove("on");
+      setTimeout(() => { mv.pause(); if (!mvOpen) busy = false; scheduleAuto(); }, 900);
+    }
+    mv.onclick = () => closeMotion(); mvbg.onclick = () => closeMotion();
+    document.addEventListener("keydown", e => { if (mvOpen && (e.key === "Escape" || e.key === "ArrowRight")) { e.stopImmediatePropagation(); closeMotion(); } }, true);
+    addEventListener("resize", () => { if (mvOpen) closeMotion(); });
 
-/* ---------- interactions ---------- */
-const INTERACT={
+    /* ---------- interactions ---------- */
+    const INTERACT = {
 
-/* 1 · HOLD YOUR BREATH — passport check, page 5 */
-breath(s){
-  lock(true); clearTimeout(autoT);
-  const b=s.b, cx=(b[0]+b[2])/2, cy=(b[1]+b[3])/2, NEED=7, C=2*Math.PI*46;
-  ui.innerHTML=`<div class="vig" id="vig" style="--cx:${cx}%;--cy:${cy}%"></div>
+      /* 1 · HOLD YOUR BREATH — passport check, page 5 */
+      breath(s) {
+        lock(true); clearTimeout(autoT);
+        const b = s.b, cx = (b[0] + b[2]) / 2, cy = (b[1] + b[3]) / 2, NEED = 7, C = 2 * Math.PI * 46;
+        ui.innerHTML = `<div class="vig" id="vig" style="--cx:${cx}%;--cy:${cy}%"></div>
    <button class="hold pulse" id="hold" type="button" style="left:42%;top:66%" aria-label="Press and hold to hold your breath">
     <svg viewBox="0 0 100 100"><circle class="base" cx="50" cy="50" r="46" fill="none" stroke="#ece8de" stroke-width="2"/><circle id="arc" cx="50" cy="50" r="46" fill="none" stroke="#D6A93E" stroke-width="5" stroke-dasharray="${C}" stroke-dashoffset="${C}"/></svg>
     <span class="lbl" id="hl">Hold<br>your breath</span></button>
    <div class="stamp" id="stamp" style="left:50%;top:70%">FALSE</div>`;
-  act.innerHTML=`<p class="task">Press and hold while he checks the passport · space works too</p>`;
-  const btn=$("hold"), arc=$("arc"), vig=$("vig");
-  let held=0, holding=false, raf=0, last=performance.now(), fails=0, done=false;
-  function frame(t){ const dt=(t-last)/1000; last=t;
-    held=holding?Math.min(NEED,held+dt):Math.max(0,held-dt*2.5);
-    const p=held/NEED; arc.style.strokeDashoffset=C*(1-p); vig.style.setProperty("--v",p); snd.rate(70+p*70);
-    if(holding&&held>=NEED) return finish("One second. That's all it took him.");
-    raf=requestAnimationFrame(frame); }
-  function down(e){ if(done) return; e.preventDefault(); holding=true; btn.classList.remove("pulse"); $("hl").textContent="…"; snd.heart(true,70); }
-  function up(){ if(done||!holding) return; holding=false; snd.heart(false);
-    if(held<NEED){ fails++; snd.gasp(); setSpot([58.5,14.5,100,51.5]); setTimeout(()=>setSpot(b),420);
-      $("hl").textContent="Again"; btn.classList.add("pulse");
-      line.textContent=fails<3?"He looked up. Breathe in. Try again.":"Some breaths you can't hold.";
-      if(fails>=3){ done=true; setTimeout(()=>finish("It wouldn't have mattered. He already knew."),1500); } } }
-  function finish(msg){ done=true; holding=false; snd.heart(false); cancelAnimationFrame(raf); btn.hidden=true; act.innerHTML="";
-    $("stamp").classList.add("on"); snd.stamp(); page.classList.add("shake"); setTimeout(()=>page.classList.remove("shake"),400);
-    line.textContent=msg; setTimeout(()=>{ vig.style.setProperty("--v",0); lock(false); act.innerHTML=`<p class="task">Click the page to continue</p>`; scheduleAuto(); },2200); }
-  btn.addEventListener("pointerdown",down); btn.addEventListener("contextmenu",e=>e.preventDefault());
-  const kd=e=>{ if(e.code==="Space"&&!e.repeat){ down(e); } }, ku=e=>{ if(e.code==="Space") up(); };
-  window.addEventListener("pointerup",up); window.addEventListener("pointercancel",up); window.addEventListener("keydown",kd); window.addEventListener("keyup",ku);
-  raf=requestAnimationFrame(frame);
-  cleanup=()=>{ cancelAnimationFrame(raf); snd.heart(false); window.removeEventListener("pointerup",up); window.removeEventListener("pointercancel",up); window.removeEventListener("keydown",kd); window.removeEventListener("keyup",ku); lock(false); };
-},
+        act.innerHTML = `<p class="task">Press and hold while he checks the passport · space works too</p>`;
+        const btn = $("hold"), arc = $("arc"), vig = $("vig");
+        let held = 0, holding = false, raf = 0, last = performance.now(), fails = 0, done = false;
+        function frame(t) {
+          const dt = (t - last) / 1000; last = t;
+          held = holding ? Math.min(NEED, held + dt) : Math.max(0, held - dt * 2.5);
+          const p = held / NEED; arc.style.strokeDashoffset = C * (1 - p); vig.style.setProperty("--v", p); snd.rate(70 + p * 70);
+          if (holding && held >= NEED) return finish("One second. That's all it took him.");
+          raf = requestAnimationFrame(frame);
+        }
+        function down(e) { if (done) return; e.preventDefault(); holding = true; btn.classList.remove("pulse"); $("hl").textContent = "…"; snd.heart(true, 70); }
+        function up() {
+          if (done || !holding) return; holding = false; snd.heart(false);
+          if (held < NEED) {
+            fails++; snd.gasp(); setSpot([58.5, 14.5, 100, 51.5]); setTimeout(() => setSpot(b), 420);
+            $("hl").textContent = "Again"; btn.classList.add("pulse");
+            line.textContent = fails < 3 ? "He looked up. Breathe in. Try again." : "Some breaths you can't hold.";
+            if (fails >= 3) { done = true; setTimeout(() => finish("It wouldn't have mattered. He already knew."), 1500); }
+          }
+        }
+        function finish(msg) {
+          done = true; holding = false; snd.heart(false); cancelAnimationFrame(raf); btn.hidden = true; act.innerHTML = "";
+          $("stamp").classList.add("on"); snd.stamp(); page.classList.add("shake"); setTimeout(() => page.classList.remove("shake"), 400);
+          line.textContent = msg; setTimeout(() => { vig.style.setProperty("--v", 0); lock(false); act.innerHTML = `<p class="task">Click the page to continue</p>`; scheduleAuto(); }, 2200);
+        }
+        btn.addEventListener("pointerdown", down); btn.addEventListener("contextmenu", e => e.preventDefault());
+        const kd = e => { if (e.code === "Space" && !e.repeat) { down(e); } }, ku = e => { if (e.code === "Space") up(); };
+        window.addEventListener("pointerup", up); window.addEventListener("pointercancel", up); window.addEventListener("keydown", kd); window.addEventListener("keyup", ku);
+        raf = requestAnimationFrame(frame);
+        cleanup = () => { cancelAnimationFrame(raf); snd.heart(false); window.removeEventListener("pointerup", up); window.removeEventListener("pointercancel", up); window.removeEventListener("keydown", kd); window.removeEventListener("keyup", ku); lock(false); };
+      },
 
-/* 2 · RUB THE WALL — the cell, page 10 */
-wall(s){
-  lock(true); clearTimeout(autoT);
-  ui.innerHTML=`<canvas class="grime" id="cv" aria-label="Rub the wall to read what others wrote"></canvas><div class="scratch" id="sc"></div>`;
-  act.innerHTML=`<p class="task">Rub the wall with your mouse or finger · read what others left behind</p>`;
-  line.textContent="The wall of the cell. Dark with years.";
-  const cv=$("cv"), ctx=cv.getContext("2d"), r=page.getBoundingClientRect(), dpr=Math.min(2,devicePixelRatio||1);
-  cv.width=r.width*dpr; cv.height=r.height*dpr; ctx.scale(dpr,dpr);
-  ctx.fillStyle="#0b0c0b"; ctx.fillRect(0,0,r.width,r.height);
-  for(let k=0;k<2400;k++){ ctx.fillStyle=`rgba(${38+Math.random()*30|0},${38+Math.random()*28|0},${34+Math.random()*20|0},${Math.random()*.5})`; const z=Math.random()*16; ctx.fillRect(Math.random()*r.width,Math.random()*r.height,z,z*.6); }
-  ctx.globalCompositeOperation="destination-out";
-  let downP=false,lastP=null,revealed=false,moves=0; const brush=Math.max(26,r.width*.09);
-  function rub(x,y){ ctx.lineCap="round"; ctx.lineWidth=brush; ctx.beginPath(); ctx.moveTo(lastP?lastP[0]:x,lastP?lastP[1]:y); ctx.lineTo(x,y); ctx.stroke(); lastP=[x,y]; if(++moves%6===0) snd.scrape(); if(moves%20===0) check(); }
-  const pos=e=>{ const q=cv.getBoundingClientRect(); return [e.clientX-q.left,e.clientY-q.top]; };
-  cv.onpointerdown=e=>{ downP=true; lastP=null; cv.setPointerCapture(e.pointerId); rub(...pos(e)); };
-  cv.onpointermove=e=>{ if(downP) rub(...pos(e)); };
-  cv.onpointerup=cv.onpointercancel=()=>{ downP=false; lastP=null; };
-  function check(){ if(revealed) return; const d=ctx.getImageData(0,0,cv.width,cv.height).data; let c=0,n=0; for(let k=3;k<d.length;k+=4*97){ n++; if(d[k]<40) c++; } if(c/n>.45) reveal(); }
-  function reveal(){ revealed=true; cv.style.transition="opacity 1.6s"; cv.style.opacity=0; cv.style.pointerEvents="none";
-    line.textContent=s.t;
-    setTimeout(()=>{
-      act.innerHTML=`<form class="write" id="wf"><p class="task" style="flex-basis:100%;margin:0">Sam left his own line on this wall. What would you leave behind?</p><input id="wline" maxlength="34" autocomplete="off" placeholder="I was here…" aria-label="Your line on the wall"><button class="btn" type="submit">Scratch it in</button></form>`;
-      $("wf").onsubmit=e=>{ e.preventDefault(); wallLine=$("wline").value.trim()||"I was here"; act.innerHTML="";
-        const a=document.createElement("div"); a.textContent=wallLine; a.style.left="52%"; a.style.top="47%"; $("sc").appendChild(a);
-        for(let k=0;k<8;k++) setTimeout(snd.scrape,k*120); requestAnimationFrame(()=>a.classList.add("on"));
-        setTimeout(()=>{ line.textContent="Everyone who sat here breathed the same air."; lock(false); act.innerHTML=`<p class="task">Click the page to continue</p>`; scheduleAuto(); },1800); };
-      $("wline").focus({preventScroll:true});
-    },2600);
-  }
-  cleanup=()=>lock(false);
-},
+      /* 2 · RUB THE WALL — the cell, page 10 */
+      wall(s) {
+        lock(true); clearTimeout(autoT);
+        ui.innerHTML = `<canvas class="grime" id="cv" aria-label="Rub the wall to read what others wrote"></canvas><div class="scratch" id="sc"></div>`;
+        act.innerHTML = `<p class="task">Rub the wall with your mouse or finger · read what others left behind</p>`;
+        line.textContent = "The wall of the cell. Dark with years.";
+        const cv = $("cv"), ctx = cv.getContext("2d"), r = page.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+        cv.width = r.width * dpr; cv.height = r.height * dpr; ctx.scale(dpr, dpr);
+        ctx.fillStyle = "#0b0c0b"; ctx.fillRect(0, 0, r.width, r.height);
+        for (let k = 0; k < 2400; k++) { ctx.fillStyle = `rgba(${38 + Math.random() * 30 | 0},${38 + Math.random() * 28 | 0},${34 + Math.random() * 20 | 0},${Math.random() * .5})`; const z = Math.random() * 16; ctx.fillRect(Math.random() * r.width, Math.random() * r.height, z, z * .6); }
+        ctx.globalCompositeOperation = "destination-out";
+        let downP = false, lastP = null, revealed = false, moves = 0; const brush = Math.max(26, r.width * .09);
+        function rub(x, y) { ctx.lineCap = "round"; ctx.lineWidth = brush; ctx.beginPath(); ctx.moveTo(lastP ? lastP[0] : x, lastP ? lastP[1] : y); ctx.lineTo(x, y); ctx.stroke(); lastP = [x, y]; if (++moves % 6 === 0) snd.scrape(); if (moves % 20 === 0) check(); }
+        const pos = e => { const q = cv.getBoundingClientRect(); return [e.clientX - q.left, e.clientY - q.top]; };
+        cv.onpointerdown = e => { downP = true; lastP = null; cv.setPointerCapture(e.pointerId); rub(...pos(e)); };
+        cv.onpointermove = e => { if (downP) rub(...pos(e)); };
+        cv.onpointerup = cv.onpointercancel = () => { downP = false; lastP = null; };
+        function check() { if (revealed) return; const d = ctx.getImageData(0, 0, cv.width, cv.height).data; let c = 0, n = 0; for (let k = 3; k < d.length; k += 4 * 97) { n++; if (d[k] < 40) c++; } if (c / n > .45) reveal(); }
+        function reveal() {
+          revealed = true; cv.style.transition = "opacity 1.6s"; cv.style.opacity = 0; cv.style.pointerEvents = "none";
+          line.textContent = s.t;
+          setTimeout(() => {
+            act.innerHTML = `<form class="write" id="wf"><p class="task" style="flex-basis:100%;margin:0">Sam left his own line on this wall. What would you leave behind?</p><input id="wline" maxlength="34" autocomplete="off" placeholder="I was here…" aria-label="Your line on the wall"><button class="btn" type="submit">Scratch it in</button></form>`;
+            $("wf").onsubmit = e => {
+              e.preventDefault(); wallLine = $("wline").value.trim() || "I was here"; act.innerHTML = "";
+              const a = document.createElement("div"); a.textContent = wallLine; a.style.left = "52%"; a.style.top = "47%"; $("sc").appendChild(a);
+              for (let k = 0; k < 8; k++) setTimeout(snd.scrape, k * 120); requestAnimationFrame(() => a.classList.add("on"));
+              setTimeout(() => { line.textContent = "Everyone who sat here breathed the same air."; lock(false); act.innerHTML = `<p class="task">Click the page to continue</p>`; scheduleAuto(); }, 1800);
+            };
+            $("wline").focus({ preventScroll: true });
+          }, 2600);
+        }
+        cleanup = () => lock(false);
+      },
 
-/* 3 · TAKE THE PHOTO — registration, page 19 */
-photo(s){
-  lock(true); clearTimeout(autoT);
-  const b=s.b;
-  pg.style.filter="grayscale(1) brightness(.6)";
-  ui.innerHTML=`<div class="finder" style="left:${b[0]}%;top:${b[1]}%;width:${b[2]-b[0]}%;height:${b[3]-b[1]}%"><i></i><i></i><i></i><i></i><span>● REG · V-NR 1997-0417</span></div><div class="flash" id="fl"></div>`;
-  act.innerHTML=`<button class="btn" id="shoot" type="button">● Take his photo</button><p class="task" style="margin-top:10px">You are behind the camera now</p>`;
-  const shoot=()=>{ if(!busy) return; snd.shutter(); $("fl").classList.add("go"); pg.style.filter=""; act.innerHTML="";
-    ui.querySelector(".finder").style.opacity=0; line.textContent="My face captured in a flash.";
-    setTimeout(()=>{ lock(false); act.innerHTML=`<p class="task">Click the page to continue</p>`; scheduleAuto(); },1600); };
-  $("shoot").onclick=shoot;
-  const onPage=e=>{ if(busy){ e.stopPropagation(); shoot(); } };
-  page.addEventListener("click",onPage,true);
-  cleanup=()=>{ page.removeEventListener("click",onPage,true); pg.style.filter=""; lock(false); };
-}
-};
-</script>
+      /* 3 · TAKE THE PHOTO — registration, page 19 */
+      photo(s) {
+        lock(true); clearTimeout(autoT);
+        const b = s.b;
+        pg.style.filter = "grayscale(1) brightness(.6)";
+        ui.innerHTML = `<div class="finder" style="left:${b[0]}%;top:${b[1]}%;width:${b[2] - b[0]}%;height:${b[3] - b[1]}%"><i></i><i></i><i></i><i></i><span>● REG · V-NR 1997-0417</span></div><div class="flash" id="fl"></div>`;
+        act.innerHTML = `<button class="btn" id="shoot" type="button">● Take his photo</button><p class="task" style="margin-top:10px">You are behind the camera now</p>`;
+        const shoot = () => {
+          if (!busy) return; snd.shutter(); $("fl").classList.add("go"); pg.style.filter = ""; act.innerHTML = "";
+          ui.querySelector(".finder").style.opacity = 0; line.textContent = "My face captured in a flash.";
+          setTimeout(() => { lock(false); act.innerHTML = `<p class="task">Click the page to continue</p>`; scheduleAuto(); }, 1600);
+        };
+        $("shoot").onclick = shoot;
+        const onPage = e => { if (busy) { e.stopPropagation(); shoot(); } };
+        page.addEventListener("click", onPage, true);
+        cleanup = () => { page.removeEventListener("click", onPage, true); pg.style.filter = ""; lock(false); };
+      }
+    };
+  </script>
 
-</body></html>
+</body>
+
+</html>

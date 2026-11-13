@@ -57,8 +57,8 @@
       hide: "bike",
       real: ["bike", 0.25],
       fb: "bell",
-      hit: [790, 508, 280, 271],
-      mark: [842, 528],
+      hit: [790, 508, 426, 271],
+      mark: [1065, 565],
       silObj: "bike",
       flutter: "money",
       text: "His bike. Amsterdam.",
@@ -108,7 +108,7 @@
     bird:       { src: "assets/bird.png",          rect: [1298, 424, 87, 62],  order: 11, interactive: true },
     money:      { src: "assets/money.png",         rect: [1518, 1010, 146, 67], order: 13, gone: true, interactive: true },
     frame:      { src: "assets/frame.png",         rect: [1591, 749, 214, 295], order: 14, gone: true, interactive: true },
-    passport:   { src: "assets/passport.png",      rect: [1380, 922, 149, 106], order: 15, interactive: true },
+    passport:   { src: "assets/passport.png",      rect: [1380, 922, 149, 106], order: 15, gone: true, interactive: true },
     seat:       { src: "assets/seat.png",          rect: [1140, 777, 105, 178], order: 25, gone: true, interactive: true },
     bed:        { src: "assets/bedfront.png",      rect: [1056, 440, 244, 362], order: 26, gone: true, interactive: true },
     post:       { src: "assets/post.png",          rect: [1210, 510, 50, 538], order: 27 },
@@ -1751,13 +1751,14 @@
     return nxt ? nxt - 1 : CHAPTERS.length;
   }
   function isChapterVisible(chNum) {
-    if (chNum === 1) return true;
+    if (chNum === 1) return introSeen || st.has(1);
     if (st.has(chNum) || st.has(chNum - 1)) return true;
     return nextIdx() >= chNum - 1;
   }
   function syncChapterObjects(instant = false) {
     const fadeSec = instant ? 0 : 0.45;
-    setGone("passport", false, 0);
+    const ch1Vis = isChapterVisible(1);
+    setGone("passport", !ch1Vis, fadeSec);
     setGone("frame", !isChapterVisible(2), fadeSec);
     const ch3Vis = isChapterVisible(3);
     setGone("bike", !ch3Vis, fadeSec);
@@ -1917,6 +1918,7 @@
     introSeen = true;
     busy = false;
     refresh();
+    say("Click the passport to begin.", 4500);
   }
 
   /* ===== Finale After Chapter 4: Sam Turns to Look Out the Window -> Dove Flies Out -> Slow Window Zoom ===== */

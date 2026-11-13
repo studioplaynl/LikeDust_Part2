@@ -28,8 +28,18 @@ body.show-ctl:not(.ld-wait) .top{opacity:1!important;pointer-events:auto!importa
   --f-fa:"Vazirmatn",Tahoma,sans-serif;
   color-scheme:dark;
 }
-html,body{height:100%;background:var(--ink);color:var(--chalk)}
+html,body{
+  height:100%;
+  background:var(--ink);
+  color:var(--chalk);
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
 body{overflow:hidden;font-family:var(--f-body)}
+img{-webkit-user-drag:none;user-drag:none;-webkit-user-select:none;user-select:none}
+input,textarea{-webkit-user-select:text;user-select:text}
 .stage{position:fixed;inset:0;display:grid;place-items:center;background:#000}
 .frame{position:relative;width:min(100vw,calc((100vh - 112px) * 16 / 9));aspect-ratio:16/9;max-width:100%;overflow:hidden;background:#000;margin:44px 0 56px}
 .frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000}

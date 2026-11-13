@@ -447,14 +447,13 @@ function hud({name,st,onReset,onDev}){
     return {update};
   }
   const top=el("div","ld-top");
-  top.innerHTML=`<div class="ld-tools"><a class="ghost" href="../index.html${location.search||""}" title="Back to Home">← Home</a><span class="ld-chap"><span>We All Breathe the Same Air · </span><b>${name}</b></span></div>
-  <div class="ld-tools"><div class="ld-dots" aria-label="Completed chapters">${CHAPTERS.map(c=>`<i title="${c.n} · ${c.title}"></i>`).join("")}</div>
-  <button class="ghost" type="button" id="ldReset" title="Reset progress">↺</button></div>`;
+  top.innerHTML=`<div class="ld-tools"><a class="ghost" href="../index.html${location.search||""}" title="Back to Home">← Home</a></div>
+  <div class="ld-tools"><div class="ld-dots" aria-label="Completed chapters">${CHAPTERS.map(c=>`<i title="${c.n} · ${c.title}"></i>`).join("")}</div></div>`;
   document.body.appendChild(top);
-  const dev=el("div","ld-dev","keys 1–4: toggle chapter · 0: reset"); document.body.appendChild(dev);
   const dots=[...top.querySelectorAll(".ld-dots i")];
   const update=()=>dots.forEach((d,i)=>dots.length&&d.classList.toggle("on",st.has(i+1)));
-  top.querySelector("#ldReset").onclick=()=>{ st.reset(); update(); onReset&&onReset(); };
+  const resetBtn=top.querySelector("#ldReset");
+  if(resetBtn) resetBtn.onclick=()=>{ st.reset(); update(); onReset&&onReset(); };
   addEventListener("keydown",e=>{
     if(chapterOpen||e.target.tagName==="INPUT") return;
     if(e.key>="1"&&e.key<="4"){ const n=+e.key; st.has(n)?st.unmark(n):st.mark(n); update(); onDev&&onDev(n); }

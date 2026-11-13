@@ -32,8 +32,18 @@
   --f-body:"Literata",Georgia,serif;
   color-scheme:dark;
 }
-html,body{height:100%;background:var(--ink);color:var(--chalk)}
-body{overflow:hidden;font-family:var(--f-body);-webkit-user-select:none;user-select:none}
+html,body{
+  height:100%;
+  background:var(--ink);
+  color:var(--chalk);
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
+body{overflow:hidden;font-family:var(--f-body)}
+img{-webkit-user-drag:none;user-drag:none;-webkit-user-select:none;user-select:none}
+input,textarea{-webkit-user-select:text;user-select:text}
 .stage{position:fixed;inset:0;overflow:hidden;background:var(--ink)}
 .screen{position:absolute;inset:0;transition:opacity 1.2s ease}
 .screen.off{opacity:0;pointer-events:none}
@@ -47,9 +57,6 @@ body{overflow:hidden;font-family:var(--f-body);-webkit-user-select:none;user-sel
 /* intro video */
 #intro video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;opacity:0;transition:opacity 1s ease}
 #intro video.on{opacity:1}
-.subs{position:absolute;left:0;right:0;bottom:calc(9vh + env(safe-area-inset-bottom,0px));z-index:3;display:flex;justify-content:center;padding-inline:16px;pointer-events:none}
-.subs span{font-family:Arial,Helvetica,"Helvetica Neue",sans-serif;font-weight:700;font-size:clamp(1.1rem,2.6vw,2rem);line-height:1.3;color:var(--ochre);text-align:center;max-width:42ch;text-wrap:balance;text-shadow:-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000,2px 2px 0 #000,0 2px 0 #000,0 -2px 0 #000,0 0 8px rgba(0,0,0,.9);opacity:0;transition:opacity .2s linear}
-.subs span.on{opacity:1}
 
 /* chapter-style video controls (auto-hide, click/tap reveals) */
 .top{
@@ -99,21 +106,6 @@ body.show-ctl #intro:not(.off) .top{opacity:1!important;pointer-events:auto!impo
 .tl .rail{position:absolute;left:0;right:0;top:10px;height:2px;background:rgba(236,232,222,.2)}
 .tl .fill{position:absolute;left:0;top:10px;height:2px;background:var(--ochre);width:0}
 .time{font:600 .78rem var(--f-display);letter-spacing:.12em;color:var(--chalk-dim);font-variant-numeric:tabular-nums;flex:0 0 auto}
-.ctl .cc{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  padding:5px 7px;
-  border:0;
-  background:transparent;
-  color:var(--chalk);
-  opacity:.86;
-  flex:0 0 auto;
-  transition:color .2s,opacity .2s,filter .2s;
-}
-.ctl .cc:hover,.ctl .cc[aria-pressed="true"]{color:var(--ochre);opacity:1}
-.ctl .cc[aria-pressed="true"]{filter:drop-shadow(0 0 6px rgba(214,169,62,.45))}
-.ctl .cc svg{width:30px;height:22px;display:block}
 
 @media (max-height:500px) and (orientation:landscape){
   .top{top:calc(4px + env(safe-area-inset-top,0px))}
@@ -128,12 +120,12 @@ body.show-ctl #intro:not(.off) .top{opacity:1!important;pointer-events:auto!impo
 
 /* window scene */
 #scene{display:grid;place-items:center}
-.wrap{position:relative;width:min(100vw,calc(100vh * 16 / 9));aspect-ratio:16/9;max-width:100%;overflow:hidden}
-.zoom{position:absolute;inset:0;animation:breathe 12s ease-in-out infinite;transform-origin:68% 40%}
+.wrap{position:relative;width:min(100vw,calc(100vh * 16 / 9));height:min(100vh,calc(100vw * 9 / 16));aspect-ratio:16/9;max-width:100%;overflow:hidden}
+.zoom{position:absolute;inset:0;animation:breathe 12s ease-in-out infinite;transform-origin:68% 40%;will-change:transform;backface-visibility:hidden}
 .zoom > img.bgimg{width:100%;height:100%;object-fit:cover;display:block}
 @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
 #young{position:absolute;left:48%;top:0;width:46%;height:96%;border:0;background:transparent;cursor:pointer;border-radius:45% 45% 10% 10%}
-.sil{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.88;animation:silBreathe 5s ease-in-out infinite;transition:opacity .6s ease}
+.sil{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.88;animation:silBreathe 5s ease-in-out infinite;transition:opacity .6s ease;will-change:opacity;backface-visibility:hidden}
 @keyframes silBreathe{0%,100%{opacity:.68}50%{opacity:1}}
 .wrap.hover .sil{animation:none;opacity:1}
 .wrap.chosen .sil{animation:none;opacity:1}
@@ -157,7 +149,6 @@ body.show-ctl #intro:not(.off) .top{opacity:1!important;pointer-events:auto!impo
 <div class="stage">
   <section class="screen" id="intro">
     <video id="iv" playsinline webkit-playsinline preload="auto" disablepictureinpicture poster="img/reflect.jpg" src="../vid/intro.mp4"></video>
-    <div class="subs" aria-live="polite"><span id="sub"></span></div>
 
     <div class="top" id="topBar">
       <a class="ghost home-link" href="../index.html">← Home</a>
@@ -171,7 +162,6 @@ body.show-ctl #intro:not(.off) .top{opacity:1!important;pointer-events:auto!impo
       <button class="play" id="play" type="button" aria-label="Pause">❚❚</button>
       <div class="tl" id="tl"><div class="rail"></div><div class="fill" id="fill"></div></div>
       <span class="time" id="time">0:00 / 1:13</span>
-      <button class="ghost cc" id="cc" type="button" aria-pressed="false" aria-label="Subtitles"><svg viewBox="0 0 32 24" aria-hidden="true"><rect x="2" y="2" width="28" height="20" rx="2.8" fill="none" stroke="currentColor" stroke-width="2.4"/><rect x="6" y="14.8" width="6.6" height="1.85" rx=".35" fill="currentColor"/><rect x="14.4" y="14.8" width="3.2" height="1.85" rx=".35" fill="currentColor"/><rect x="19.4" y="14.8" width="6.6" height="1.85" rx=".35" fill="currentColor"/><rect x="8.8" y="17.6" width="5.8" height="1.85" rx=".35" fill="currentColor"/><rect x="17.4" y="17.6" width="5.8" height="1.85" rx=".35" fill="currentColor"/></svg></button>
     </div>
   </section>
 
@@ -195,37 +185,8 @@ let running=false;
 
 function show(n){ ["intro","scene","begin"].forEach(s=>$(s).classList.toggle("off",s!==n)); }
 
-/* ---------- subtitles (start, end in seconds of the video) ---------- */
-const CUES=[
-  [0.8,2.3,"My name is Sam."],
-  [3.1,4.5,"I was born in Iran."],
-  [6.2,9.0,"I was seventeen when I had to leave Iran."],
-  [9.85,12.1,"My mother came with me as far as Istanbul…"],
-  [13.2,14.9,"…and then she went back to Iran."],
-  [16.4,21.1,"There, a smuggler named Yilmaz handed me a fake passport…"],
-  [21.55,23.5,"…and put me on a plane."],
-  [23.8,25.8,"Destination: the Netherlands."],
-  [27.0,29.4,"And that's when it all began."],
-  [30.3,32.3,"Interrogations… admission…"],
-  [32.45,34.2,"…and a wait that never seemed to end."],
-  [34.3,36.8,"In the refugee camp, I fell in love."],
-  [37.35,39.4,"I took care of a little bird."],
-  [40.05,42.3,"And it was there that a letter reached me…"],
-  [42.4,44.1,"…one that changed everything."],
-  [46.05,50.5,"When I turned eighteen, my life in Amsterdam began…"],
-  [51.95,53.8,"…undocumented and illegal."],
-  [54.3,57.0,"This story is the story of what came before…"],
-  [57.7,59.4,"…how I became illegal."],
-  [60.9,63.6,"We all breathe the same air…"]
-];
-let ccOn=false, lastCue=-1;
-try{
-  const pref=localStorage.getItem("wabtsa-cc");
-  if(pref==="1" || (pref===null && Math.min(innerWidth,innerHeight)<700)){
-    ccOn=true;
-    $("cc").setAttribute("aria-pressed","true");
-  }
-}catch(_){}
+/* Intro video already has burned-in subtitles; overlay subtitles and CC button are disabled */
+let ccOn=false;
 
 function fmt(t){
   t=Math.max(0,Math.floor(t||0));
@@ -238,11 +199,7 @@ function setPlaying(p){
 }
 
 function updateSub(){
-  const t=iv.currentTime||0;
-  const i=CUES.findIndex(c=>t>=c[0]&&t<c[1]);
-  const el=$("sub");
-  if(i!==lastCue){ lastCue=i; if(i>=0){ el.textContent=CUES[i][2]; } }
-  el.classList.toggle("on", ccOn && i>=0 && !iv.ended && !iv.paused);
+  // Intro video has subtitles baked in; no-op
 }
 
 /* ---------- intro video playback & timeline ---------- */
@@ -256,6 +213,10 @@ function tick(){
   requestAnimationFrame(tick);
 }
 
+const MAX_WAIT_MS=5000;
+let introWatchdog=null;
+function clearIntroWatchdog(){ clearTimeout(introWatchdog); introWatchdog=null; }
+
 function startIntro(){
   ambience.stop();
   running=true;
@@ -264,6 +225,10 @@ function startIntro(){
   iv.classList.add("on");
   iv.muted=false;
   iv.volume=1;
+  clearIntroWatchdog();
+  introWatchdog=setTimeout(()=>{
+    if(running && (iv.paused || iv.currentTime===0 || iv.readyState<2)) toWindow();
+  },MAX_WAIT_MS);
   iv.play().then(()=>{
     setPlaying(true);
   }).catch(()=>{
@@ -278,9 +243,10 @@ function startIntro(){
   requestAnimationFrame(tick);
 }
 
-iv.addEventListener("timeupdate",updateSub);
-iv.addEventListener("playing",()=>{ setPlaying(true); updateSub(); });
+iv.addEventListener("timeupdate",()=>{ if(iv.currentTime>0) clearIntroWatchdog(); updateSub(); });
+iv.addEventListener("playing",()=>{ clearIntroWatchdog(); setPlaying(true); updateSub(); });
 iv.addEventListener("pause",()=>{ if(!iv.ended) setPlaying(false); updateSub(); });
+iv.addEventListener("error",()=>{ if(running) toWindow(); });
 iv.onended=()=>{
   if(!running) return;
   toWindow();
@@ -288,9 +254,9 @@ iv.onended=()=>{
 
 function stopIntro(){
   running=false;
+  clearIntroWatchdog();
   hideControls();
   iv.pause();
-  $("sub").classList.remove("on");
 }
 
 /* ---------- auto-show/hide video controls on click/tap ---------- */
@@ -384,15 +350,41 @@ function prefetchRoom(){
     const l=document.createElement("link"); l.rel="prefetch"; l.href=href; document.head.appendChild(l);
   });
 }
+function decodeSceneImg(img){
+  const waitLoad=()=>new Promise(resolve=>{
+    if(img.complete && img.naturalWidth>0) return resolve();
+    let retried=false;
+    const done=()=>{ img.removeEventListener("load",done); img.removeEventListener("error",onErr); resolve(); };
+    const onErr=()=>{
+      if(!retried){ retried=true; img.src=img.getAttribute("src"); return; }
+      done();
+    };
+    img.addEventListener("load",done);
+    img.addEventListener("error",onErr);
+  });
+  return waitLoad().then(()=>img.decode ? img.decode().catch(()=>{}) : undefined);
+}
+const sceneImgsReady=Promise.all([...document.querySelectorAll("#scene img")].map(decodeSceneImg));
+function ensureSceneReady(){
+  return Promise.race([sceneImgsReady,new Promise(r=>setTimeout(r,MAX_WAIT_MS))]);
+}
+let windowToken=0;
 function toWindow(fromHistory=false){
+  const token=++windowToken;
   stopIntro();
   $("wrap").classList.remove("chosen","hover");
-  show("scene");
-  ambience.start();
-  prefetchRoom();
-  if(!fromHistory && location.hash!=="#window"){
-    try{ history.pushState({screen:"window"},"",location.pathname+location.search+"#window"); }catch(_){}
-  }
+  ensureSceneReady().then(()=>{
+    if(token!==windowToken) return;
+    requestAnimationFrame(()=>{
+      if(token!==windowToken) return;
+      show("scene");
+      ambience.start();
+      prefetchRoom();
+      if(!fromHistory && location.hash!=="#window"){
+        try{ history.pushState({screen:"window"},"",location.pathname+location.search+"#window"); }catch(_){}
+      }
+    });
+  });
 }
 
 /* ---------- ambience: empty terminal room tone, strip-light hum, rain on glass, a distant jet ---------- */
@@ -497,28 +489,20 @@ function afterYoungSam(){
 }
 yb.onclick=()=>{ if(enteringRoom) return; wr.classList.add("chosen"); ambience.stop(); setTimeout(afterYoungSam,450); };
 
-$("cc").onclick=e=>{
-  ccOn=!ccOn;
-  e.currentTarget.setAttribute("aria-pressed",ccOn);
-  try{ localStorage.setItem("wabtsa-cc",ccOn?"1":"0"); }catch(_){}
-  updateSub();
-  showControls();
-};
-
 if(location.search){
   document.querySelectorAll(".home-link").forEach(a=>{ a.href="../index.html"+location.search; });
 }
 
 window.addEventListener("popstate",()=>{
   enteringRoom=false;
+  $("wrap").classList.remove("chosen","hover");
   if(location.hash==="#window") toWindow(true);
-  else startIntro();
+  else { ++windowToken; startIntro(); }
 });
-window.addEventListener("pageshow",e=>{
-  if(e.persisted){
-    enteringRoom=false;
-    if(location.hash==="#window") toWindow(true);
-  }
+window.addEventListener("pageshow",()=>{
+  enteringRoom=false;
+  $("wrap").classList.remove("chosen","hover");
+  if(location.hash==="#window") toWindow(true);
 });
 
 /* Start the intro video immediately (or restore the window screen when returning via Browser Back) */

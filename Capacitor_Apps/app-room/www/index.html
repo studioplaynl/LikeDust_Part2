@@ -32,7 +32,15 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
+html,body{
+  -webkit-user-select:none;
+  -moz-user-select:none;
+  user-select:none;
+  -webkit-touch-callout:none;
+}
 body{background:var(--ink);color:var(--paper);font-family:var(--f-body);font-size:1.05rem;line-height:1.65}
+img{-webkit-user-drag:none;user-drag:none;-webkit-user-select:none;user-select:none}
+input,textarea{-webkit-user-select:text;user-select:text}
 p{margin:0}
 a{color:inherit}
 :focus-visible{outline:2px solid var(--ochre);outline-offset:3px}
