@@ -95,8 +95,7 @@ body{overflow:hidden;font-family:var(--f-body)}
 .voice p .w.on{opacity:1}
 .voice .fa{direction:rtl;font:400 clamp(.95rem,1.7vw,1.3rem)/1.7 var(--f-fa);font-style:normal;color:var(--chalk-dim);margin-top:6px;opacity:0;transition:opacity 1.2s}
 .voice .fa.on{opacity:1}
-.skip{position:absolute;right:2%;bottom:4%;z-index:8;font:600 .66rem var(--f-display);letter-spacing:.2em;text-transform:uppercase;color:var(--chalk-dim);background:rgba(0,0,0,.55);border:1px solid rgba(236,232,222,.25);padding:6px 10px;cursor:pointer}
-.skip:hover{color:var(--ochre);border-color:var(--ochre)}
+.skip{display:none!important}
 .readout{position:absolute;left:50%;top:76%;transform:translateX(-50%);z-index:7;font:700 clamp(.8rem,1.4vw,1rem) var(--f-display);letter-spacing:.18em;color:var(--chalk);background:rgba(0,0,0,.6);padding:4px 10px;font-variant-numeric:tabular-nums;opacity:0;transition:opacity .4s}
 .readout.on{opacity:1}
 
@@ -674,7 +673,7 @@ function voice(lines, fa){
   step();
   return words.length*380+(fa?1200:0);
 }
-function skipBtn(){ if(!DEV_MODE) return; const b=document.createElement("button"); b.className="skip"; b.type="button"; b.textContent=t("skip"); onTap(b,()=>next()); ui.appendChild(b); }
+function skipBtn(){ /* Skip button removed from interactive videos */ }
 
 /* ---------- viewer's number for the yellow card (kept per viewer for chapter two) ---------- */
 function myNumber(make){ let n=null; try{ n=localStorage.getItem("wabtsa-number"); if(n&&n.startsWith("V-1999-")){ n=n.replace("V-1999-","V-1997-"); localStorage.setItem("wabtsa-number",n); } }catch(_){}
@@ -716,7 +715,6 @@ breath(){
    <div class="readout" id="ro"></div>
    <div class="stamp" id="stamp">${t("b_stamp")}</div>
    <div class="ask" id="ask">${t("b_ask")}</div>`);
-  skipBtn();
   const btn=$("hold"), arc=$("arc"), vig=$("vig"), ro=$("ro");
   let held=0, holding=false, raf=0, last=performance.now(), done=false;
   function loop(t){ const dt=(t-last)/1000; last=t;
@@ -741,7 +739,6 @@ silence(){
     <form class="answer" id="af"><label for="ans">${t("q_label")}</label>
     <textarea id="ans" maxlength="160" placeholder="${t("q_ph")}" autocomplete="off"></textarea>
     <div class="acts"><button class="btn" type="submit">${t("q_answer")}</button><button class="ghost" id="quiet" type="button">${t("q_quiet")}</button></div></form>`);
-  skipBtn();
   const ta=$("ans"); if(!matchMedia("(pointer:coarse)").matches) ta.focus({preventScroll:true});
   let idle=later(()=>finish(""),25000);
   ta.addEventListener("input",()=>{ clearTimeout(idle); timers.delete(idle); idle=later(()=>finish(ta.value),25000); });
@@ -764,7 +761,6 @@ wall(){
     <div class="wallbox" id="wb"><img src="pages/p10.jpg" alt="${t("w_alt")}"><div class="lines" id="wl"></div><canvas id="cv" aria-label="${t("w_canvas")}"></canvas></div>
     <div class="wallcount" id="wc"></div>
     <div class="ask" id="ask">${t("w_ask")}</div>`);
-  skipBtn();
   requestAnimationFrame(()=>{ $("dim").classList.add("on"); $("wb").classList.add("on"); });
   voice(t("w_v1"),"دیوارها حرف می‌زدند. داستان‌های خامی که هرگز پایانشان را نمی‌دانستم.");
   const wb=$("wb"), wl=$("wl"), cv=$("cv"), ctx=cv.getContext("2d");
@@ -805,7 +801,6 @@ wall(){
 mother(){
   ui.insertAdjacentHTML("beforeend",`<button class="phone" id="ph" type="button" aria-label="${t("ph_aria")}">${t("ph_hold")}</button>
     <div class="ask" id="ask">${t("ph_ask")}</div>`);
-  skipBtn();
   voice("","مادر…");
   const ph=$("ph"); let calling=false, rings=0, done=false;
   onTap(ph,()=>{ if(done) return; if(!calling){ calling=true; snd.unlock(); ph.classList.add("ringing"); ph.innerHTML=t("ph_calling"); $("ask").textContent=t("ph_hang"); snd.ring(true,()=>{ rings++; ph.innerHTML=t("ph_calling")+`<span class="rc">${rings}</span>`; if(navigator.vibrate) try{navigator.vibrate(120);}catch(_){} if(rings>=4) later(stop,1800); }); } else stop(); });
@@ -819,7 +814,6 @@ photo(){
   ui.insertAdjacentHTML("beforeend",`<div class="finder" id="fd"><i></i><i></i><i></i><i></i><span>● REC</span></div>
     <button class="shoot" id="shoot" type="button" aria-label="${t("f_aria")}"></button><div class="flash" id="fl"></div>
     <div class="ask" id="ask">${t("f_ask")}</div>`);
-  skipBtn();
   onTap($("shoot"),()=>{ $("shoot").remove(); $("ask").hidden=true; snd.shutter(); $("fl").classList.add("go"); frame.classList.remove("gray"); $("fd").style.opacity=0;
     const num=myNumber(true);
     ui.insertAdjacentHTML("beforeend",`<div class="ycard" id="yc" role="img" aria-label="${t("y_aria",num)}"><canvas id="ycp" width="300" height="400"></canvas>

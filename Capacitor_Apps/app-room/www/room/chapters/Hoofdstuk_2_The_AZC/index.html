@@ -96,8 +96,7 @@ body{overflow:hidden;font-family:var(--f-body)}
 .voice p .w.on{opacity:1}
 .voice .fa{direction:rtl;font:400 clamp(.95rem,1.7vw,1.3rem)/1.7 var(--f-fa);font-style:normal;color:var(--chalk-dim);margin-top:6px;opacity:0;transition:opacity 1.2s}
 .voice .fa.on{opacity:1}
-.skip{position:absolute;right:2%;bottom:4%;z-index:8;font:600 .66rem var(--f-display);letter-spacing:.2em;text-transform:uppercase;color:var(--chalk-dim);background:rgba(0,0,0,.55);border:1px solid rgba(236,232,222,.25);padding:6px 10px;cursor:pointer}
-.skip:hover{color:var(--ochre);border-color:var(--ochre)}
+.skip{display:none!important}
 .readout{position:absolute;left:50%;top:76%;transform:translateX(-50%);z-index:7;font:700 clamp(.8rem,1.4vw,1rem) var(--f-display);letter-spacing:.18em;color:var(--chalk);background:rgba(0,0,0,.6);padding:4px 10px;font-variant-numeric:tabular-nums;opacity:0;transition:opacity .4s}
 .readout.on{opacity:1}
 
@@ -741,7 +740,7 @@ function voice(lines, fa){
   step();
   return words.length*380+(fa?1200:0);
 }
-function skipBtn(){ if(!DEV_MODE) return; const b=document.createElement("button"); b.className="skip"; b.type="button"; b.textContent=t("skip"); onTap(b,()=>next()); ui.appendChild(b); }
+function skipBtn(){ /* Skip button removed from interactive videos */ }
 
 /* ---------- viewer's number for the yellow card (kept per viewer for chapter two) ---------- */
 function myNumber(make){ let n=null; try{ n=localStorage.getItem("wabtsa-number"); if(n&&n.startsWith("V-1999-")){ n=n.replace("V-1999-","V-1997-"); localStorage.setItem("wabtsa-number",n); } }catch(_){}
@@ -781,7 +780,6 @@ breath(){
    <div class="readout" id="ro"></div>
    <div class="stamp" id="stamp">${t("b_stamp")}</div>
    <div class="ask" id="ask">${t("b_ask")}</div>`);
-  skipBtn();
   const btn=$("hold"), arc=$("arc"), vig=$("vig"), ro=$("ro");
   let held=0, holding=false, raf=0, last=performance.now(), done=false;
   function loop(t){ const dt=(t-last)/1000; last=t;
@@ -806,7 +804,6 @@ silence(){
     <form class="answer" id="af"><label for="ans">${t("q_label")}</label>
     <textarea id="ans" maxlength="160" placeholder="${t("q_ph")}" autocomplete="off"></textarea>
     <div class="acts"><button class="btn" type="submit">${t("q_answer")}</button><button class="ghost" id="quiet" type="button">${t("q_quiet")}</button></div></form>`);
-  skipBtn();
   const ta=$("ans"); if(!matchMedia("(pointer:coarse)").matches) ta.focus({preventScroll:true});
   let idle=later(()=>finish(""),25000);
   ta.addEventListener("input",()=>{ clearTimeout(idle); timers.delete(idle); idle=later(()=>finish(ta.value),25000); });
@@ -829,7 +826,6 @@ wall(){
     <div class="wallbox" id="wb"><img src="pages/p10.jpg" alt="${t("w_alt")}"><div class="lines" id="wl"></div><canvas id="cv" aria-label="${t("w_canvas")}"></canvas></div>
     <div class="wallcount" id="wc"></div>
     <div class="ask" id="ask">${t("w_ask")}</div>`);
-  skipBtn();
   requestAnimationFrame(()=>{ $("dim").classList.add("on"); $("wb").classList.add("on"); });
   voice(t("w_v1"),"دیوارها حرف می‌زدند. داستان‌های خامی که هرگز پایانشان را نمی‌دانستم.");
   const wb=$("wb"), wl=$("wl"), cv=$("cv"), ctx=cv.getContext("2d");
@@ -871,7 +867,6 @@ wall(){
 mother(){
   ui.insertAdjacentHTML("beforeend",`<button class="phone" id="ph" type="button" aria-label="${t("ph_aria")}">${t("ph_hold")}</button>
     <div class="ask" id="ask">${t("ph_ask")}</div>`);
-  skipBtn();
   voice("","مادر…");
   const ph=$("ph"); let holding=false, rings=0, done=false;
   function down(e){ if(done||holding) return; e.preventDefault(); holding=true; ph.classList.add("ringing"); ph.innerHTML=t("ph_calling"); $("ask").hidden=true; snd.ring(true,()=>{ rings++; if(rings>=5) up(); }); }
@@ -885,7 +880,6 @@ mother(){
 call(){
   ui.insertAdjacentHTML("beforeend",`<video class="lockclip" id="hc" src="film/home.mp4" muted playsinline preload="auto" aria-label="Sam on the phone; at home his mother and father answer"></video><button class="phone" id="ph" type="button" aria-label="Call home">${t("c_hold")}</button>
     <div class="ask" id="ask">${t("c_ask")}</div>`);
-  skipBtn();
   const ph=$("ph"), hc=$("hc"); let calling=false, rings=0, done=false, went=false; const go=()=>{ if(went) return; went=true; next(); };
   onTap(ph,()=>{ if(calling||done) return; calling=true; snd.unlock(); try{ hc.play().then(()=>hc.pause()).catch(()=>{}); }catch(_){} ph.classList.add("ringing"); ph.innerHTML=t("c_calling"); $("ask").hidden=true; voice(t("c_ring"));
     snd.ring(true,()=>{ rings++; ph.innerHTML=t("c_calling")+`<span class="rc">${rings} / 3</span>`; if(navigator.vibrate) try{navigator.vibrate(120);}catch(_){} if(rings>=3) later(connect,1400); }); });
@@ -902,7 +896,6 @@ locker(){
     <button class="door" id="door" type="button" aria-label="${t("l_open")}"><span class="plate"><small>${t("l_door")}</small><b>${num}</b></span><span class="knob"></span></button>
     <video class="lockclip" id="lc" src="film/locker.mp4" muted playsinline preload="auto" aria-label="Sam opens his locker and finds a small glass globe left behind"></video>
     <div class="ask" id="ask">${t("l_ask")}</div>`);
-  skipBtn();
   requestAnimationFrame(()=>$("dim").classList.add("on"));
   const lc=$("lc"); let went=false; const go=()=>{ if(went) return; went=true; next(); };
   /* behind the door: the animated clip from the film (Sam at his locker, his face, the glass globe with the flies) */
@@ -921,7 +914,6 @@ hide(){
   ui.insertAdjacentHTML("beforeend",`<div class="vig" id="vig" style="--v:0"></div>
    <button class="hold pulse" id="hold" type="button" aria-label="Press and hold to hide"><svg viewBox="0 0 100 100"><circle class="base" cx="50" cy="50" r="46" fill="none" stroke="#ece8de" stroke-width="2"/></svg><span class="lbl" id="hl">${t("h_hold")}</span></button>
    <div class="ask" id="ask">${t("h_ask")}</div>`);
-  skipBtn();
   const btn=$("hold"), vig=$("vig"); let holding=false, held=0, raf=0, last=performance.now(), done=false, said=false;
   function loop(tm){ const dt=(tm-last)/1000; last=tm;
     if(holding){ held+=dt; vig.style.setProperty("--v",Math.min(1,held/2)); if(held>1.2&&!said){ said=true; voice(t("h_v")); } if(held>=9) return finish(); }
@@ -942,7 +934,6 @@ photo(){
   ui.insertAdjacentHTML("beforeend",`<div class="finder" id="fd"><i></i><i></i><i></i><i></i><span>● REC</span></div>
     <button class="shoot" id="shoot" type="button" aria-label="${t("f_aria")}"></button><div class="flash" id="fl"></div>
     <div class="ask" id="ask">${t("f_ask")}</div>`);
-  skipBtn();
   onTap($("shoot"),()=>{ $("shoot").remove(); $("ask").hidden=true; snd.shutter(); $("fl").classList.add("go"); frame.classList.remove("gray"); $("fd").style.opacity=0;
     const num=myNumber(true);
     ui.insertAdjacentHTML("beforeend",`<div class="ycard" id="yc" role="img" aria-label="${t("y_aria",num)}"><canvas id="ycp" width="300" height="400"></canvas>
