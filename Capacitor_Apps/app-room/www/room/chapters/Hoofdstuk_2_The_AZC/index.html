@@ -948,16 +948,19 @@ photo(){
     // aan het eind geen eindkaart: meteen terug naar de kamer
     const ce=$("cardEnd"); ce.style.display="none"; let back=false;
     new MutationObserver(()=>{ if(!back&&!ce.classList.contains("off")){ back=true; parent.postMessage("ld-room-back","*"); } }).observe(ce,{attributes:true,attributeFilter:["class"]}); }
-  function unmuteChip(){ const b=document.createElement("button"); b.className="btn"; b.type="button"; b.textContent="Geluid aan";
-    b.style.cssText="position:fixed;left:50%;bottom:90px;transform:translateX(-50%);z-index:60";
-    b.onclick=()=>{ vids.forEach(v=>v.muted=false); try{ snd.unlock(); }catch(_){} b.remove(); }; document.body.appendChild(b); }
+  ["pointerdown","pointermove","touchstart","touchend","keydown","click"].forEach(ev=>{
+    addEventListener(ev,()=>{
+      vids.forEach(v=>{ if(v.muted){ v.muted=false; v.volume=1; } });
+      try{ snd.unlock(); }catch(_){}
+    },{passive:true});
+  });
   function start(){
     $("cardStart").classList.add("off"); document.body.classList.remove("ld-wait");
+    vids.forEach(v=>{ v.muted=false; v.volume=1; });
     vids[0].currentTime=0;
     vids[0].play().then(()=>setPlaying(true)).catch(()=>{
-      // de browser wil geen geluid zonder klik: dan zonder geluid starten, met een knop om het aan te zetten
       vids.forEach(v=>v.muted=true);
-      vids[0].play().then(()=>{ setPlaying(true); unmuteChip(); }).catch(()=>{ $("cardStart").classList.remove("off"); });
+      vids[0].play().then(()=>setPlaying(true)).catch(()=>{ $("cardStart").classList.remove("off"); });
     });
     preload(1);
   }
@@ -966,8 +969,10 @@ photo(){
     const st=document.createElement("style"); st.textContent=".ld-wait .top,.ld-wait .ctl{opacity:0;pointer-events:none}.top,.ctl{transition:opacity .8s}"; document.head.appendChild(st);
     segI=0; cur=0; vids[0].preload="auto"; vids[0].src=SEGS[0].src; vids[0].classList.remove("hide"); vids[1].classList.add("hide");
     let primed=false;
-    window.ldPrime=()=>{ if(primed) return; primed=true; try{ snd.unlock(); }catch(_){}
-      vids.forEach(v=>{ try{ const p=v.play(); if(p&&p.catch) p.catch(()=>{}); v.pause(); }catch(_){} }); };
+    window.ldPrime=()=>{ try{ snd.unlock(); }catch(_){}
+      if(primed || !document.body.classList.contains("ld-wait")) return;
+      primed=true;
+      vids.forEach(v=>{ try{ v.muted=false; v.volume=1; const p=v.play(); if(p&&p.catch) p.catch(()=>{}); v.pause(); }catch(_){} }); };
     window.ldStart=start;
     addEventListener("message",e=>{ if(e.data==="ld-prime") ldPrime(); if(e.data==="ld-start") start(); if(e.data==="ld-pause") vids.forEach(v=>v.pause()); });
     parent.postMessage("ld-ready","*");

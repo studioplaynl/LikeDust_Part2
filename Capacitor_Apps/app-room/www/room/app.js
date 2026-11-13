@@ -1058,14 +1058,13 @@
     } catch (_) {}
   }
 
-  addEventListener("pointerdown", () => {
-    primeRoomAudioAndVideo();
-    if (actx && actx.state !== "running") unlockAudio();
-  }, { passive: true });
-  addEventListener("touchend", () => {
-    primeRoomAudioAndVideo();
-    if (actx && actx.state !== "running") unlockAudio();
-  }, { passive: true });
+  ["pointerdown", "pointermove", "touchstart", "touchend", "keydown", "click"].forEach((ev) => {
+    addEventListener(ev, () => {
+      primeRoomAudioAndVideo();
+      if (actx && actx.state !== "running") unlockAudio();
+      if (started && !LD.busy && !ambCur && ambWant && AMB[ambWant]) amb(ambWant, 2.5);
+    }, { passive: true });
+  });
 
   function nz(c, sec, shape) {
     const len = Math.max(1, Math.floor(c.sampleRate * sec)), b = c.createBuffer(1, len, c.sampleRate), d = b.getChannelData(0);
@@ -1848,8 +1847,8 @@
     });
 
     /* Preload next interactive chapter iframe quietly when idle in room */
-    const nxt = st.next();
-    if (introSeen && nxt && !busy && !LD.busy) {
+    const nxt = st.next() || 1;
+    if (nxt && !busy && !LD.busy) {
       LD.prepareChapter(nxt);
     }
 
@@ -1875,6 +1874,8 @@
 
   async function standUp() {
     if (busy || introSeen || LD.busy) return;
+    primeRoomAudioAndVideo();
+    unlockAudio();
     busy = true;
     clearAllGlows();
     refresh();
@@ -1892,9 +1893,11 @@
     showClip("standup", 60);
     setGone("man", true, 0.06);
     if (!muted && actx) {
-      playSfx("creak");
-      setTimeout(() => playSfx("cloth"), 350);
-      [1.15, 1.62].forEach((a, idx) => footstep(a, 0.42 - idx * 0.06));
+      playReal("standup2", () => {
+        playSfx("creak");
+        setTimeout(() => playSfx("cloth"), 350);
+        [1.15, 1.62].forEach((a, idx) => footstep(a, 0.42 - idx * 0.06));
+      });
     }
 
     await new Promise((r) => {
@@ -1977,6 +1980,8 @@
   async function triggerChapter(i, skipInRoomLead = false, fromHistory = false) {
     const c = CHAPTERS[i];
     if (!c || busy || LD.busy) return;
+    primeRoomAudioAndVideo();
+    unlockAudio();
     stopIdleReact();
 
     if (!introSeen) {
@@ -2009,7 +2014,8 @@
 
     if (c.id === "bike" || c.id === "reject") loadCine();
 
-    /* Fade out room ambient loop so the interactive video chapter's own audio plays cleanly */
+    /* Subtle foley feedback when clicking the object, then fade out room ambience for chapter video */
+    if (!skipInRoomLead && c.fb) playSfx(c.fb);
     amb(null, 0.8);
 
     LD.openChapter(c.n, {
@@ -2218,9 +2224,11 @@
     started = true;
     $("start").classList.remove("show");
     if (curtainEl) curtainEl.classList.add("off");
+    unlockAudio();
     loadSounds();
     loadAmb();
     amb("room", 4);
+    LD.prepareChapter(st.next() || 1);
     if (!st.has(4)) setTimeout(() => birdMove(), 2000);
   }
 

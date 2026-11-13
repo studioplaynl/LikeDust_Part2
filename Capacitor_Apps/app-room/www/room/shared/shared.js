@@ -91,7 +91,23 @@ addEventListener("message",e=>{
     if(e.data==="ld-ctl-on"&&o.setBack) o.setBack(true);
     if(e.data==="ld-ctl-off"&&o.setBack) o.setBack(false); }
 });
-function call(o,fn){ try{ const w=o.fr.contentWindow; if(w&&w[fn]){ w[fn](); return; } }catch(_){} try{ o.fr.contentWindow.postMessage(fn==="ldPrime"?"ld-prime":"ld-start","*"); }catch(_){} }
+function call(o,fn){
+  if(!o) return;
+  const run=()=>{
+    try{ const w=o.fr.contentWindow; if(w&&w[fn]){ w[fn](); return; } }catch(_){}
+    try{ o.fr.contentWindow.postMessage(fn==="ldPrime"?"ld-prime":"ld-start","*"); }catch(_){}
+  };
+  run();
+  if(!o.ready) o.waits.push(run);
+}
+["pointerdown","touchstart","touchend","keydown","click"].forEach(ev=>{
+  addEventListener(ev,()=>{
+    for(const k in frames){
+      const o=frames[k];
+      if(o && o.fr && o.fr.contentWindow) call(o,"ldPrime");
+    }
+  },{passive:true});
+});
 const whenReady=(o,ms)=>new Promise(res=>{ if(o.ready) return res(); o.waits.push(res); setTimeout(res,ms); });
 
 function silhouette(renderer,scene,camera,root,grow=0){

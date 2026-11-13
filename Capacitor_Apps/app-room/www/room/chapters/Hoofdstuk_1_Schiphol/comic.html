@@ -102,7 +102,7 @@ canvas.grime{position:absolute;inset:0;width:100%;height:100%;z-index:5;cursor:c
 <div class="bar" id="bar"></div>
 <div class="top">
   <span class="chap"><span class="long">We All Breathe The Same Air · </span>Chapter <b>one</b></span>
-  <span class="tools"><a class="ghost" href="index.html" style="text-decoration:none">▶ Film version</a><button class="ghost" id="mute" type="button" aria-pressed="false">Sound on</button><button class="ghost" id="restart" type="button">↺ Restart</button></span>
+  <span class="tools"><a class="ghost" href="index.html" style="text-decoration:none">▶ Film version</a><button class="ghost" id="restart" type="button">↺ Restart</button></span>
 </div>
 
 <div class="stage">
@@ -260,7 +260,9 @@ $("auto").onclick=e=>{ autoOn=!autoOn; e.currentTarget.setAttribute("aria-presse
 $("go").onclick=()=>{ snd.unlock(); snd.roomOn(); $("cardStart").classList.add("off"); show(0); };
 $("again").onclick=()=>{ $("cardEnd").classList.add("off"); curPage=0; show(0); };
 $("restart").onclick=()=>{ lock(false); $("cardEnd").classList.add("off"); curPage=0; show(0); };
-$("mute").onclick=e=>{ const m=snd.toggle(); e.currentTarget.textContent=m?"Sound off":"Sound on"; e.currentTarget.setAttribute("aria-pressed",m); };
+["pointerdown","touchstart","touchend","keydown","click"].forEach(ev=>{
+  document.addEventListener(ev,()=>{ snd.unlock(); snd.roomOn(); },{passive:true});
+});
 
 /* ---------- motion ---------- */
 const mv=$("mv"), mvbg=$("mvbg"), mvtag=$("mvtag"); let mvOpen=false, mvToken=0;

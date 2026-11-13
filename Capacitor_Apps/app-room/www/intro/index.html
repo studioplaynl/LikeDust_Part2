@@ -115,14 +115,6 @@ body.show-ctl #intro:not(.off) .top{opacity:1!important;pointer-events:auto!impo
 .ctl .cc[aria-pressed="true"]{filter:drop-shadow(0 0 6px rgba(214,169,62,.45))}
 .ctl .cc svg{width:30px;height:22px;display:block}
 
-#unmute{
-  position:fixed;
-  left:50%;
-  bottom:calc(74px + env(safe-area-inset-bottom,0px));
-  transform:translateX(-50%);
-  z-index:25;
-}
-
 @media (max-height:500px) and (orientation:landscape){
   .top{top:calc(4px + env(safe-area-inset-top,0px))}
   .top .ghost{padding:5px 9px;font-size:.62rem}
@@ -166,8 +158,6 @@ body.show-ctl #intro:not(.off) .top{opacity:1!important;pointer-events:auto!impo
   <section class="screen" id="intro">
     <video id="iv" playsinline webkit-playsinline preload="auto" disablepictureinpicture poster="img/reflect.jpg" src="../vid/intro.mp4"></video>
     <div class="subs" aria-live="polite"><span id="sub"></span></div>
-
-    <button class="btn" id="unmute" type="button" hidden>Tap for sound</button>
 
     <div class="top" id="topBar">
       <a class="ghost home-link" href="../index.html">← Home</a>
@@ -273,14 +263,13 @@ function startIntro(){
   iv.currentTime=0;
   iv.classList.add("on");
   iv.muted=false;
+  iv.volume=1;
   iv.play().then(()=>{
-    $("unmute").hidden=true;
     setPlaying(true);
   }).catch(()=>{
     iv.muted=true;
     iv.play().then(()=>{
       setPlaying(true);
-      $("unmute").hidden=false;
     }).catch(()=>{
       setPlaying(false);
       showControls();
@@ -301,7 +290,6 @@ function stopIntro(){
   running=false;
   hideControls();
   iv.pause();
-  $("unmute").hidden=true;
   $("sub").classList.remove("on");
 }
 
@@ -409,7 +397,7 @@ function toWindow(fromHistory=false){
 
 /* ---------- ambience: empty terminal room tone, strip-light hum, rain on glass, a distant jet ---------- */
 const ambience=(()=>{
-  let ctx=null, master=null, jetTimer=null, muted=false;
+  let ctx=null, master=null, jetTimer=null, active=false;
   function noise(seconds,brown){
     const b=ctx.createBuffer(1,ctx.sampleRate*seconds,ctx.sampleRate), d=b.getChannelData(0); let last=0;
     for(let i=0;i<d.length;i++){ const w=Math.random()*2-1; if(brown){ last=(last+.02*w)/1.02; d[i]=last*3.5; } else d[i]=w; }
@@ -441,15 +429,24 @@ const ambience=(()=>{
   }
   return {
     unlock(){
-      try{ if(!ctx) build(); ctx.resume(); }catch(e){}
+      try{
+        if(!ctx) build();
+        if(ctx.state!=="running") ctx.resume().catch(()=>{});
+        if(active){
+          const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t);
+          master.gain.linearRampToValueAtTime(.8,t+1.5);
+        }
+      }catch(e){}
     },
     start(){
-      try{ if(!ctx) build(); ctx.resume(); }catch(e){ return; }
+      active=true;
+      try{ if(!ctx) build(); if(ctx.state!=="running") ctx.resume().catch(()=>{}); }catch(e){ return; }
       const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t);
-      master.gain.linearRampToValueAtTime(muted?0:.8,t+2.5);
+      master.gain.linearRampToValueAtTime(.8,t+2.5);
       clearTimeout(jetTimer); jetTimer=setTimeout(jet,6000);
     },
     stop(){
+      active=false;
       clearTimeout(jetTimer); if(!ctx) return;
       const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t); master.gain.linearRampToValueAtTime(0,t+1.2);
     }
@@ -457,12 +454,12 @@ const ambience=(()=>{
 })();
 
 /* ---------- controls ---------- */
-["pointerdown","touchend","keydown"].forEach(ev=>{
+["pointerdown","pointermove","touchstart","touchend","keydown","click"].forEach(ev=>{
   document.addEventListener(ev,()=>{
     ambience.unlock();
     if(running && iv.muted){
       iv.muted=false;
-      $("unmute").hidden=true;
+      iv.volume=1;
     }
   },{passive:true});
 });
@@ -471,19 +468,13 @@ $("play").onclick=()=>{
   ambience.unlock();
   if(iv.paused){
     iv.muted=false;
-    $("unmute").hidden=true;
+    iv.volume=1;
     iv.play().then(()=>setPlaying(true)).catch(()=>{});
   } else {
     iv.pause();
     setPlaying(false);
   }
   showControls();
-};
-$("unmute").onclick=()=>{
-  ambience.unlock();
-  iv.muted=false;
-  iv.play().catch(()=>{});
-  $("unmute").hidden=true;
 };
 $("skip").onclick=()=>toWindow(false);
 
