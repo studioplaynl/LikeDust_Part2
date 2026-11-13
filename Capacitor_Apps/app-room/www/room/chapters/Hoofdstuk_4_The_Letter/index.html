@@ -3523,19 +3523,48 @@ Los geopend gedraagt het hoofdstuk zich als vanouds.
         const ce = $("cardEnd"); ce.style.display = "none"; let back = false;
         new MutationObserver(() => { if (!back && !ce.classList.contains("off")) { back = true; parent.postMessage("ld-room-back", "*"); } }).observe(ce, { attributes: true, attributeFilter: ["class"] });
       }
+      let audioFading = false;
+      function fadeInAudio(v, durationMs = 2000) {
+        if (!v) return;
+        audioFading = true;
+        v.volume = 0;
+        const startTime = performance.now();
+        const step = (now) => {
+          if (v.paused) { audioFading = false; return; }
+          const progress = Math.min(1, (now - startTime) / durationMs);
+          v.volume = progress;
+          if (progress < 1) {
+            requestAnimationFrame(step);
+          } else {
+            v.volume = 1;
+            audioFading = false;
+          }
+        };
+        requestAnimationFrame(step);
+      }
       ["pointerdown", "pointermove", "touchstart", "touchend", "keydown", "click"].forEach(ev => {
         addEventListener(ev, () => {
-          vids.forEach(v => { if (v.muted) { v.muted = false; v.volume = 1; } });
+          if (!audioFading) {
+            vids.forEach(v => { if (v.muted) { v.muted = false; v.volume = 1; } });
+          } else {
+            vids.forEach(v => { if (v.muted) { v.muted = false; } });
+          }
           try { snd.unlock(); } catch (_) { }
         }, { passive: true });
       });
       function start() {
         $("cardStart").classList.add("off"); document.body.classList.remove("ld-wait");
-        vids.forEach(v => { v.muted = false; v.volume = 1; });
+        vids.forEach(v => { v.muted = false; v.volume = 0; });
         vids[0].currentTime = 0;
-        vids[0].play().then(() => setPlaying(true)).catch(() => {
+        vids[0].play().then(() => {
+          setPlaying(true);
+          fadeInAudio(vids[0], 2000);
+        }).catch(() => {
           vids.forEach(v => v.muted = true);
-          vids[0].play().then(() => setPlaying(true)).catch(() => { $("cardStart").classList.remove("off"); });
+          vids[0].play().then(() => {
+            setPlaying(true);
+            fadeInAudio(vids[0], 2000);
+          }).catch(() => { $("cardStart").classList.remove("off"); });
         });
         preload(1);
       }

@@ -234,47 +234,8 @@
       transition: width .2s;
     }
 
-    #rotate {
-      position: fixed;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      text-align: center;
-      background: rgba(10, 9, 8, .94);
-      pointer-events: auto;
-      z-index: 55;
-      color: var(--paper);
-      padding-left: max(16px, env(safe-area-inset-left, 0px));
-      padding-right: max(16px, env(safe-area-inset-right, 0px));
-    }
-    #rotate svg {
-      color: var(--lamp);
-      animation: turn 2.4s ease-in-out infinite;
-    }
-    #rotate p {
-      font: 400 18px/1.5 var(--f-body);
-      color: var(--paper);
-      max-width: 18em;
-      margin: 16px auto 0;
-    }
-    #rotate button.big {
-      margin-top: 22px;
-      font: 16px/1 var(--f-type);
-      color: var(--ink);
-      background: var(--lamp);
-      border: 0;
-      padding: .9em 1.6em;
-      border-radius: 4px;
-      min-height: 44px;
-      cursor: pointer;
-    }
-    @keyframes turn {
-      0%, 30% { transform: rotate(0); }
-      60%, 100% { transform: rotate(-90deg); }
-    }
     @media (prefers-reduced-motion: reduce) {
       .card, #caption { transition: none; }
-      #rotate svg { animation: none; }
     }
   </style>
 </head>

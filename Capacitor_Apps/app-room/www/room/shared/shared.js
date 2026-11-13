@@ -323,6 +323,7 @@ function openChapter(n,{onClose,fromHistory=false}={}){
   const t0=performance.now();
   let done=false;
   const fadeMs=window.LD_FADE_MS||520;
+  const videoFadeInMs=window.LD_VIDEO_FADE_IN_MS||2000;
   Promise.all([wipe("#000","in",fadeMs), whenReady(o,6000)]).then(()=>{
     if(done) return;
     wrap.classList.add("on");
@@ -332,7 +333,7 @@ function openChapter(n,{onClose,fromHistory=false}={}){
     if(back) wrap.appendChild(back);
     call(o,"ldStart");
     window.dispatchEvent(new CustomEvent("ld:pause"));
-    wipe("#000","out",fadeMs);
+    wipe("#000","out",videoFadeInMs);
   });
   const poll=setInterval(()=>{ try{ const end=o.fr.contentDocument&&o.fr.contentDocument.getElementById("cardEnd"); if(end&&!end.classList.contains("off")) close(true,false); }catch(_){} },800);
   function performClose(ended){
