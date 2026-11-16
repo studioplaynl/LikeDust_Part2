@@ -173,8 +173,10 @@ input,textarea{-webkit-user-select:text;user-select:text}
 .said .c.x{text-decoration:line-through;text-decoration-color:var(--stamp);text-decoration-thickness:2px;color:rgba(236,232,222,.35)}
 .said.gone{opacity:0;transition:opacity 1.6s}
 .turn{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(64px + env(safe-area-inset-bottom,0px));z-index:21;display:none;font:600 .7rem var(--f-display);letter-spacing:.18em;text-transform:uppercase;color:var(--chalk-dim);background:rgba(0,0,0,.7);border:1px solid rgba(236,232,222,.25);padding:8px 12px;white-space:nowrap}
-@media (orientation:portrait) and (max-width:700px){
+@media (orientation:portrait) and (max-width:700px) and (hover:none) and (pointer:coarse){
   .turn{display:block}
+}
+@media (orientation:portrait) and (max-width:700px){
   .frame{overflow:visible}
   .big{top:calc(100% + 18px);bottom:auto}
   .big span{background:none;padding:0 4px;font-size:1.15rem}
@@ -598,9 +600,14 @@ function tick(){ const g=gtime(); $("fill").style.width=Math.min(100,Math.max(0,
   el.classList.toggle("on", ccOn && i>=0 && !inInteraction);
   requestAnimationFrame(tick); }
 requestAnimationFrame(tick);
-$("cc").onclick=e=>{ ccOn=!ccOn; e.currentTarget.setAttribute("aria-pressed",ccOn); try{ localStorage.setItem("wabtsa-cc",ccOn?"1":"0"); }catch(_){} };
-{ let pref=null; try{ pref=localStorage.getItem("wabtsa-cc"); }catch(_){}
-  if(pref==="1" || (pref===null && Math.min(innerWidth,innerHeight)<700)){ ccOn=true; $("cc").setAttribute("aria-pressed","true"); } }
+function syncCcPref(){
+  let pref=null; try{ pref=localStorage.getItem("wabtsa-cc"); }catch(_){}
+  ccOn = pref==="1";
+  $("cc").setAttribute("aria-pressed", ccOn ? "true" : "false");
+}
+$("cc").onclick=e=>{ ccOn=!ccOn; e.currentTarget.setAttribute("aria-pressed",ccOn ? "true" : "false"); try{ localStorage.setItem("wabtsa-cc",ccOn?"1":"0"); }catch(_){} };
+syncCcPref();
+addEventListener("storage", e=>{ if(e.key==="wabtsa-cc") syncCcPref(); });
 
 function preload(i){ const nv=vids[1-cur]; if(SEGS[i] && nv.getAttribute("src")!==SEGS[i].src){ nv.src=SEGS[i].src; nv.load(); } }
 function setPlaying(p){ playing=p; $("play").textContent=p?"❚❚":"▶"; $("play").setAttribute("aria-label",p?t("pause"):t("play")); }
@@ -1210,6 +1217,7 @@ photo(){
     },{passive:true});
   });
   function start(){
+    syncCcPref();
     $("cardStart").classList.add("off"); document.body.classList.remove("ld-wait");
     vids.forEach(v=>{ v.muted=false; v.volume=0; });
     vids[0].currentTime=0;

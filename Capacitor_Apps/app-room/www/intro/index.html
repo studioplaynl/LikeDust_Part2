@@ -96,12 +96,21 @@
     .screen {
       position: absolute;
       inset: 0;
-      transition: opacity 1.2s ease
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 1.2s ease, visibility 0s linear 0s
     }
 
     .screen.off {
       opacity: 0;
-      pointer-events: none
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity 1.2s ease, visibility 0s linear 1.2s
+    }
+
+    .stage.instant .screen,
+    .stage.instant .screen.off {
+      transition: none !important
     }
 
     .btn {
@@ -158,6 +167,10 @@
     }
 
     /* intro video */
+    #intro {
+      background: #000
+    }
+
     #intro video {
       position: absolute;
       inset: 0;
@@ -313,10 +326,11 @@
 
     .wrap {
       position: relative;
-      width: min(100vw, calc(100vh * 16 / 9));
-      height: min(100vh, calc(100vw * 9 / 16));
+      width: min(100%, calc(100dvh * 16 / 9));
+      height: min(100%, calc(100dvw * 9 / 16));
       aspect-ratio: 16/9;
       max-width: 100%;
+      max-height: 100%;
       overflow: hidden
     }
 
@@ -357,7 +371,8 @@
       border: 0;
       background: transparent;
       cursor: pointer;
-      border-radius: 45% 45% 10% 10%
+      border-radius: 45% 45% 10% 10%;
+      z-index: 2
     }
 
     .sil {
@@ -386,14 +401,16 @@
       position: absolute;
       left: 50%;
       transform: translateX(-50%);
-      bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+      bottom: max(14px, calc(10px + env(safe-area-inset-bottom, 0px)));
+      z-index: 3;
       font-family: var(--f-display);
       letter-spacing: .24em;
       text-transform: uppercase;
       font-size: .85rem;
       color: var(--chalk);
-      text-shadow: 0 2px 12px #000;
-      white-space: nowrap
+      text-shadow: 0 2px 12px #000, 0 0 6px rgba(0, 0, 0, .9);
+      white-space: nowrap;
+      pointer-events: none
     }
 
     .hint b {
@@ -498,8 +515,6 @@
 
   <div class="stage">
     <section class="screen" id="intro">
-      <video id="iv" playsinline webkit-playsinline preload="auto" disablepictureinpicture poster="img/reflect.jpg"
-        src="../vid/intro.mp4"></video>
       <video id="iv" playsinline webkit-playsinline preload="auto" disablepictureinpicture
         src="../vid/intro.mp4"></video>
 
@@ -541,7 +556,27 @@
     const iv = $("iv");
     let running = false;
 
-    function show(n) { ["intro", "scene", "begin"].forEach(s => $(s).classList.toggle("off", s !== n)); }
+    const stageEl = document.querySelector(".stage");
+    function fitSceneWrap() {
+      const wrapEl = $("wrap");
+      if (!stageEl || !wrapEl) return;
+      const sw = stageEl.clientWidth || window.innerWidth || 1;
+      const sh = stageEl.clientHeight || window.innerHeight || 1;
+      let w = sw, h = sw * 9 / 16;
+      if (h > sh) { h = sh; w = sh * 16 / 9; }
+      wrapEl.style.width = Math.floor(w) + "px";
+      wrapEl.style.height = Math.floor(h) + "px";
+    }
+    window.addEventListener("resize", fitSceneWrap);
+    window.addEventListener("orientationchange", () => setTimeout(fitSceneWrap, 150));
+    if (window.visualViewport) window.visualViewport.addEventListener("resize", fitSceneWrap);
+    fitSceneWrap();
+
+    function show(n, instant = false) {
+      if (instant && stageEl) stageEl.classList.add("instant");
+      ["intro", "scene", "begin"].forEach(s => $(s).classList.toggle("off", s !== n));
+      if (instant && stageEl) { void stageEl.offsetHeight; stageEl.classList.remove("instant"); }
+    }
 
     /* Intro video already has burned-in subtitles; overlay subtitles and CC button are disabled */
     let ccOn = false;
@@ -571,7 +606,7 @@
       requestAnimationFrame(tick);
     }
 
-    const MAX_WAIT_MS = 5000;
+    const MAX_WAIT_MS = 10000;
     let introWatchdog = null;
     function clearIntroWatchdog() { clearTimeout(introWatchdog); introWatchdog = null; }
 
@@ -579,15 +614,14 @@
       silhouette.stop();
       ambience.stop();
       running = true;
-      show("intro");
+      show("intro", true);
       iv.classList.remove("on");
       iv.currentTime = 0;
-      iv.classList.add("on");
       iv.muted = false;
       iv.volume = 1;
       clearIntroWatchdog();
       introWatchdog = setTimeout(() => {
-        if (running && (iv.paused || iv.currentTime === 0 || iv.readyState < 2)) toWindow();
+        if (running && iv.paused && iv.readyState < 2) toWindow();
       }, MAX_WAIT_MS);
       iv.play().then(() => {
         setPlaying(true);
@@ -596,6 +630,8 @@
         iv.play().then(() => {
           setPlaying(true);
         }).catch(() => {
+          clearIntroWatchdog();
+          iv.classList.add("on");
           setPlaying(false);
           showControls();
         });
@@ -603,11 +639,17 @@
       requestAnimationFrame(tick);
     }
 
-    iv.addEventListener("timeupdate", () => { if (iv.currentTime > 0) clearIntroWatchdog(); updateSub(); });
-    iv.addEventListener("playing", () => { clearIntroWatchdog(); setPlaying(true); updateSub(); });
+    iv.addEventListener("loadeddata", () => { if (running) iv.classList.add("on"); });
+    iv.addEventListener("canplay", () => { if (running) iv.classList.add("on"); });
     iv.addEventListener("timeupdate", () => { if (iv.currentTime > 0) { iv.classList.add("on"); clearIntroWatchdog(); } updateSub(); });
-    iv.addEventListener("playing", () => { iv.classList.add("on"); clearIntroWatchdog(); setPlaying(true); updateSub(); });
-    iv.addEventListener("pause", () => { if (!iv.ended) setPlaying(false); updateSub(); });
+    iv.addEventListener("playing", () => {
+      iv.classList.add("on");
+      clearIntroWatchdog();
+      setPlaying(true);
+      updateSub();
+      if (document.body.classList.contains("show-ctl")) showControls();
+    });
+    iv.addEventListener("pause", () => { if (!iv.ended) { setPlaying(false); showControls(); } updateSub(); });
     iv.addEventListener("error", () => { if (running) toWindow(); });
     iv.onended = () => {
       if (!running) return;
@@ -633,7 +675,9 @@
       if (!running || $("intro").classList.contains("off")) return;
       document.body.classList.add("show-ctl");
       clearTimeout(ctlTimer);
-      ctlTimer = setTimeout(hideControls, 3000);
+      if (!iv.paused) {
+        ctlTimer = setTimeout(hideControls, 3000);
+      }
     }
     (() => {
       const introEl = $("intro");
@@ -641,6 +685,7 @@
         if (!running || introEl.classList.contains("off")) return;
         if (e.target.closest(".ctl,.top,button,a")) return;
         const now = Date.now(); if (now - lastPaneTap < 420) return; lastPaneTap = now;
+        if (iv.paused) { $("play").click(); return; }
         if (document.body.classList.contains("show-ctl")) hideControls(); else showControls();
       }
       introEl.addEventListener("pointerup", e => { if (e.pointerType === "mouse" && e.button !== 0) return; paneTap(e); });
@@ -742,6 +787,7 @@
         if (token !== windowToken) return;
         requestAnimationFrame(() => {
           if (token !== windowToken) return;
+          fitSceneWrap();
           show("scene");
           silhouette.start();
           ambience.start();

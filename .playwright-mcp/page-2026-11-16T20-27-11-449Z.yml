@@ -1,0 +1,35 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - generic "Interactive room" [ref=e3]
+    - button "Chapter 1 · Schiphol" [disabled] [ref=e4]
+  - generic:
+    - status
+  - generic:
+    - link "← Home" [ref=e6] [cursor=pointer]:
+      - /url: ../index.html
+    - generic "Completed chapters" [ref=e8]:
+      - generic "1 · Schiphol" [ref=e9]
+      - generic "2 · The AZC" [ref=e10]
+      - generic "3 · Amsterdam" [ref=e11]
+      - generic "4 · The Letter" [ref=e12]
+  - generic [ref=e13]:
+    - iframe [ref=e15]:
+      - generic [ref=f1e1]:
+        - generic [ref=f1e2]: En toen zag ik die hond.
+        - generic:
+          - button "Pause": ❚❚
+          - generic:
+            - 'button "Jump to: Hold your breath"'
+            - 'button "Jump to: The interrogation"'
+            - 'button "Jump to: The cell wall"'
+            - 'button "Jump to: Mother"'
+            - 'button "Jump to: The photo"'
+          - generic: 0:14 / 4:15
+          - button "Ondertiteling" [pressed]
+        - generic:
+          - paragraph: We All Breathe The Same Air · Chapter one
+          - heading "Schiphol" [level=1]
+          - paragraph: Amsterdam, 1997
+          - button "▶ Play the chapter"
+          - paragraph: Sound on · 4 minutes · the film stops five times and waits for you
+    - button [aria-hidden]: ← Back to room

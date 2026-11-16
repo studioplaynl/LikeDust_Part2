@@ -6,10 +6,10 @@ Before submitting **We All Breathe the Same Air** to the **Apple App Store**, **
 
 ## 1. Disable Development Mode
 
-In `Capacitor_Apps/app-room/www/shared/shared.js`, set `DEV_DEFAULT = false`:
+In `Capacitor_Apps/app-room/www/room/shared/shared.js`, set `DEV_DEFAULT = false`:
 
 ```javascript
-// File: Capacitor_Apps/app-room/www/shared/shared.js
+// File: Capacitor_Apps/app-room/www/room/shared/shared.js
 const DEV_DEFAULT = false;
 ```
 

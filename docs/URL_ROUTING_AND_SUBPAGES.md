@@ -1,6 +1,18 @@
 # URL Routing, Shareable Links & Subpages
 
-**We All Breathe the Same Air** includes a lightweight, zero-dependency URL router in `Capacitor_Apps/app-room/www/shared/shared.js` designed for debugging, link sharing on the web, deep linking, and modal subpages.
+**We All Breathe the Same Air** includes pre-room stage hashes in `Capacitor_Apps/app-room/www/index.html` (and `intro/index.html`) plus a lightweight, zero-dependency URL router in `Capacitor_Apps/app-room/www/room/shared/shared.js` designed for debugging, link sharing on the web, deep linking, and modal subpages.
+
+---
+
+## 0. Pre-Room Stage Routing & Query Flags (`index.html` / `intro/index.html`)
+
+| Hash | Screen | Behavior |
+| :--- | :--- | :--- |
+| *(none)* | Landing page | Shows the split Part 1 / Part 2 hero doors and story column. |
+| `#intro` | Intro video (`#stage`) | Opens full-screen `#stage` on the intro video (`← Home` closes `#stage`). |
+| `#window` | Airport window (`#scene`) | Shows the airport reflection scene; Browser **Back** from `room/index.html` restores `#window` without replaying the intro. |
+
+Query flags such as `?dev=0` or `?dev=1` are preserved automatically when transitioning from `index.html` → `#intro` / `#window` → `room/index.html` (and back via `← Home`).
 
 ---
 

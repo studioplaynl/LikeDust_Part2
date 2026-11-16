@@ -309,16 +309,17 @@ function openChapter(n,{onClose,fromHistory=false}={}){
   const o=prepareChapter(n); o.active=true;
   call(o,"ldPrime");
   const wrap=chapterWrap();
-  /* "← Back to room" top-left in video overlay (always accessible to return to the room) */
+  /* "← Back to room" top-left in video overlay (hidden with video controls, revealed on click/tap) */
   const back=el("button","ghost back","← Back to room");
-  back.type="button"; back.style.opacity=0.85; back.style.pointerEvents="auto"; back.style.transition="opacity .35s ease";
-  let ctlOn=false, hoverBack=false;
+  back.type="button"; back.style.transition="opacity .35s ease";
+  let ctlOn=false;
   const syncBack=()=>{
-    back.style.opacity=(ctlOn||hoverBack)?1:0.78;
-    back.style.pointerEvents="auto";
+    back.style.opacity=ctlOn?"1":"0";
+    back.style.pointerEvents=ctlOn?"auto":"none";
+    back.setAttribute("aria-hidden",ctlOn?"false":"true");
+    back.tabIndex=ctlOn?0:-1;
   };
-  back.addEventListener("pointerenter",()=>{ hoverBack=true; syncBack(); });
-  back.addEventListener("pointerleave",()=>{ hoverBack=false; syncBack(); });
+  syncBack();
   o.setBack=on=>{ ctlOn=!!on; syncBack(); };
   const t0=performance.now();
   let done=false;

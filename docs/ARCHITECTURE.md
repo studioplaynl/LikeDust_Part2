@@ -25,7 +25,9 @@
 | Directory | Purpose |
 | :--- | :--- |
 | **`Capacitor_Apps/app-room/`** | Unified production Capacitor 7 application (`com.likedust.wabtsa`). |
-| `├── www/` | Web bundle: flat 2D Three.js room (`app.js`), shared router/HUD (`shared/`), room assets (`assets/`), and interactive video chapters (`chapters/`). |
+| `├── www/index.html` | Landing page (Part 1 *Like Dust* & Part 2 *We All Breathe The Same Air*) + embedded full-screen pre-room `#stage` (`#intro` video → `#scene` airport window → `#begin` transition). |
+| `├── www/intro/` | Standalone intro + airport window route (`intro/index.html`) for direct/dashboard links. |
+| `├── www/room/` | Flat 2D Three.js room (`app.js`), shared router/HUD (`shared/shared.js`), room assets (`assets/`), and interactive video chapters (`chapters/`). |
 | `├── ios/` | Native Xcode project using Swift Package Manager (no CocoaPods). |
 | `└── android/` | Native Android Studio project with Java 21 & Android Gradle Plugin. |
 | **`We All Breathe the Same Air-DEF 2/`** | Definitive flat 2D room design reference & artwork source. |
@@ -42,8 +44,12 @@ Instead of maintaining separate codebases in Unity, Flutter, and Web, the projec
 
 1. **Flat 2D Orthographic Stage in Three.js:** Renders the `1920 × 1080` room artwork on flat 2D planes using an `OrthographicCamera` with zero 2.5D parallax distortion, preserving exact artist framing (`FOCUS` contain/cover blend) and `LinearSRGBColorSpace` + `NoColorSpace` texture pass-through.
 2. **Adaptive Character Playback:** Uses GLSL green-screen chroma-key shaders on `<video>` textures on desktop and pre-keyed `.webp` sprite sheets (`uSubUv` uniform) on mobile/touch devices (`LITE`), keeping GPU memory low while interactive chapter videos load.
-3. **WebGL Object Silhouette Transitions:** Offscreen `WebGLRenderTarget` pixel readback in `shared.js` extracts the exact silhouette of clicked Three.js object meshes (`passport`, `frame`, `bike`, `rejectOpen`) to mask-zoom into each interactive video chapter.
-4. **Instant Web Distribution:** `Capacitor_Apps/app-room/www/` runs directly as a static website and is packaged into `dist_pages/room/` for Cloudflare Pages.
+3. **WebGL Object Silhouette Transitions:** Offscreen `WebGLRenderTarget` pixel readback in `room/shared/shared.js` extracts the exact silhouette of clicked Three.js object meshes (`passport`, `frame`, `bike`, `rejectOpen`) to mask-zoom into each interactive video chapter.
+4. **Unified Pre-Room Stage & Mobile Viewport Handling:**
+   - **Synchronous iOS Video Playback:** `www/index.html` embeds `#stage` (`#intro` video + `#scene` airport window) directly so clicking **Start** invokes `iv.play()` synchronously inside the tap handler—avoiding iOS Safari/Chrome autoplay restrictions and eliminating page-transition blips of `#scene`.
+   - **Desktop-Only Hero Videos:** On mobile/touch devices (`hover: none` / `pointer: coarse`), hero doors render static `<img>` posters (`bgimg`) and skip mounting `<video class="bgv">`, preventing iOS WebKit native play overlays in Low Power Mode.
+   - **Safe-Area & Dynamic Landscape Framing:** Landing `.doors` adapts to short phone landscape (`max-height: 520px and (orientation: landscape)`) with `env(safe-area-inset-*)` padding so **START** and **ENTER** stay visible above the fold and clear of the Dynamic Island; `#sceneWrap` (and standalone `intro/index.html`) uses `100dvh` + `fitSceneWrap()` (`stage.clientWidth × stage.clientHeight`) so the airport window hint is never clipped behind Safari's URL bar.
+5. **Instant Web Distribution:** `Capacitor_Apps/app-room/www/` runs directly as a static website and is packaged into `dist_pages/room/` for Cloudflare Pages.
 
 ---
 

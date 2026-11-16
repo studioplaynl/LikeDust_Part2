@@ -4,7 +4,17 @@ A comprehensive guide to the visual, audio, and interactive systems implemented 
 
 ---
 
-## 1. Flat 2D Room in Three.js (`app.js`)
+## 1. Landing Page & Pre-Room Intro Stage (`index.html` & `intro/index.html`)
+
+- **Two-Book Doors (`www/index.html`):** Full-viewport split hero for **Part 2 (*We All Breathe The Same Air*)** and **Part 1 (*Like Dust*)** with drifting dust particles (`<canvas id="dust">`), desktop-only silent background video loops (`(hover: hover) and (pointer: fine)`), static poster images on mobile/touch devices, and safe-area + short-landscape responsive layout.
+- **Unified `#stage` Overlay (`#intro` → `#scene` → `#begin`):**
+  - Tapping **Start** opens `#stage` and starts `vid/intro.mp4` synchronously inside the user gesture with auto-hiding player controls (controls stay visible while paused).
+  - After the intro video (or **Skip ›**), `#scene` reveals the airport window (`reflect.jpg`) with an organic breathing silhouette animation of young Sam (`young-silhouette.png`) and synthesized WebAudio terminal ambience (room tone, fluorescent hum, rain on glass, distant jet).
+  - Clicking **young Sam** fades to black (`#begin`) and navigates into `room/index.html`; pressing Browser Back returns cleanly to `#window`.
+
+---
+
+## 2. Flat 2D Room in Three.js (`room/app.js`)
 
 - **True Flat 2D Presentation:** Built in Three.js with an `OrthographicCamera` over a `1920 × 1080` stage (`stageGroup`) with zero 2.5D camera parallax, matching the exact framing and artwork of `We All Breathe the Same Air-DEF 2`.
 - **Prologue & In-Room Character Beats:**
@@ -21,7 +31,7 @@ A comprehensive guide to the visual, audio, and interactive systems implemented 
 
 ---
 
-## 2. Interactive Video Chapter Player (`chapters/` + `shared.js`)
+## 3. Interactive Video Chapter Player (`room/chapters/` + `room/shared/shared.js`)
 
 - **Three.js Silhouette Mask Transition:** Clicking an unlocked room object extracts its alpha silhouette from the Three.js scene via an offscreen `WebGLRenderTarget` and expands it smoothly into the full-screen interactive chapter iframe (`Hoofdstuk_1..4`).
 - **Auto-Hiding Video Controls:**
@@ -33,12 +43,12 @@ A comprehensive guide to the visual, audio, and interactive systems implemented 
 
 ---
 
-## 3. Dev Mode vs. Store Production Mode
+## 4. Dev Mode vs. Store Production Mode
 
-A single flag at the top of `Capacitor_Apps/app-room/www/shared/shared.js` controls development tools vs. store-ready presentation:
+A single flag at the top of `Capacitor_Apps/app-room/www/room/shared/shared.js` controls development tools vs. store-ready presentation:
 
 ```javascript
-// Located at the top of Capacitor_Apps/app-room/www/shared/shared.js:
+// Located at the top of Capacitor_Apps/app-room/www/room/shared/shared.js:
 const DEV_DEFAULT = true; // Set to false before building for App Store / Google Play
 ```
 

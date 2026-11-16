@@ -1074,11 +1074,13 @@
       white-space: nowrap
     }
 
-    @media (orientation:portrait) and (max-width:700px) {
+    @media (orientation:portrait) and (max-width:700px) and (hover:none) and (pointer:coarse) {
       .turn {
         display: block
       }
+    }
 
+    @media (orientation:portrait) and (max-width:700px) {
       .frame {
         overflow: visible
       }
@@ -2767,11 +2769,14 @@
       requestAnimationFrame(tick);
     }
     requestAnimationFrame(tick);
-    $("cc").onclick = e => { ccOn = !ccOn; e.currentTarget.setAttribute("aria-pressed", ccOn); try { localStorage.setItem("wabtsa-cc", ccOn ? "1" : "0"); } catch (_) { } };
-    {
+    function syncCcPref() {
       let pref = null; try { pref = localStorage.getItem("wabtsa-cc"); } catch (_) { }
-      if (pref === "1" || (pref === null && Math.min(innerWidth, innerHeight) < 700)) { ccOn = true; $("cc").setAttribute("aria-pressed", "true"); }
+      ccOn = pref === "1";
+      $("cc").setAttribute("aria-pressed", ccOn ? "true" : "false");
     }
+    $("cc").onclick = e => { ccOn = !ccOn; e.currentTarget.setAttribute("aria-pressed", ccOn ? "true" : "false"); try { localStorage.setItem("wabtsa-cc", ccOn ? "1" : "0"); } catch (_) { } };
+    syncCcPref();
+    addEventListener("storage", e => { if (e.key === "wabtsa-cc") syncCcPref(); });
 
     function preload(i) { const nv = vids[1 - cur]; if (SEGS[i] && nv.getAttribute("src") !== SEGS[i].src) { nv.src = SEGS[i].src; nv.load(); } }
     function setPlaying(p) { playing = p; $("play").textContent = p ? "❚❚" : "▶"; $("play").setAttribute("aria-label", p ? t("pause") : t("play")); }
@@ -3553,6 +3558,7 @@ Los geopend gedraagt het hoofdstuk zich als vanouds.
         }, { passive: true });
       });
       function start() {
+        syncCcPref();
         $("cardStart").classList.add("off"); document.body.classList.remove("ld-wait");
         vids.forEach(v => { v.muted = false; v.volume = 0; });
         vids[0].currentTime = 0;
