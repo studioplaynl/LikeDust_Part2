@@ -10,7 +10,7 @@
                         no "Back to the room" button and no "Skip ›" button on chapter interactions.
    (Tip: on web you can always override with ?dev=0 or ?dev=1 in the URL.)
    ============================================================================ */
-const DEV_DEFAULT = true;
+const DEV_DEFAULT = false;
 const DEV_MODE = /[?&]dev=0\b/.test(location.search) ? false
                : /[?&]dev=1\b/.test(location.search) ? true
                : DEV_DEFAULT;
