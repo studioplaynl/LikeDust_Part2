@@ -337,12 +337,12 @@ DASHBOARD_HTML = """<!doctype html>
 
     <section class="cloud-card">
       <div class="cloud-info">
-        <h3>☁️ Cloudflare Pages Review Site</h3>
-        <p>Live review URL: <a href="https://maartenvanderglas-com-2hv.pages.dev" target="_blank" rel="noopener" id="cloudLink">https://maartenvanderglas-com-2hv.pages.dev</a></p>
+        <h3>☁️ Cloudflare Pages Live Site</h3>
+        <p>Live URL: <a href="https://thesameair-nl.pages.dev" target="_blank" rel="noopener" id="cloudLink">https://thesameair-nl.pages.dev</a></p>
         <div class="cloud-msg" id="cloudMsg"></div>
       </div>
       <div class="cloud-actions">
-        <a href="https://maartenvanderglas-com-2hv.pages.dev" target="_blank" rel="noopener" class="btn-link btn-secondary" style="flex:none; text-decoration:none;">
+        <a href="https://thesameair-nl.pages.dev" target="_blank" rel="noopener" class="btn-link btn-secondary" style="flex:none; text-decoration:none;">
           Open Cloudflare Site ↗
         </a>
         <button type="button" class="btn-cloud" id="deployCloudBtn">
@@ -637,7 +637,7 @@ DASHBOARD_HTML = """<!doctype html>
             throw new Error(data.error || "Deployment failed");
           }
           cloudMsg.className = "cloud-msg success";
-          cloudMsg.textContent = "✓ Successfully deployed to Cloudflare Pages! (" + (data.url || "https://maartenvanderglas-com-2hv.pages.dev") + ")";
+          cloudMsg.textContent = "✓ Successfully deployed to Cloudflare Pages! (" + (data.url || "https://thesameair-nl.pages.dev") + ")";
         } catch (err) {
           cloudMsg.className = "cloud-msg error";
           cloudMsg.textContent = "✗ Error: " + err.message;
@@ -1091,7 +1091,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                     timeout=180,
                 )
                 if res.returncode == 0:
-                    self._send_json({"ok": True, "url": "https://maartenvanderglas-com-2hv.pages.dev"})
+                    self._send_json({"ok": True, "url": "https://thesameair-nl.pages.dev"})
                 else:
                     err_msg = (res.stderr or res.stdout or "Deployment failed").strip()
                     self._send_json({"ok": False, "error": err_msg[:300]}, status=HTTPStatus.INTERNAL_SERVER_ERROR)
