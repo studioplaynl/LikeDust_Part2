@@ -120,6 +120,7 @@ a{color:inherit}
 .btn:hover{background:var(--paper);color:var(--ink)}
 .btn.o{border-color:var(--ochre);color:var(--ochre)}
 .btn.o:hover{background:var(--ochre);color:var(--ink)}
+.btn[data-store-soon]{opacity:.78}
 .btn svg{width:11px;height:11px;fill:currentColor;flex:0 0 auto}
 .frame{aspect-ratio:16/9;max-width:100%;width:100%;height:auto;object-fit:cover;display:block;border:1px solid var(--line)}
 blockquote{margin:0;font-family:var(--f-display);font-weight:700;text-transform:uppercase;font-size:clamp(1.6rem,3.4vw,2.4rem);line-height:1;color:var(--ochre)}
@@ -138,18 +139,7 @@ blockquote{margin:0;font-family:var(--f-display);font-weight:700;text-transform:
 @media (max-width:360px){.credits dl{grid-template-columns:1fr}}
 footer{border-top:1px solid var(--line);padding-block:24px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;direction:ltr}
 
-/* cinema */
-.cinema .fx{position:absolute;inset:0;pointer-events:none;overflow:hidden;display:none}
-.cinema.tex .fx{display:block}
-.cinema .fx .paper{position:absolute;inset:0;z-index:1;background:url(img/paper.jpg) center/cover;mix-blend-mode:soft-light;opacity:.6}
-.cinema .fx .grain{position:absolute;inset:-120px;z-index:1;background:url(img/grain.png);mix-blend-mode:overlay;opacity:.18;animation:grain .5s steps(1) infinite}
 @keyframes grain{0%{transform:translate(0,0)}17%{transform:translate(-37px,22px)}33%{transform:translate(29px,-41px)}50%{transform:translate(-18px,-9px)}67%{transform:translate(44px,31px)}83%{transform:translate(-50px,48px)}100%{transform:translate(12px,-26px)}}
-@media (prefers-reduced-motion:reduce){.cinema .fx .grain{animation:none}}
-@media (hover:none),(pointer:coarse){.cinema .fx{display:none!important}}
-.cinema{position:fixed;inset:0;z-index:50;background:#000;display:grid;place-items:center;opacity:0;transition:opacity .5s}
-.cinema.on{opacity:1}
-.cinema video{width:100%;height:100%;object-fit:contain}
-.cinema .close{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));right:16px;z-index:2;font-family:var(--f-display);font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:.9rem;color:var(--paper);background:rgba(0,0,0,.55);border:1px solid rgba(238,237,232,.35);padding:10px 16px;cursor:pointer}
 body.locked{overflow:hidden}
 
 @media (max-width:760px){
@@ -321,6 +311,9 @@ body.show-ctl #stage #intro:not(.off) .ctl,body.show-ctl #stage #intro:not(.off)
         <blockquote data-i18n="landing.waQuote">We all breathe the same air… but not all of us are equally free.</blockquote>
         <div class="links">
           <a class="btn o" href="intro/index.html" data-i18n="landing.start">Start</a>
+          <!-- TODO: vervang href="#we-all-breathe" door de live store-URL's en verwijder data-store-soon + aria-disabled -->
+          <a class="btn" href="#we-all-breathe" data-store-soon aria-disabled="true" data-i18n="landing.appStore" data-i18n-title="landing.comingSoon" title="Coming soon">App Store</a>
+          <a class="btn" href="#we-all-breathe" data-store-soon aria-disabled="true" data-i18n="landing.googlePlay" data-i18n-title="landing.comingSoon" title="Coming soon">Google Play</a>
         </div>
       </div>
     </section>
@@ -336,7 +329,6 @@ body.show-ctl #stage #intro:not(.off) .ctl,body.show-ctl #stage #intro:not(.off)
         <p data-i18n="landing.ldBody">Seventeen-year-old Sam travels from Iran to Europe, hoping to cross every kind of border. An interactive illustrated novel in black and white.</p>
         <div class="meta"><span class="mono" data-i18n="landing.ldPlatforms">iPhone · iPad · Mac · web</span><span class="mono" data-i18n="landing.ldInfo">Free · English · 13+</span></div>
         <div class="links">
-          <button class="btn" type="button" data-film="vid/ld-trailer.mp4"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M0 0l10 6-10 6z"/></svg><span data-i18n="landing.watchTrailer">Watch the trailer · 0:17</span></button>
           <a class="btn" href="https://likedust.nl" target="_blank" rel="noopener" data-i18n="landing.readLikedust">Read on likedust.nl</a>
           <a class="btn" href="https://apps.apple.com/app/like-dust/id6608977988" target="_blank" rel="noopener" data-i18n="landing.appStore">App Store</a>
         </div>
@@ -361,7 +353,7 @@ body.show-ctl #stage #intro:not(.off) .ctl,body.show-ctl #stage #intro:not(.off)
         <div><dt data-i18n="landing.roleScript">Script</dt><dd>Sam Yazdanpanna</dd></div>
         <div><dt data-i18n="landing.roleConsultant">Script consultant</dt><dd>David Henrichs</dd></div>
         <div><dt data-i18n="landing.roleIllustrations">Illustrations</dt><dd>Maysam Barza</dd></div>
-        <div><dt data-i18n="landing.roleMotion">Motion</dt><dd>Mostafa Kandaz</dd></div>
+        <div><dt data-i18n="landing.roleMotion">Motion</dt><dd>Mostafa Kandaz<br>Said Rasouli</dd></div>
         <div><dt data-i18n="landing.roleSound">Sound</dt><dd>Oliver Rekkers<br>Said Rasouli</dd></div>
         <div><dt data-i18n="landing.roleInteractive">Interactive &amp; web</dt><dd>Maarten van de Glas<br>Sam Yazdanpanna</dd></div>
         <div><dt data-i18n="landing.roleProducers">Producers</dt><dd>Metafoor<br>Bas Broertjes<br>Sam Yazdanpanna</dd></div>
@@ -370,16 +362,10 @@ body.show-ctl #stage #intro:not(.off) .ctl,body.show-ctl #stage #intro:not(.off)
 
     <footer>
       <span class="mono">© Sam Yazdanpanna</span>
-      <a class="mono" href="https://likedust.nl" target="_blank" rel="noopener">likedust.nl</a>
+      <a class="mono" href="https://www.samyazdanpanna.com/" target="_blank" rel="noopener">samyazdanpanna.com</a>
     </footer>
   </div>
 </main>
-
-<div class="cinema" id="cinema" role="dialog" aria-modal="true" aria-label="Film" hidden>
-  <button class="close" type="button" id="close" data-i18n="common.close">Close ✕</button>
-  <video id="cv" width="1280" height="720" playsinline webkit-playsinline controls preload="none" disablepictureinpicture></video>
-  <div class="fx" aria-hidden="true"><i class="paper"></i><i class="grain"></i></div>
-</div>
 
 <div id="stage" role="dialog" aria-modal="true" aria-label="We All Breathe The Same Air — Intro" data-i18n-aria="intro.stageAria" hidden>
   <section class="screen off" id="intro">
@@ -447,7 +433,7 @@ if(window.WABTSA_I18N){
 }
 
 function syncLandingInert(){
-  const overlayOpen=!document.getElementById("stage").hidden || !document.getElementById("cinema").hidden;
+  const overlayOpen=!document.getElementById("stage").hidden;
   mainEl.toggleAttribute("inert",overlayOpen);
   landingBarEl.toggleAttribute("inert",overlayOpen);
 }
@@ -518,7 +504,7 @@ if(!reduce){
 }
 
 function playBgs(){
-  if(reduce || !doorsVisible || !document.getElementById("stage").hidden || !document.getElementById("cinema").hidden) return;
+  if(reduce || !doorsVisible || !document.getElementById("stage").hidden) return;
   bgs.forEach(v=>{
     v.defaultMuted=true;
     v.muted=true;
@@ -552,24 +538,18 @@ if("IntersectionObserver" in window && doorsEl){
   },{rootMargin:"120px 0px"}).observe(doorsEl);
 }
 
-/* cinema: Watch the trailer modal */
-const cin=document.getElementById("cinema"), cv=document.getElementById("cv");
-let opener=null;
-document.querySelectorAll("[data-film]").forEach(btn=>btn.addEventListener("click",()=>{
-  opener=btn;
-  if(cv.getAttribute("src")!==btn.dataset.film) cv.src=btn.dataset.film;
-  cin.classList.toggle("tex",btn.dataset.film.indexOf("intro")>-1);
-  cin.hidden=false; document.body.classList.add("locked"); syncLandingInert(); pauseBgs(); stopDust();
-  cv.currentTime=0; cv.muted=false; cv.play().catch(()=>{ cv.muted=true; cv.play().catch(()=>{}); });
-  requestAnimationFrame(()=>cin.classList.add("on")); document.getElementById("close").focus({preventScroll:true});
+/* Part 2 App Store / Google Play buttons (coming soon until store URLs are added) */
+document.querySelectorAll("[data-store-soon]").forEach(a=>a.addEventListener("click",e=>{
+  e.preventDefault();
+  if(a._soonTimer) return;
+  const orig=a.textContent;
+  const soon=window.WABTSA_I18N?WABTSA_I18N.t("landing.comingSoon"):"Coming soon";
+  a.textContent=`${orig} · ${soon}`;
+  a._soonTimer=setTimeout(()=>{
+    a._soonTimer=0;
+    a.textContent=window.WABTSA_I18N&&a.dataset.i18n?WABTSA_I18N.t(a.dataset.i18n):orig;
+  },1800);
 }));
-function closeCinema(){
-  cv.pause(); cin.classList.remove("on"); document.body.classList.remove("locked");
-  setTimeout(()=>{ cin.hidden=true; syncLandingInert(); playBgs(); startDust(); if(opener) opener.focus({preventScroll:true}); },450);
-}
-document.getElementById("close").addEventListener("click",closeCinema);
-cv.addEventListener("ended",closeCinema);
-document.addEventListener("keydown",e=>{ if(e.key==="Escape" && !cin.hidden) closeCinema(); });
 
 /* Preserve ?dev=0 / ?dev=1 / ?lang= query flags on Start links */
 if(location.search){

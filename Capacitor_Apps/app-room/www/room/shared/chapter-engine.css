@@ -976,18 +976,39 @@ html,
       font-variant-numeric: tabular-nums
     }
 
-    /* the interrogation: what you answer is crossed out */
+    /* the interrogation: starts as low as possible below the film; slides up smoothly when typing */
     .answer {
-      position: absolute;
+      position: fixed;
       left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 7;
-      width: min(70%, 520px);
+      top: auto;
+      bottom: max(10px, env(safe-area-inset-bottom, 0px));
+      transform: translateX(-50%);
+      z-index: 12;
+      width: min(92vw, 680px);
       display: flex;
       flex-direction: column;
+      gap: 6px;
+      align-items: stretch;
+      background: rgba(0, 0, 0, .86);
+      border: 1px solid rgba(236, 232, 222, .22);
+      border-radius: 4px;
+      padding: 8px 12px;
+      box-sizing: border-box;
+      transition: bottom .28s cubic-bezier(.2, .8, .2, 1), width .25s ease, padding .25s ease, border-color .25s ease, box-shadow .25s ease
+    }
+
+    .answer.typing,
+    .answer:has(textarea:focus) {
+      bottom: max(calc(var(--kb, 0px) + 16px), min(22vh, 150px));
+      width: min(92vw, 560px);
       gap: 10px;
-      align-items: stretch
+      padding: 12px 14px;
+      border-color: rgba(214, 169, 62, .48);
+      box-shadow: 0 14px 44px rgba(0, 0, 0, .86)
+    }
+
+    body.show-ctl:not(.ld-wait) .answer:not(.typing):not(:has(textarea:focus)) {
+      bottom: max(54px, calc(48px + env(safe-area-inset-bottom, 0px)))
     }
 
     .answer label {
@@ -999,17 +1020,42 @@ html,
       text-shadow: 0 1px 8px #000
     }
 
-    .answer textarea {
-      font: 400 clamp(1rem, 1.8vw, 1.3rem)/1.5 var(--f-body);
-      color: var(--chalk);
-      background: rgba(0, 0, 0, .82);
-      border: 1px solid rgba(236, 232, 222, .35);
-      padding: 10px 12px;
-      resize: none;
-      min-height: 4.6em
+    .answer .answer-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap
     }
 
+    .answer.typing .answer-row,
+    .answer:has(textarea:focus) .answer-row {
+      flex-direction: column;
+      align-items: stretch
+    }
+
+    .answer textarea {
+      flex: 1 1 220px;
+      min-width: 0;
+      font: inherit;
+      font-family: var(--f-body);
+      font-size: max(1rem, 1em);
+      line-height: 1.4;
+      color: var(--chalk);
+      background: rgba(14, 14, 14, .92);
+      border: 1px solid rgba(236, 232, 222, .35);
+      padding: 8px 12px;
+      resize: none;
+      min-height: 44px;
+      max-height: 44px;
+      box-sizing: border-box;
+      transition: min-height .24s ease, max-height .24s ease, padding .24s ease
+    }
+
+    .answer.typing textarea,
     .answer textarea:focus {
+      min-height: 4.2em;
+      max-height: 7.5em;
+      padding: 10px 12px;
       outline: 2px solid var(--ochre)
     }
 
@@ -1017,7 +1063,35 @@ html,
       display: flex;
       gap: 8px;
       justify-content: center;
-      flex-wrap: wrap
+      flex-wrap: wrap;
+      flex: 0 0 auto
+    }
+
+    @media (max-height:600px) {
+      .answer {
+        bottom: max(6px, env(safe-area-inset-bottom, 0px));
+        padding: 5px 10px;
+        gap: 4px
+      }
+      .answer label {
+        font-size: .62rem
+      }
+      .answer .acts .btn,
+      .answer .acts .ghost {
+        padding: 7px 11px;
+        font-size: .68rem
+      }
+      .answer.typing,
+      .answer:has(textarea:focus) {
+        bottom: max(calc(var(--kb, 0px) + 10px), 24vh);
+        padding: 8px 12px;
+        gap: 6px
+      }
+      .answer.typing textarea,
+      .answer textarea:focus {
+        min-height: 3em;
+        max-height: 4.6em
+      }
     }
 
     .said {

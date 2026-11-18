@@ -935,22 +935,57 @@
 
     /* CH1 · 2 · THE INTERROGATION */
     silence() {
-      ui.insertAdjacentHTML("beforeend", `<div class="dim on" style="background:rgba(0,0,0,.55)"></div>
+      ui.insertAdjacentHTML("beforeend", `<div class="dim" id="qdim" style="background:rgba(0,0,0,.48)"></div>
         <form class="answer" id="af"><label for="ans">${t("q_label")}</label>
-        <textarea id="ans" maxlength="160" placeholder="${t("q_ph")}" autocomplete="off"></textarea>
-        <div class="acts"><button class="btn" type="submit">${t("q_answer")}</button><button class="ghost" id="quiet" type="button">${t("q_quiet")}</button></div></form>`);
-      const ta = $("ans");
-      if (!matchMedia("(pointer:coarse)").matches) ta.focus({ preventScroll: true });
+        <div class="answer-row">
+          <textarea id="ans" name="answer" rows="1" maxlength="160" placeholder="${t("q_ph")}" autocomplete="off" enterkeyhint="send"></textarea>
+          <div class="acts"><button class="btn" type="submit">${t("q_answer")}</button><button class="ghost" id="quiet" type="button">${t("q_quiet")}</button></div>
+        </div></form>`);
+      const af = $("af"), ta = $("ans"), qdim = $("qdim");
+      const syncTyping = () => {
+        const active = document.activeElement === ta || ta.value.trim().length > 0;
+        if (af) af.classList.toggle("typing", active);
+        if (qdim) qdim.classList.toggle("on", active);
+      };
+      const vv = window.visualViewport;
+      const syncKb = () => {
+        if (!af || !vv) return;
+        const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+        af.style.setProperty("--kb", kb + "px");
+      };
+      if (vv) {
+        vv.addEventListener("resize", syncKb);
+        vv.addEventListener("scroll", syncKb);
+      }
+      cleanup = () => {
+        if (vv) {
+          vv.removeEventListener("resize", syncKb);
+          vv.removeEventListener("scroll", syncKb);
+        }
+      };
       let idle = later(() => finish(""), 25000);
-      ta.addEventListener("input", () => { clearTimeout(idle); timers.delete(idle); idle = later(() => finish(ta.value), 25000); });
+      ta.addEventListener("focus", () => { syncTyping(); syncKb(); });
+      ta.addEventListener("blur", () => { later(() => { syncTyping(); syncKb(); }, 80); });
+      ta.addEventListener("input", () => {
+        syncTyping();
+        clearTimeout(idle); timers.delete(idle);
+        idle = later(() => finish(ta.value), 25000);
+      });
+      ta.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
+          e.preventDefault();
+          finish(ta.value);
+        }
+      });
       $("quiet").onclick = () => finish("");
-      $("af").onsubmit = (e) => { e.preventDefault(); finish(ta.value); };
+      af.onsubmit = (e) => { e.preventDefault(); finish(ta.value); };
       let done = false;
       function finish(text) {
         if (done) return;
         done = true;
         text = text.trim();
-        $("af").remove();
+        if (af) af.remove();
+        if (qdim) qdim.classList.toggle("on", Boolean(text));
         if (!text) { later(next, 600); return; }
         const box = document.createElement("div"); box.className = "said"; ui.appendChild(box);
         [...text].forEach((ch) => { const s = document.createElement("span"); s.className = "c"; s.textContent = ch; box.appendChild(s); });
