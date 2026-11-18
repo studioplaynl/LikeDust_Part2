@@ -1054,29 +1054,6 @@
       transition: opacity 1.6s
     }
 
-    .turn {
-      position: fixed;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: calc(64px + env(safe-area-inset-bottom, 0px));
-      z-index: 21;
-      display: none;
-      font: 600 .7rem var(--f-display);
-      letter-spacing: .18em;
-      text-transform: uppercase;
-      color: var(--chalk-dim);
-      background: rgba(0, 0, 0, .7);
-      border: 1px solid rgba(236, 232, 222, .25);
-      padding: 8px 12px;
-      white-space: nowrap
-    }
-
-    @media (orientation:portrait) and (max-width:700px) and (hover:none) and (pointer:coarse) {
-      .turn {
-        display: block
-      }
-    }
-
     @media (orientation:portrait) and (max-width:700px) {
       .frame {
         overflow: visible
@@ -1551,7 +1528,6 @@
         id="fs" type="button" hidden>⛶ Full screen</button></span>
   </div>
 
-  <div class="turn" id="turn" role="note" data-t="turn">↻ Draai je telefoon</div>
   <div class="ctl" id="ctl">
     <button class="play" id="play" type="button" aria-label="Pause">❚❚</button>
     <div class="tl" id="tl">
@@ -1615,7 +1591,7 @@
     const SUBLANG = "nl";
     const T = {
       nl: {
-        chap: "Hoofdstuk", one: "één", comic: "Lees als strip", restart: "↺ Opnieuw", turn: "↻ Draai je telefoon", cc: "CC",
+        chap: "Hoofdstuk", one: "één", comic: "Lees als strip", restart: "↺ Opnieuw", cc: "CC",
         s_eye: "We All Breathe The Same Air · Hoofdstuk één", s_play: "▶ Speel het hoofdstuk", s_note: "Geluid aan · 4 minuten · de film stopt vijf keer en wacht op jou",
         e_eye: "Einde van hoofdstuk één", e_title: "Een nummer<br>voor een naam.", e_num: "Jouw nummer:", e_next: "Hoofdstuk twee: het AZC", again: "↺ Opnieuw kijken",
         m_breath: "Adem inhouden", m_silence: "Het verhoor", m_wall: "De celmuur", m_mother: "Moeder", m_photo: "De foto", jump: "Ga naar: ", skip: "Overslaan ›",
@@ -1631,7 +1607,7 @@
         play: "Afspelen", pause: "Pauze"
       },
       en: {
-        chap: "Chapter", one: "one", comic: "Read as comic", restart: "↺ Restart", turn: "↻ Turn your phone sideways", cc: "CC",
+        chap: "Chapter", one: "one", comic: "Read as comic", restart: "↺ Restart", cc: "CC",
         s_eye: "We All Breathe The Same Air · Chapter one", s_play: "▶ Play the chapter", s_note: "Sound on · 4 minutes · the film stops five times and waits for you",
         e_eye: "End of chapter one", e_title: "A number<br>for a name.", e_num: "Your number:", e_next: "Chapter two: the AZC", again: "↺ Watch again",
         m_breath: "Hold your breath", m_silence: "The interrogation", m_wall: "The cell wall", m_mother: "Mother", m_photo: "The photo", jump: "Jump to: ", skip: "Skip ›",
