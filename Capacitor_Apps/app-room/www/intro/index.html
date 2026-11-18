@@ -1,137 +1,54 @@
 <!doctype html>
 <html lang="en">
-
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>We All Breathe The Same Air</title>
   <link rel="icon" href="data:,">
-  <meta name="description"
-    content="We All Breathe The Same Air: interactive intro to the graphic novel by Sam Yazdanpanna.">
+  <meta name="description" content="We All Breathe The Same Air: interactive intro to the graphic novel by Sam Yazdanpanna.">
   <meta property="og:title" content="We All Breathe The Same Air">
-  <meta property="og:description"
-    content="We All Breathe The Same Air: interactive intro to the graphic novel by Sam Yazdanpanna.">
+  <meta property="og:description" content="We All Breathe The Same Air: interactive intro to the graphic novel by Sam Yazdanpanna.">
   <meta property="og:image" content="img/reflect.jpg">
   <meta name="theme-color" content="#000000">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <link rel="stylesheet" href="../fonts/fonts.css">
+  <link rel="stylesheet" href="../i18n/i18n.css">
   <style>
     :root {
       box-sizing: border-box;
       padding-top: env(safe-area-inset-top, 0px);
-      padding-bottom: env(safe-area-inset-bottom, 0px)
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      -webkit-text-size-adjust: 100%
-    }
-
-    img {
-      max-width: 100%
-    }
-
-    [hidden] {
-      display: none !important
-    }
-  </style>
-</head>
-
-<body>
-  <style>
-    /* Layout: one full-screen cinema stage. Starts immediately with the intro video (click/tap reveals chapter-style controls) → the airport window, where clicking young Sam's silhouette enters the 2D Room. */
-    :root {
+      padding-bottom: env(safe-area-inset-bottom, 0px);
       --ink: #000;
-      --steel: #151a1e;
       --chalk: #ece8de;
       --chalk-dim: #a3a59e;
-      --amber: #D6A93E;
       --ochre: #D6A93E;
-      --ochre-dim: #a8873a;
       --shade: rgba(0, 0, 0, .62);
-      --amber-glow: rgba(214, 169, 62, .5);
       --f-display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
       --f-body: "Literata", Georgia, serif;
+      --f-sub: Arial, Helvetica, "Helvetica Neue", sans-serif;
       color-scheme: dark;
     }
-
-    html,
-    body {
+    html, body {
       height: 100%;
+      margin: 0;
+      padding: 0;
       background: var(--ink);
       color: var(--chalk);
+      -webkit-text-size-adjust: 100%;
       -webkit-user-select: none;
       -moz-user-select: none;
       user-select: none;
       -webkit-touch-callout: none;
-    }
-
-    body {
       overflow: hidden;
-      font-family: var(--f-body)
+      font-family: var(--f-body);
     }
-
-    img {
-      -webkit-user-drag: none;
-      user-drag: none;
-      -webkit-user-select: none;
-      user-select: none
-    }
-
-    input,
-    textarea {
-      -webkit-user-select: text;
-      user-select: text
-    }
-
-    .stage {
-      position: fixed;
-      inset: 0;
-      overflow: hidden;
-      background: var(--ink)
-    }
-
-    .screen {
-      position: absolute;
-      inset: 0;
-      opacity: 1;
-      visibility: visible;
-      transition: opacity 1.2s ease, visibility 0s linear 0s
-    }
-
-    .screen.off {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transition: opacity 1.2s ease, visibility 0s linear 1.2s
-    }
-
-    .stage.instant .screen,
-    .stage.instant .screen.off {
-      transition: none !important
-    }
-
-    .btn {
-      font-family: var(--f-display);
-      font-weight: 700;
-      letter-spacing: .18em;
-      text-transform: uppercase;
-      font-size: 1rem;
-      color: #000;
-      background: var(--chalk);
-      border: 0;
-      padding: 14px 30px;
-      cursor: pointer;
-      transition: background .2s, transform .2s
-    }
-
-    .btn:hover {
-      background: var(--amber);
-      transform: translateY(-1px)
-    }
-
+    img { max-width: 100%; -webkit-user-drag: none; user-select: none; }
+    [hidden] { display: none !important; }
+    .stage { position: fixed; inset: 0; overflow: hidden; background: var(--ink); }
+    .screen { position: absolute; inset: 0; opacity: 1; visibility: visible; transition: opacity 1.2s ease, visibility 0s linear 0s; }
+    .screen.off { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 1.2s ease, visibility 0s linear 1.2s; }
+    .stage.instant .screen, .stage.instant .screen.off { transition: none !important; }
     .ghost {
       font: 700 .78rem var(--f-display);
       letter-spacing: .2em;
@@ -143,34 +60,23 @@
       cursor: pointer;
       text-decoration: none;
       display: inline-block;
-      backdrop-filter: blur(4px)
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
     }
+    .ghost:hover, .ghost[aria-pressed="true"] { border-color: var(--ochre); color: var(--ochre); }
+    .ghost:focus-visible, .play:focus-visible { outline: 2px solid var(--ochre); outline-offset: 4px; }
+    #young, #young:focus, #young:focus-visible { outline: none; -webkit-tap-highlight-color: transparent; }
 
-    .ghost:hover,
-    .ghost[aria-pressed="true"] {
-      border-color: var(--ochre);
-      color: var(--ochre)
+    #intro { background: #000; display: grid; place-items: center; }
+    #introFrame, .wrap {
+      position: relative;
+      width: min(100%, calc(100dvh * 16 / 9));
+      height: min(100%, calc(100dvw * 9 / 16));
+      aspect-ratio: 16/9;
+      max-width: 100%;
+      max-height: 100%;
+      overflow: hidden;
     }
-
-    .btn:focus-visible,
-    .ghost:focus-visible,
-    .play:focus-visible {
-      outline: 2px solid var(--ochre);
-      outline-offset: 4px
-    }
-
-    #young,
-    #young:focus,
-    #young:focus-visible {
-      outline: none;
-      -webkit-tap-highlight-color: transparent
-    }
-
-    /* intro video */
-    #intro {
-      background: #000
-    }
-
     #intro video {
       position: absolute;
       inset: 0;
@@ -179,14 +85,25 @@
       object-fit: contain;
       background: #000;
       opacity: 0;
-      transition: opacity 1s ease
+      transition: opacity .7s ease;
     }
-
-    #intro video.on {
-      opacity: 1
+    #intro video.on { opacity: 1; }
+    .big { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: flex; justify-content: center; pointer-events: none; }
+    .big span {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 1.2% 6% 1.6%;
+      background: rgba(0, 0, 0, .86);
+      font: 700 clamp(.95rem, 2.4vw, 1.85rem)/1.35 var(--f-sub);
+      color: var(--ochre);
+      text-align: center;
+      text-wrap: balance;
+      opacity: 0;
+      transition: opacity .15s linear;
     }
+    .big span.on { opacity: 1; }
 
-    /* chapter-style video controls (auto-hide, click/tap reveals) */
     .top {
       position: fixed;
       top: calc(12px + env(safe-area-inset-top, 0px));
@@ -198,13 +115,7 @@
       gap: 10px;
       z-index: 20;
     }
-
-    .tools {
-      display: flex;
-      gap: 8px;
-      align-items: center
-    }
-
+    .tools { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
     .ctl {
       position: fixed;
       left: 0;
@@ -217,312 +128,65 @@
       padding: 10px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
       background: linear-gradient(to top, rgba(0, 0, 0, .82), rgba(0, 0, 0, 0));
     }
-
-    .ctl,
-    .top {
-      opacity: 0 !important;
-      pointer-events: none !important;
-      transition: opacity .35s ease !important
-    }
-
-    body.show-ctl #intro:not(.off) .ctl,
-    body.show-ctl #intro:not(.off) .top {
-      opacity: 1 !important;
-      pointer-events: auto !important
-    }
-
+    .ctl, .top { opacity: 0 !important; pointer-events: none !important; transition: opacity .35s ease !important; }
+    body.show-ctl #intro:not(.off) .ctl, body.show-ctl #intro:not(.off) .top { opacity: 1 !important; pointer-events: auto !important; }
     .play {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
+      width: 36px; height: 36px; border-radius: 50%;
       border: 1px solid rgba(236, 232, 222, .4);
-      background: var(--shade);
-      color: var(--chalk);
-      cursor: pointer;
-      font-size: .9rem;
-      flex: 0 0 auto;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+      background: var(--shade); color: var(--chalk);
+      cursor: pointer; font-size: .9rem; flex: 0 0 auto;
+      display: inline-flex; align-items: center; justify-content: center;
     }
+    .play:hover { border-color: var(--ochre); color: var(--ochre); }
+    .tl { position: relative; flex: 1 1 auto; height: 22px; min-width: 0; cursor: pointer; touch-action: none; }
+    .tl .rail { position: absolute; left: 0; right: 0; top: 10px; height: 2px; background: rgba(236, 232, 222, .2); }
+    .tl .fill { position: absolute; left: 0; top: 10px; height: 2px; background: var(--ochre); width: 0; }
+    .time { font: 600 .78rem var(--f-display); letter-spacing: .12em; color: var(--chalk-dim); font-variant-numeric: tabular-nums; flex: 0 0 auto; }
+    .cc { display: inline-flex; align-items: center; justify-content: center; padding: 5px 7px; border: 0; background: transparent; color: var(--chalk); opacity: .86; cursor: pointer; flex: 0 0 auto; transition: color .2s, opacity .2s, filter .2s; }
+    .cc:hover, .cc[aria-pressed="true"] { color: var(--ochre); opacity: 1; }
+    .cc[aria-pressed="true"] { filter: drop-shadow(0 0 6px rgba(214, 169, 62, .45)); }
+    .cc svg { width: 30px; height: 22px; display: block; }
 
-    .play:hover {
-      border-color: var(--ochre);
-      color: var(--ochre)
-    }
-
-    .tl {
-      position: relative;
-      flex: 1 1 auto;
-      height: 22px;
-      min-width: 0;
-      cursor: pointer;
-      touch-action: none
-    }
-
-    .tl .rail {
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 10px;
-      height: 2px;
-      background: rgba(236, 232, 222, .2)
-    }
-
-    .tl .fill {
-      position: absolute;
-      left: 0;
-      top: 10px;
-      height: 2px;
-      background: var(--ochre);
-      width: 0
-    }
-
-    .time {
-      font: 600 .78rem var(--f-display);
-      letter-spacing: .12em;
-      color: var(--chalk-dim);
-      font-variant-numeric: tabular-nums;
-      flex: 0 0 auto
-    }
-
+    #scene { display: grid; place-items: center; }
+    .zoom { position: absolute; inset: 0; animation: breathe 12s ease-in-out infinite; transform-origin: 68% 40%; will-change: transform; backface-visibility: hidden; }
+    .zoom > img.bgimg { width: 100%; height: 100%; object-fit: cover; display: block; }
+    @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+    #young { position: absolute; left: 48%; top: 0; width: 46%; height: 96%; border: 0; background: transparent; cursor: pointer; border-radius: 45% 45% 10% 10%; z-index: 2; }
+    .sil { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: .90; will-change: opacity; backface-visibility: hidden; }
+    .wrap.chosen .sil { opacity: 0 !important; transition: opacity .32s ease-out !important; }
+    .hint { position: absolute; left: 50%; transform: translateX(-50%); bottom: max(14px, calc(10px + env(safe-area-inset-bottom, 0px))); z-index: 3; font-family: var(--f-display); letter-spacing: .24em; text-transform: uppercase; font-size: .85rem; color: var(--chalk); text-shadow: 0 2px 12px #000, 0 0 6px rgba(0, 0, 0, .9); white-space: nowrap; pointer-events: none; }
+    .hint b { color: var(--ochre); font-weight: 700; }
+    #begin { display: grid; place-items: center; background: #000; }
+    .fx { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+    .fx .paper { position: absolute; inset: 0; z-index: 40; background: url(img/paper.jpg) center/cover; mix-blend-mode: soft-light; opacity: .6; }
+    .fx .grain { position: absolute; inset: -120px; z-index: 40; background: url(img/grain.png); mix-blend-mode: overlay; opacity: .18; animation: grain .5s steps(1) infinite; }
+    @keyframes grain { 0% { transform: translate(0,0); } 17% { transform: translate(-37px,22px); } 33% { transform: translate(29px,-41px); } 50% { transform: translate(-18px,-9px); } 67% { transform: translate(44px,31px); } 83% { transform: translate(-50px,48px); } 100% { transform: translate(12px,-26px); } }
     @media (max-height:500px) and (orientation:landscape) {
-      .top {
-        top: calc(4px + env(safe-area-inset-top, 0px))
-      }
-
-      .top .ghost {
-        padding: 5px 9px;
-        font-size: .62rem
-      }
-
-      .ctl {
-        padding-top: 4px;
-        padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px))
-      }
-
-      .play {
-        width: 30px;
-        height: 30px
-      }
+      .top { top: calc(4px + env(safe-area-inset-top, 0px)); }
+      .top .ghost { padding: 5px 9px; font-size: .62rem; }
+      .ctl { padding-top: 4px; padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)); }
+      .play { width: 30px; height: 30px; }
     }
-
-    @media (max-width:640px) {
-      .ghost {
-        padding: 7px 10px;
-        font-size: .68rem
-      }
-
-      #fs {
-        display: none !important
-      }
-    }
-
-    /* window scene */
-    #scene {
-      display: grid;
-      place-items: center
-    }
-
-    .wrap {
-      position: relative;
-      width: min(100%, calc(100dvh * 16 / 9));
-      height: min(100%, calc(100dvw * 9 / 16));
-      aspect-ratio: 16/9;
-      max-width: 100%;
-      max-height: 100%;
-      overflow: hidden
-    }
-
-    .zoom {
-      position: absolute;
-      inset: 0;
-      animation: breathe 12s ease-in-out infinite;
-      transform-origin: 68% 40%;
-      will-change: transform;
-      backface-visibility: hidden
-    }
-
-    .zoom>img.bgimg {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block
-    }
-
-    @keyframes breathe {
-
-      0%,
-      100% {
-        transform: scale(1)
-      }
-
-      50% {
-        transform: scale(1.03)
-      }
-    }
-
-    #young {
-      position: absolute;
-      left: 48%;
-      top: 0;
-      width: 46%;
-      height: 96%;
-      border: 0;
-      background: transparent;
-      cursor: pointer;
-      border-radius: 45% 45% 10% 10%;
-      z-index: 2
-    }
-
-    .sil {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      opacity: .92;
-      transition: opacity 2.2s cubic-bezier(.4, 0, .2, 1);
-      will-change: opacity;
-      backface-visibility: hidden
-    }
-
-    .wrap.hover .sil {
-      opacity: .02 !important;
-      transition: opacity .45s ease !important
-    }
-
-    .wrap.chosen .sil {
-      opacity: 0 !important;
-      transition: opacity .35s ease !important
-    }
-
-    .hint {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      bottom: max(14px, calc(10px + env(safe-area-inset-bottom, 0px)));
-      z-index: 3;
-      font-family: var(--f-display);
-      letter-spacing: .24em;
-      text-transform: uppercase;
-      font-size: .85rem;
-      color: var(--chalk);
-      text-shadow: 0 2px 12px #000, 0 0 6px rgba(0, 0, 0, .9);
-      white-space: nowrap;
-      pointer-events: none
-    }
-
-    .hint b {
-      color: var(--amber);
-      font-weight: 700
-    }
-
-    /* begin (fade to black before room) */
-    #begin {
-      display: grid;
-      place-items: center;
-      background: #000
-    }
-
-    /* paper + film grain laid over the picture */
-    .fx {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      overflow: hidden
-    }
-
-    .fx .paper {
-      position: absolute;
-      inset: 0;
-      z-index: 40;
-      background: url(img/paper.jpg) center/cover;
-      mix-blend-mode: soft-light;
-      opacity: .6
-    }
-
-    .fx .grain {
-      position: absolute;
-      inset: -120px;
-      z-index: 40;
-      background: url(img/grain.png);
-      mix-blend-mode: overlay;
-      opacity: .18;
-      animation: grain .5s steps(1) infinite
-    }
-
-    @keyframes grain {
-      0% {
-        transform: translate(0, 0)
-      }
-
-      17% {
-        transform: translate(-37px, 22px)
-      }
-
-      33% {
-        transform: translate(29px, -41px)
-      }
-
-      50% {
-        transform: translate(-18px, -9px)
-      }
-
-      67% {
-        transform: translate(44px, 31px)
-      }
-
-      83% {
-        transform: translate(-50px, 48px)
-      }
-
-      100% {
-        transform: translate(12px, -26px)
-      }
-    }
-
-    @media (prefers-reduced-motion:reduce) {
-      .fx .grain {
-        animation: none
-      }
-    }
-
-    @media (hover:none),
-    (pointer:coarse) {
-      .fx {
-        display: none
-      }
-    }
-
-    @media (max-width:600px) {
-      .hint {
-        font-size: .72rem
-      }
-    }
-
-    @media (prefers-reduced-motion:reduce) {
-      .zoom {
-        animation: none
-      }
-
-      .sil {
-        opacity: .1 !important;
-        transition: none !important
-      }
-    }
+    @media (max-width:640px) { .ghost { padding: 7px 10px; font-size: .68rem; } #fs { display: none !important; } }
+    @media (max-width:600px) { .hint { font-size: .72rem; } }
+    @media (hover:none), (pointer:coarse) { .fx { display: none; } }
+    @media (prefers-reduced-motion:reduce) { .fx .grain, .zoom { animation: none; } .sil { opacity: .28 !important; transition: none !important; } }
   </style>
-
+</head>
+<body>
   <div class="stage">
     <section class="screen" id="intro">
-      <video id="iv" playsinline webkit-playsinline preload="auto" disablepictureinpicture
-        src="../vid/intro.mp4"></video>
+      <div id="introFrame">
+        <video id="iv" width="1280" height="720" playsinline webkit-playsinline preload="auto" disablepictureinpicture src="../vid/intro.mp4"></video>
+        <div class="big" aria-live="polite"><span id="introBig"></span></div>
+      </div>
 
       <div class="top" id="topBar">
-        <a class="ghost home-link" href="../index.html">← Home</a>
+        <a class="ghost home-link" href="../index.html" data-i18n="common.backHome">← Home</a>
         <span class="tools">
-          <button class="ghost" id="skip" type="button">Skip ›</button>
-          <button class="ghost" id="fs" type="button" hidden>⛶ Full screen</button>
+          <span id="stageLang"></span>
+          <button class="ghost" id="skip" type="button" data-i18n="common.skip">Skip ›</button>
+          <button class="ghost" id="fs" type="button" hidden data-i18n="common.fullScreen">⛶ Full screen</button>
         </span>
       </div>
 
@@ -532,18 +196,28 @@
           <div class="rail"></div>
           <div class="fill" id="fill"></div>
         </div>
-        <span class="time" id="time">0:00 / 1:13</span>
+        <span class="time" id="time">0:00 / 1:12</span>
+        <button class="cc" id="cc" type="button" aria-pressed="true" aria-label="Subtitles" data-i18n-aria="common.ccLabel" hidden>
+          <svg viewBox="0 0 32 24" aria-hidden="true">
+            <rect x="2" y="2" width="28" height="20" rx="2.8" fill="none" stroke="currentColor" stroke-width="2.4"/>
+            <rect x="6" y="14.8" width="6.6" height="1.85" rx=".35" fill="currentColor"/>
+            <rect x="14.4" y="14.8" width="3.2" height="1.85" rx=".35" fill="currentColor"/>
+            <rect x="19.4" y="14.8" width="6.6" height="1.85" rx=".35" fill="currentColor"/>
+            <rect x="8.8" y="17.6" width="5.8" height="1.85" rx=".35" fill="currentColor"/>
+            <rect x="17.4" y="17.6" width="5.8" height="1.85" rx=".35" fill="currentColor"/>
+          </svg>
+        </button>
       </div>
     </section>
 
     <section class="screen off" id="scene">
       <div class="wrap" id="wrap">
-        <div class="zoom"><img class="bgimg" src="img/reflect.jpg"
-            alt="Grown-up Sam looks out of an airport window and sees his seventeen-year-old self reflected in the glass, with the control tower and a plane behind.">
-          <img class="sil" src="img/young-silhouette.png" alt="">
+        <div class="zoom">
+          <img class="bgimg" src="img/reflect.jpg" width="1920" height="1080" alt="Grown-up Sam looks out of an airport window and sees his seventeen-year-old self reflected in the glass, with the control tower and a plane behind." data-i18n-alt="intro.reflectAlt">
+          <img class="sil" src="img/young-silhouette.png" width="1920" height="1080" alt="">
         </div>
-        <button id="young" type="button" aria-label="Click young Sam to begin the story"></button>
-        <div class="hint">Click <b>young Sam</b> to begin</div>
+        <button id="young" type="button" aria-label="Click young Sam to begin the story" data-i18n-aria="intro.youngAria"></button>
+        <div class="hint" data-i18n-html="intro.windowHint">Click <b>young Sam</b> to begin</div>
       </div>
     </section>
 
@@ -551,21 +225,28 @@
     <div class="fx" aria-hidden="true"><i class="paper"></i><i class="grain"></i></div>
   </div>
 
+  <script src="../i18n/i18n.js"></script>
+  <script src="intro-shared.js"></script>
   <script>
     const $ = id => document.getElementById(id);
-    const iv = $("iv");
-    let running = false;
-
+    const iv = $("iv"), introFrame = $("introFrame"), wr = $("wrap"), yb = $("young"), ccBtn = $("cc"), bigEl = $("introBig");
     const stageEl = document.querySelector(".stage");
+    const flicker = WABTSA_INTRO_SHARED.createReflectionFlicker(document.querySelector("#scene .sil"), wr);
+    const ambience = WABTSA_INTRO_SHARED.createTerminalAmbience();
+    let running = false, lastCue = -1, windowToken = 0, enteringRoom = false;
+
+    if (window.WABTSA_I18N) {
+      WABTSA_I18N.mountSwitcher($("stageLang"));
+    }
+
     function fitSceneWrap() {
-      const wrapEl = $("wrap");
-      if (!stageEl || !wrapEl) return;
       const sw = stageEl.clientWidth || window.innerWidth || 1;
       const sh = stageEl.clientHeight || window.innerHeight || 1;
       let w = sw, h = sw * 9 / 16;
       if (h > sh) { h = sh; w = sh * 16 / 9; }
-      wrapEl.style.width = Math.floor(w) + "px";
-      wrapEl.style.height = Math.floor(h) + "px";
+      const wf = Math.floor(w) + "px", hf = Math.floor(h) + "px";
+      wr.style.width = wf; wr.style.height = hf;
+      if (introFrame) { introFrame.style.width = wf; introFrame.style.height = hf; }
     }
     window.addEventListener("resize", fitSceneWrap);
     window.addEventListener("orientationchange", () => setTimeout(fitSceneWrap, 150));
@@ -573,13 +254,10 @@
     fitSceneWrap();
 
     function show(n, instant = false) {
-      if (instant && stageEl) stageEl.classList.add("instant");
+      if (instant) stageEl.classList.add("instant");
       ["intro", "scene", "begin"].forEach(s => $(s).classList.toggle("off", s !== n));
-      if (instant && stageEl) { void stageEl.offsetHeight; stageEl.classList.remove("instant"); }
+      if (instant) { void stageEl.offsetHeight; stageEl.classList.remove("instant"); }
     }
-
-    /* Intro video already has burned-in subtitles; overlay subtitles and CC button are disabled */
-    let ccOn = false;
 
     function fmt(t) {
       t = Math.max(0, Math.floor(t || 0));
@@ -588,96 +266,55 @@
 
     function setPlaying(p) {
       $("play").textContent = p ? "❚❚" : "▶";
-      $("play").setAttribute("aria-label", p ? "Pause" : "Play");
+      const lbl = window.WABTSA_I18N ? WABTSA_I18N.t(p ? "common.pause" : "common.play") : (p ? "Pause" : "Play");
+      $("play").setAttribute("aria-label", lbl);
     }
 
-    function updateSub() {
-      // Intro video has subtitles baked in; no-op
+    function syncIntroSubtitles() {
+      if (!window.WABTSA_I18N || !ccBtn || !bigEl) return;
+      const allowed = WABTSA_I18N.isCcAllowed();
+      const ccOn = WABTSA_I18N.getCcEnabled();
+      ccBtn.hidden = !allowed;
+      ccBtn.setAttribute("aria-pressed", ccOn ? "true" : "false");
+      if (!allowed || !ccOn || !running || iv.ended) {
+        bigEl.classList.remove("on");
+        lastCue = -1;
+        return;
+      }
+      const list = WABTSA_I18N.cues("intro");
+      const cur = iv.currentTime || 0;
+      const i = list.findIndex(c => cur >= c[0] && cur < c[1]);
+      if (i !== lastCue) {
+        lastCue = i;
+        if (i >= 0) bigEl.textContent = list[i][2];
+      }
+      bigEl.classList.toggle("on", i >= 0);
     }
 
-    /* ---------- intro video playback & timeline ---------- */
+    if (ccBtn) {
+      ccBtn.addEventListener("click", () => {
+        if (window.WABTSA_I18N) WABTSA_I18N.toggleCc();
+        syncIntroSubtitles();
+        showControls();
+      });
+    }
+
     function tick() {
       if (!running) return;
-      const dur = iv.duration || 73;
-      const cur = iv.currentTime || 0;
+      const dur = iv.duration || 72, cur = iv.currentTime || 0;
       $("fill").style.width = Math.min(100, cur / dur * 100) + "%";
       $("time").textContent = `${fmt(cur)} / ${fmt(dur)}`;
-      updateSub();
+      syncIntroSubtitles();
       requestAnimationFrame(tick);
     }
 
-    const MAX_WAIT_MS = 10000;
-    let introWatchdog = null;
-    function clearIntroWatchdog() { clearTimeout(introWatchdog); introWatchdog = null; }
-
-    function startIntro() {
-      silhouette.stop();
-      ambience.stop();
-      running = true;
-      show("intro", true);
-      iv.classList.remove("on");
-      iv.currentTime = 0;
-      iv.muted = false;
-      iv.volume = 1;
-      clearIntroWatchdog();
-      introWatchdog = setTimeout(() => {
-        if (running && iv.paused && iv.readyState < 2) toWindow();
-      }, MAX_WAIT_MS);
-      iv.play().then(() => {
-        setPlaying(true);
-      }).catch(() => {
-        iv.muted = true;
-        iv.play().then(() => {
-          setPlaying(true);
-        }).catch(() => {
-          clearIntroWatchdog();
-          iv.classList.add("on");
-          setPlaying(false);
-          showControls();
-        });
-      });
-      requestAnimationFrame(tick);
-    }
-
-    iv.addEventListener("loadeddata", () => { if (running) iv.classList.add("on"); });
-    iv.addEventListener("canplay", () => { if (running) iv.classList.add("on"); });
-    iv.addEventListener("timeupdate", () => { if (iv.currentTime > 0) { iv.classList.add("on"); clearIntroWatchdog(); } updateSub(); });
-    iv.addEventListener("playing", () => {
-      iv.classList.add("on");
-      clearIntroWatchdog();
-      setPlaying(true);
-      updateSub();
-      if (document.body.classList.contains("show-ctl")) showControls();
-    });
-    iv.addEventListener("pause", () => { if (!iv.ended) { setPlaying(false); showControls(); } updateSub(); });
-    iv.addEventListener("error", () => { if (running) toWindow(); });
-    iv.onended = () => {
-      if (!running) return;
-      toWindow();
-    };
-
-    function stopIntro() {
-      running = false;
-      clearIntroWatchdog();
-      hideControls();
-      iv.pause();
-      iv.classList.remove("on");
-      silhouette.stop();
-    }
-
-    /* ---------- auto-show/hide video controls on click/tap ---------- */
     let ctlTimer = null, lastPaneTap = 0;
-    function hideControls() {
-      clearTimeout(ctlTimer); ctlTimer = null;
-      document.body.classList.remove("show-ctl");
-    }
+    function hideControls() { clearTimeout(ctlTimer); ctlTimer = null; document.body.classList.remove("show-ctl"); }
     function showControls() {
       if (!running || $("intro").classList.contains("off")) return;
       document.body.classList.add("show-ctl");
       clearTimeout(ctlTimer);
-      if (!iv.paused) {
-        ctlTimer = setTimeout(hideControls, 3000);
-      }
+      if (!iv.paused) ctlTimer = setTimeout(hideControls, 3000);
     }
     (() => {
       const introEl = $("intro");
@@ -696,38 +333,29 @@
       });
       addEventListener("keydown", e => {
         if (e.code === "Space" && running && !introEl.classList.contains("off")) {
-          e.preventDefault();
-          $("play").click();
-          showControls();
+          e.preventDefault(); $("play").click(); showControls();
         }
       });
     })();
 
-    /* timeline scrubbing */
     (() => {
-      const tl = $("tl");
-      let dragging = false;
+      const tl = $("tl"); let dragging = false;
       function seek(e) {
-        const r = tl.getBoundingClientRect();
-        if (!r.width) return;
+        const r = tl.getBoundingClientRect(); if (!r.width) return;
         const pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
-        const dur = iv.duration || 73;
-        try { iv.currentTime = pct * dur; } catch (_) { }
+        const dur = iv.duration || 72;
+        try { iv.currentTime = pct * dur; } catch (_) {}
         $("fill").style.width = (pct * 100) + "%";
         $("time").textContent = `${fmt(pct * dur)} / ${fmt(dur)}`;
-        showControls();
+        lastCue = -1; syncIntroSubtitles(); showControls();
       }
-      tl.addEventListener("pointerdown", e => {
-        dragging = true;
-        try { tl.setPointerCapture(e.pointerId); } catch (_) { }
-        seek(e);
-      });
+      tl.addEventListener("pointerdown", e => { dragging = true; try { tl.setPointerCapture(e.pointerId); } catch (_) {} seek(e); });
       tl.addEventListener("pointermove", e => { if (dragging) seek(e); });
       tl.addEventListener("pointerup", () => { dragging = false; });
       tl.addEventListener("pointercancel", () => { dragging = false; });
     })();
 
-    /* full screen: offered on web (hidden in native Capacitor iOS/Android app) */
+    let updFsLabel = () => {};
     (() => {
       const IS_NATIVE_APP = !!((window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform()) || location.protocol === "capacitor:" || /; wv\)/.test(navigator.userAgent));
       const b = $("fs"); if (!b || IS_NATIVE_APP) return;
@@ -736,277 +364,139 @@
       if (!(d.fullscreenEnabled || d.webkitFullscreenEnabled) || !req) return;
       b.hidden = false;
       const isFs = () => d.fullscreenElement || d.webkitFullscreenElement;
-      const upd = () => { b.textContent = isFs() ? "✕ Exit full screen" : "⛶ Full screen"; };
+      updFsLabel = () => {
+        const key = isFs() ? "common.exitFullScreen" : "common.fullScreen";
+        b.textContent = window.WABTSA_I18N ? WABTSA_I18N.t(key) : (isFs() ? "✕ Exit full screen" : "⛶ Full screen");
+      };
       b.addEventListener("click", () => {
         try {
           if (isFs()) ext.call(d);
-          else {
-            const p = req.call(el); if (p && p.catch) p.catch(() => { });
-            try { const o = screen.orientation; if (o && o.lock) o.lock("landscape").catch(() => { }); } catch (_) { }
-          }
-        } catch (_) { }
+          else { const p = req.call(el); if (p && p.catch) p.catch(() => {}); try { const o = screen.orientation; if (o && o.lock) o.lock("landscape").catch(() => {}); } catch (_) {} }
+        } catch (_) {}
       });
-      d.addEventListener("fullscreenchange", upd);
-      d.addEventListener("webkitfullscreenchange", upd);
-      upd();
+      d.addEventListener("fullscreenchange", updFsLabel);
+      d.addEventListener("webkitfullscreenchange", updFsLabel);
+      updFsLabel();
     })();
 
-    /* after the intro: the airport window. Young Sam's silhouette breathes in the glass; clicking him begins. */
+    if (window.WABTSA_I18N) {
+      WABTSA_I18N.onChange(() => { lastCue = -1; setPlaying(!iv.paused); syncIntroSubtitles(); updFsLabel(); });
+    }
+
+    let introWatchdog = null;
+    function clearIntroWatchdog() { clearTimeout(introWatchdog); introWatchdog = null; }
+    function stopIntro() {
+      running = false; clearIntroWatchdog(); hideControls(); iv.pause(); iv.classList.remove("on");
+      if (bigEl) bigEl.classList.remove("on");
+      flicker.stop();
+    }
+
     let prefetched = false;
     function prefetchRoom() {
       if (prefetched) return; prefetched = true;
-      ["../room/index.html", "../room/shared/shared.css", "../room/shared/lib/three.min.js", "../room/shared/shared.js", "../room/app.js", "../room/assets/room.jpg"].forEach(href => {
+      ["../room/index.html", "../room/shared/shared.css", "../room/shared/lib/three.min.js", "../room/shared/fsm.js", "../room/shared/shared.js", "../room/app.js", "../room/assets/room.jpg"].forEach(href => {
         const l = document.createElement("link"); l.rel = "prefetch"; l.href = href; document.head.appendChild(l);
       });
     }
-    function decodeSceneImg(img) {
-      const waitLoad = () => new Promise(resolve => {
-        if (img.complete) return resolve();
-        let retried = false;
-        const done = () => { img.removeEventListener("load", done); img.removeEventListener("error", onErr); resolve(); };
-        const onErr = () => {
-          if (!retried) { retried = true; img.src = img.getAttribute("src"); return; }
-          done();
-        };
-        img.addEventListener("load", done);
-        img.addEventListener("error", onErr);
+
+    const sceneImgsReady = Promise.all([...document.querySelectorAll("#scene img")].map(img => new Promise(res => {
+      if (img.complete) return res();
+      const done = () => { img.removeEventListener("load", done); img.removeEventListener("error", done); res(); };
+      img.addEventListener("load", done); img.addEventListener("error", done);
+    }).then(() => img.decode ? img.decode().catch(() => {}) : undefined)));
+
+    function startIntro() {
+      flicker.stop(); ambience.stop();
+      running = true; lastCue = -1;
+      show("intro", true); fitSceneWrap(); syncIntroSubtitles();
+      iv.classList.remove("on");
+      try { iv.currentTime = 0; } catch (_) {}
+      iv.muted = false; iv.volume = 1;
+      clearIntroWatchdog();
+      introWatchdog = setTimeout(() => { if (running && iv.paused && iv.readyState < 2) toWindow(); }, 10000);
+      iv.play().then(() => setPlaying(true)).catch(() => {
+        iv.muted = true;
+        iv.play().then(() => setPlaying(true)).catch(() => { clearIntroWatchdog(); iv.classList.add("on"); setPlaying(false); showControls(); });
       });
-      return waitLoad().then(() => img.decode ? img.decode().catch(() => { }) : undefined);
+      requestAnimationFrame(tick);
     }
-    const sceneImgsReady = Promise.all([...document.querySelectorAll("#scene img")].map(decodeSceneImg));
-    const SCENE_READY_MAX_WAIT = 250;
-    function ensureSceneReady() {
-      return Promise.race([sceneImgsReady, new Promise(r => setTimeout(r, SCENE_READY_MAX_WAIT))]);
-    }
-    let windowToken = 0;
+
     function toWindow(fromHistory = false) {
       const token = ++windowToken;
       stopIntro();
-      $("wrap").classList.remove("chosen", "hover");
-      ensureSceneReady().then(() => {
+      wr.classList.remove("chosen");
+      Promise.race([sceneImgsReady, new Promise(r => setTimeout(r, 250))]).then(() => {
         if (token !== windowToken) return;
         requestAnimationFrame(() => {
           if (token !== windowToken) return;
           fitSceneWrap();
           show("scene");
-          silhouette.start();
+          flicker.start();
           ambience.start();
           prefetchRoom();
           if (!fromHistory && location.hash !== "#window") {
-            try { history.pushState({ screen: "window" }, "", location.pathname + location.search + "#window"); } catch (_) { }
+            try { history.pushState({ wabtsa: "intro", screen: "window" }, "", location.pathname + location.search + "#window"); } catch (_) {}
           }
         });
       });
     }
 
-    /* ---------- young Sam silhouette breathing controller (organic, consistent, natural) ---------- */
-    const silhouette = (() => {
-      const sil = document.querySelector("#scene .sil");
-      const wr = $("wrap");
-      let timer = null;
-      let active = false;
-      let hovering = false;
+    iv.addEventListener("loadeddata", () => { if (running) iv.classList.add("on"); });
+    iv.addEventListener("canplay", () => { if (running) iv.classList.add("on"); });
+    iv.addEventListener("timeupdate", () => { if (iv.currentTime > 0) { iv.classList.add("on"); clearIntroWatchdog(); } syncIntroSubtitles(); });
+    iv.addEventListener("playing", () => { iv.classList.add("on"); clearIntroWatchdog(); setPlaying(true); if (document.body.classList.contains("show-ctl")) showControls(); });
+    iv.addEventListener("pause", () => { if (!iv.ended) { setPlaying(false); showControls(); } });
+    iv.addEventListener("error", () => { if (running) toWindow(); });
+    iv.onended = () => { if (running) toWindow(); };
 
-      function clear() { clearTimeout(timer); timer = null; }
-
-      function setOpacity(val, durationMs) {
-        if (!sil) return;
-        sil.style.transition = `opacity ${durationMs}ms cubic-bezier(.4,0,.2,1)`;
-        sil.style.opacity = val;
-      }
-
-      // Phase 1: Inhale / Emerge (young Sam emerges from shadow into clear reflection)
-      function emerge() {
-        if (!active || hovering || wr.classList.contains("chosen")) return;
-        const dur = Math.round(2200 + Math.random() * 600); // 2.2s - 2.8s
-        const target = +(0.04 + Math.random() * 0.08).toFixed(2); // 0.04 - 0.12 (clear visibility)
-        setOpacity(target, dur);
-        timer = setTimeout(() => hold(target), dur);
-      }
-
-      // Phase 2: Hold (young Sam lingers visibly, giving comfortable time to see and click)
-      function hold(current) {
-        if (!active || hovering || wr.classList.contains("chosen")) return;
-        const dur = Math.round(2400 + Math.random() * 1000); // 2.4s - 3.4s
-        const drift = Math.max(0, +(current - 0.02 + Math.random() * 0.04).toFixed(2));
-        setOpacity(drift, dur);
-        timer = setTimeout(dissolve, dur);
-      }
-
-      // Phase 3: Exhale / Dissolve (young Sam fades softly back into shadow)
-      function dissolve() {
-        if (!active || hovering || wr.classList.contains("chosen")) return;
-        const dur = Math.round(2000 + Math.random() * 500); // 2.0s - 2.5s
-        const target = +(0.88 + Math.random() * 0.06).toFixed(2); // 0.88 - 0.94 (in shadow)
-        setOpacity(target, dur);
-        timer = setTimeout(rest, dur);
-      }
-
-      // Phase 4: Rest (brief quiet pause in shadow before next breath)
-      function rest() {
-        if (!active || hovering || wr.classList.contains("chosen")) return;
-        const dur = Math.round(1200 + Math.random() * 800); // 1.2s - 2.0s
-        timer = setTimeout(emerge, dur);
-      }
-
-      return {
-        start() {
-          if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-          active = true;
-          clear();
-          if (sil) {
-            sil.style.transition = "none";
-            sil.style.opacity = "0.92";
-            void sil.offsetHeight; // force reflow
-          }
-          timer = setTimeout(emerge, 350);
-        },
-        stop() {
-          active = false;
-          clear();
-          if (sil) sil.style.transition = "";
-        },
-        setHover(isHover) {
-          hovering = isHover;
-          if (!active || wr.classList.contains("chosen")) return;
-          if (hovering) {
-            clear();
-            setOpacity(0.02, 400);
-          } else {
-            clear();
-            timer = setTimeout(() => hold(0.08), 250);
-          }
-        }
-      };
-    })();
-
-    /* ---------- ambience: empty terminal room tone, strip-light hum, rain on glass, a distant jet ---------- */
-    const ambience = (() => {
-      let ctx = null, master = null, jetTimer = null, active = false;
-      function noise(seconds, brown) {
-        const b = ctx.createBuffer(1, ctx.sampleRate * seconds, ctx.sampleRate), d = b.getChannelData(0); let last = 0;
-        for (let i = 0; i < d.length; i++) { const w = Math.random() * 2 - 1; if (brown) { last = (last + .02 * w) / 1.02; d[i] = last * 3.5; } else d[i] = w; }
-        return b;
-      }
-      function loop(buf) { const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; return s; }
-      function build() {
-        ctx = new (window.AudioContext || window.webkitAudioContext)();
-        master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
-        // room tone
-        const room = loop(noise(6, true)), lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 380;
-        const rg = ctx.createGain(); rg.gain.value = .55; room.connect(lp).connect(rg).connect(master); room.start();
-        // fluorescent hum
-        [100, 200, 300].forEach((f, i) => { const o = ctx.createOscillator(); o.frequency.value = f; const g = ctx.createGain(); g.gain.value = [.012, .006, .003][i]; o.connect(g).connect(master); o.start(); });
-        // rain on the window
-        const rain = loop(noise(4, false)), bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 2600; bp.Q.value = .6;
-        const rgn = ctx.createGain(); rgn.gain.value = .05; rain.connect(bp).connect(rgn).connect(master); rain.start();
-        const lfo = ctx.createOscillator(); lfo.frequency.value = .07; const lg = ctx.createGain(); lg.gain.value = .02; lfo.connect(lg).connect(rgn.gain); lfo.start();
-      }
-      function jet() {
-        if (!ctx) return;
-        const s = ctx.createBufferSource(); s.buffer = noise(10, true);
-        const f = ctx.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 200;
-        const g = ctx.createGain(); const t = ctx.currentTime;
-        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.9, t + 4); g.gain.linearRampToValueAtTime(0, t + 9.5);
-        f.frequency.setValueAtTime(140, t); f.frequency.linearRampToValueAtTime(420, t + 4); f.frequency.linearRampToValueAtTime(160, t + 9.5);
-        s.connect(f).connect(g).connect(master); s.start(); s.stop(t + 10);
-        jetTimer = setTimeout(jet, 22000 + Math.random() * 14000);
-      }
-      return {
-        unlock() {
-          try {
-            if (!ctx) build();
-            if (ctx.state !== "running") ctx.resume().catch(() => { });
-            if (active) {
-              const t = ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t);
-              master.gain.linearRampToValueAtTime(.8, t + 1.5);
-            }
-          } catch (e) { }
-        },
-        start() {
-          active = true;
-          try { if (!ctx) build(); if (ctx.state !== "running") ctx.resume().catch(() => { }); } catch (e) { return; }
-          const t = ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t);
-          master.gain.linearRampToValueAtTime(.8, t + 2.5);
-          clearTimeout(jetTimer); jetTimer = setTimeout(jet, 6000);
-        },
-        stop() {
-          active = false;
-          clearTimeout(jetTimer); if (!ctx) return;
-          const t = ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t); master.gain.linearRampToValueAtTime(0, t + 1.2);
-        }
-      };
-    })();
-
-    /* ---------- controls ---------- */
-    ["pointerdown", "pointermove", "touchstart", "touchend", "keydown", "click"].forEach(ev => {
+    ["pointerdown", "touchstart", "keydown", "click"].forEach(ev => {
       document.addEventListener(ev, () => {
         ambience.unlock();
-        if (running && iv.muted) {
-          iv.muted = false;
-          iv.volume = 1;
-        }
+        if (running && iv.muted && !iv.paused) { iv.muted = false; iv.volume = 1; }
       }, { passive: true });
     });
 
     $("play").onclick = () => {
       ambience.unlock();
-      if (iv.paused) {
-        iv.muted = false;
-        iv.volume = 1;
-        iv.play().then(() => setPlaying(true)).catch(() => { });
-      } else {
-        iv.pause();
-        setPlaying(false);
-      }
+      if (iv.paused) { iv.muted = false; iv.volume = 1; iv.play().then(() => setPlaying(true)).catch(() => {}); }
+      else { iv.pause(); setPlaying(false); }
       showControls();
     };
     $("skip").onclick = () => toWindow(false);
 
-    const yb = $("young"), wr = $("wrap");
-    yb.addEventListener("pointerenter", () => { wr.classList.add("hover"); silhouette.setHover(true); });
-    yb.addEventListener("pointerleave", () => { wr.classList.remove("hover"); silhouette.setHover(false); });
-    yb.addEventListener("focus", () => { wr.classList.add("hover"); silhouette.setHover(true); });
-    yb.addEventListener("blur", () => { wr.classList.remove("hover"); silhouette.setHover(false); });
-    /* Click on young Sam = fade to black and enter the 2D Room directly */
-    let enteringRoom = false;
     function afterYoungSam() {
       if (enteringRoom) return; enteringRoom = true;
       if (location.hash !== "#window") {
-        try { history.replaceState({ screen: "window" }, "", location.pathname + location.search + "#window"); } catch (_) { }
+        try { history.replaceState({ wabtsa: "intro", screen: "window" }, "", location.pathname + location.search + "#window"); } catch (_) {}
       }
       show("begin");
-      setTimeout(() => {
-        location.href = "../room/index.html" + (location.search || "");
-      }, 1050);
+      setTimeout(() => { location.href = "../room/index.html" + (location.search || ""); }, 1050);
     }
-    yb.onclick = () => { if (enteringRoom) return; wr.classList.add("chosen"); silhouette.stop(); ambience.stop(); setTimeout(afterYoungSam, 450); };
+    yb.onclick = () => {
+      if (enteringRoom) return;
+      ambience.unlock();
+      wr.classList.add("chosen");
+      flicker.choose();
+      ambience.stop();
+      setTimeout(afterYoungSam, 450);
+    };
 
     if (location.search) {
       document.querySelectorAll(".home-link").forEach(a => { a.href = "../index.html" + location.search; });
     }
 
     window.addEventListener("popstate", () => {
-      enteringRoom = false;
-      silhouette.stop();
-      $("wrap").classList.remove("chosen", "hover");
+      enteringRoom = false; wr.classList.remove("chosen");
       if (location.hash === "#window") toWindow(true);
       else { ++windowToken; startIntro(); }
     });
     window.addEventListener("pageshow", () => {
-      enteringRoom = false;
-      silhouette.stop();
-      $("wrap").classList.remove("chosen", "hover");
+      enteringRoom = false; wr.classList.remove("chosen");
       if (location.hash === "#window") toWindow(true);
     });
 
-    /* Start the intro video immediately (or restore the window screen when returning via Browser Back) */
-    if (location.hash === "#window") {
-      toWindow(true);
-    } else {
-      startIntro();
-    }
+    if (location.hash === "#window") toWindow(true);
+    else startIntro();
   </script>
 </body>
-
 </html>

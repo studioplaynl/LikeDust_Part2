@@ -1,0 +1,756 @@
+{
+  "meta": {
+    "lang": "en",
+    "dir": "ltr",
+    "label": "EN",
+    "name": "English"
+  },
+  "common": {
+    "backHome": "← Home",
+    "backToRoom": "← Back to room",
+    "skip": "Skip ›",
+    "fullScreen": "⛶ Full screen",
+    "exitFullScreen": "✕ Exit full screen",
+    "play": "Play",
+    "pause": "Pause",
+    "close": "Close ✕",
+    "ccLabel": "Subtitles",
+    "langAria": "Language"
+  },
+  "landing": {
+    "title": "We All Breathe The Same Air · Sam Yazdanpanna",
+    "topSub": "Graphic novels · True story",
+    "chooseStoryAria": "Choose a story",
+    "part1": "Part 1",
+    "part2": "Part 2",
+    "waSubtitle": "The new interactive graphic novel by Sam Yazdanpanna. What came after. How I became illegal.",
+    "start": "Start",
+    "ldRoute": "Iran → Europe",
+    "ldSubtitle": "The journey. Black and white.",
+    "enter": "Enter",
+    "introLead": "At seventeen, Sam had to leave Iran. <em>Like Dust</em> is the journey to Europe. <b>We All Breathe The Same Air</b>, his new graphic novel, is what came after.",
+    "waTag": "New · interactive graphic novel",
+    "waReflectAlt": "Grown-up Sam at an airport window sees his seventeen-year-old self reflected in the glass.",
+    "waBody": "A smuggler named Yilmaz, a fake passport, a plane to the Netherlands. Interrogations, a refugee camp, a wait that never seemed to end. Love, a little bird, and a letter that changed everything.",
+    "waQuote": "We all breathe the same air… but not all of us are equally free.",
+    "ldTag": "Interactive novel",
+    "ldTrailerAlt": "Black-and-white drawing: a border officer studies a passport while young Sam waits.",
+    "ldBody": "Seventeen-year-old Sam travels from Iran to Europe, hoping to cross every kind of border. An interactive illustrated novel in black and white.",
+    "ldPlatforms": "iPhone · iPad · Mac · web",
+    "ldInfo": "Free · English · 13+",
+    "watchTrailer": "Watch the trailer · 0:17",
+    "readLikedust": "Read on likedust.nl",
+    "appStore": "App Store",
+    "fundersHeading": "Made possible with support from",
+    "creditsHeading": "Credits",
+    "roleScript": "Script",
+    "roleConsultant": "Script consultant",
+    "roleIllustrations": "Illustrations",
+    "roleMotion": "Motion",
+    "roleSound": "Sound",
+    "roleInteractive": "Interactive & web",
+    "roleProducers": "Producers"
+  },
+  "intro": {
+    "stageAria": "We All Breathe The Same Air — Intro",
+    "reflectAlt": "Grown-up Sam looks out of an airport window and sees his seventeen-year-old self reflected in the glass, with the control tower and a plane behind.",
+    "youngAria": "Click young Sam to begin the story",
+    "windowHint": "Click <b>young Sam</b> to begin",
+    "cues": [
+      [
+        0.8,
+        2.3,
+        "My name is Sam."
+      ],
+      [
+        3.1,
+        4.5,
+        "I was born in Iran."
+      ],
+      [
+        6.2,
+        9.0,
+        "I was seventeen when I had to leave Iran."
+      ],
+      [
+        9.85,
+        12.1,
+        "My mother came with me as far as Istanbul…"
+      ],
+      [
+        13.2,
+        14.9,
+        "…and then she went back to Iran."
+      ],
+      [
+        16.4,
+        21.1,
+        "There, a smuggler named Yilmaz handed me a fake passport…"
+      ],
+      [
+        21.55,
+        23.5,
+        "…and put me on a plane."
+      ],
+      [
+        23.8,
+        25.8,
+        "Destination: the Netherlands."
+      ],
+      [
+        27.0,
+        29.4,
+        "And that's when it all began."
+      ],
+      [
+        30.3,
+        32.3,
+        "Interrogations… admission…"
+      ],
+      [
+        32.45,
+        34.2,
+        "…and a wait that never seemed to end."
+      ],
+      [
+        34.3,
+        36.8,
+        "In the refugee camp, I fell in love."
+      ],
+      [
+        37.35,
+        39.4,
+        "I took care of a little bird."
+      ],
+      [
+        40.05,
+        42.3,
+        "And it was there that a letter reached me…"
+      ],
+      [
+        42.4,
+        44.1,
+        "…one that changed everything."
+      ],
+      [
+        46.05,
+        50.5,
+        "When I turned eighteen, my life in Amsterdam began…"
+      ],
+      [
+        51.95,
+        53.8,
+        "…undocumented and illegal."
+      ],
+      [
+        54.3,
+        57.0,
+        "This story is the story of what came before…"
+      ],
+      [
+        57.7,
+        59.4,
+        "…how I became illegal."
+      ],
+      [
+        60.9,
+        63.6,
+        "We all breathe the same air…"
+      ],
+      [
+        65.2,
+        70.5,
+        "…but not all of us are equally free."
+      ]
+    ]
+  },
+  "room": {
+    "title": "We All Breathe the Same Air",
+    "canvasAria": "Interactive room",
+    "startKicker": "A graphic novel in four chapters",
+    "startHeading": "We All Breathe<br>the Same Air",
+    "startBody": "Every object in his room opens a chapter. Follow the small light.",
+    "loading": "Loading…",
+    "startBtn": "Start",
+    "continueBtn": "Continue",
+    "endKicker": "The End",
+    "endHeading": "We All Breathe<br>the Same Air",
+    "startAgain": "Start again",
+    "samAria": "Sam",
+    "clickPassport": "Click the passport to begin.",
+    "chaptersAria": "Chapters",
+    "completedAria": "Completed chapters",
+    "linkCopied": "Link copied: {0}",
+    "share": "Share",
+    "sharePrompt": "Shareable link:",
+    "comingSoon": "Page <b>{0}</b> is coming soon.",
+    "chapterTitles": {
+      "1": "Schiphol",
+      "2": "The AZC",
+      "3": "Amsterdam",
+      "4": "The Letter"
+    }
+  },
+  "chapters": {
+    "ui": {
+      "s_play": "▶ Play the chapter",
+      "again": "↺ Watch again",
+      "e_num": "Your number:",
+      "jump": "Jump to: ",
+      "play": "Play",
+      "pause": "Pause",
+      "m_breath": "Hold your breath",
+      "m_silence": "The interrogation",
+      "m_wall": "The cell wall",
+      "m_mother": "Mother",
+      "m_photo": "The photo",
+      "b_lbl": "Hold<br>your breath",
+      "b_ask": "Press and hold to hold your breath",
+      "b_held": "You held your breath for {0} seconds",
+      "b_stamp": "FALSE",
+      "b_aria": "Press and hold to hold your breath",
+      "q_label": "He is waiting for your answer",
+      "q_ph": "Where are you from? How did you get here?",
+      "q_answer": "Answer",
+      "q_quiet": "Stay silent",
+      "w_ask": "Rub the wall with your finger",
+      "w_alt": "The cell wall, covered in lines written by people who sat here before",
+      "w_canvas": "Rub the wall to read what others wrote",
+      "w_v1": "The walls spoke. Raw stories whose endings I would never know.",
+      "w_v2": "I read every line and listened to every story.",
+      "w_q": "What would you leave on this wall?",
+      "w_ph": "I was here…",
+      "w_btn": "Scratch it in",
+      "w_note": "Your line stays on the wall for everyone who watches after you.",
+      "w_line": "Your line on the wall",
+      "w_count_one": "1 person has left a line on this wall",
+      "w_count_many": "{0} people have left a line on this wall",
+      "w_fail": "Your line is on your wall only; it could not be saved for others.",
+      "ph_hold": "Tap<br>to call<br>home",
+      "ph_calling": "Calling<br>home…",
+      "ph_hang": "It is ringing · tap again to hang up",
+      "ph_rings_one": "1 ring<br>no answer",
+      "ph_rings_many": "{0} rings<br>no answer",
+      "ph_none": "No<br>answer",
+      "ph_ask": "Tap the phone to call home",
+      "ph_aria": "Call home",
+      "f_ask": "Tap to take his photo",
+      "f_aria": "Take his photo",
+      "y_name": "Name",
+      "y_num": "Number",
+      "y_aria": "A yellow card with Sam's photo and the number {0} instead of his name",
+      "f_v": "My face captured in a flash. A photo for a yellow card. With a number that would be my identity from now on.",
+      "m_call": "Calling home",
+      "m_locker": "The room",
+      "m_hide": "That night",
+      "c_ring": "The phone just kept ringing and ringing. It took forever.",
+      "c_conn": "Connected",
+      "c_hold": "Tap<br>to call<br>home",
+      "c_calling": "Ringing…",
+      "c_ask": "Tap the phone to call home",
+      "c_aria": "Call home",
+      "c_video_aria": "Sam on the phone; at home his mother and father answer",
+      "l_door": "Your room",
+      "l_open": "Open the door",
+      "l_ask": "Tap the door to open it",
+      "l_v": "In my locker, whoever had it before me had left something behind for me.",
+      "l_video_aria": "Sam opens his locker and finds a small glass globe left behind",
+      "h_hold": "Hold<br>to hide",
+      "h_ask": "Press and hold to hide",
+      "h_aria": "Press and hold to hide",
+      "h_v": "Behind the closed door I felt the walls closing in on me. Where on earth had I ended up?",
+      "m_truth": "Lie or truth",
+      "m_look": "Amsterdam",
+      "m_card": "Red light",
+      "m_bike": "The city's veins",
+      "m_bird": "The bird",
+      "tr_ask": "What would you do?",
+      "tr_lie": "Lie",
+      "tr_true": "Tell the truth",
+      "tr_vlie": "A lie would have been easier. But I didn't want to go back. So I told her where I came from.",
+      "tr_vtrue": "I didn't want to go back. So I told her where I came from.",
+      "lk_ask": "Drag over the city to take it all in",
+      "lk_v": "Amsterdam smelled strange. Was that the smell of freedom?",
+      "lk_aria": "The station, grey until you drag over it",
+      "cd_v1": "The red light glowed on my skin. It made me unsure.",
+      "cd_ask": "Hold the card · let go when you choose",
+      "cd_aria": "Press and hold the bank card",
+      "cd_hold": "Hold<br>the card",
+      "cd_v2": "I thought of my counsellor, and of what the money was meant for.",
+      "cd_burn": "The red light started to burn.",
+      "bk_ask": "Ride the canals with your finger",
+      "bk_aria": "A map of the Amsterdam canal rings; draw your route with your finger",
+      "bk_v": "For the first time that day I felt truly free.",
+      "bd_hold": "Hold<br>it warm",
+      "bd_ask": "Hold to keep the little bird warm",
+      "bd_v": "I promised the little creature I would make him better.",
+      "bd_aria": "Press and hold to keep the bird warm",
+      "m_dive": "Under water",
+      "m_candles": "Eighteen",
+      "m_free": "The bird",
+      "m_erase": "Your number",
+      "dv_ask": "Touch the water",
+      "dv_aria": "The water. Touch it",
+      "dv_alt": "Sam swimming under water, from the comic",
+      "cn_label": "Make a wish before you blow out the candles",
+      "cn_ph": "I wish…",
+      "cn_blow": "Blow",
+      "cn_secret": "Keep it secret",
+      "cn_v": "My friends had made a cake especially for me.",
+      "fr_ask": "Tap the bird to let it go",
+      "fr_aria": "Let the bird go",
+      "er_ask": "Rub out your number",
+      "er_aria": "Your number. Rub it out with your finger",
+      "er_v": "No number in a system anymore. Just one more face in the city.",
+      "er_lab": "Number"
+    },
+    "meta": {
+      "1": {
+        "eyebrow": "We All Breathe The Same Air · Chapter one",
+        "title": "Schiphol",
+        "place": "Amsterdam, 1997",
+        "note": "Sound on · 4 minutes · the film stops five times and waits for you",
+        "endEye": "End of chapter one",
+        "endTitle": "A number<br>for a name.",
+        "endNext": "Chapter two: the AZC"
+      },
+      "2": {
+        "eyebrow": "We All Breathe The Same Air · Chapter two",
+        "title": "The AZC",
+        "place": "1997",
+        "note": "Sound on · under 2 minutes · the film stops three times and waits for you",
+        "endEye": "End of chapter two",
+        "endTitle": "When will this<br>nightmare end?",
+        "endNext": "Chapter three: Amsterdam"
+      },
+      "3": {
+        "eyebrow": "We All Breathe The Same Air · Chapter three",
+        "title": "Amsterdam",
+        "place": "1997",
+        "note": "Sound on · 3½ minutes · the film stops five times and waits for you",
+        "endEye": "End of chapter three",
+        "endTitle": "My turn to give<br>something back.",
+        "endNext": "Chapter four: The Letter"
+      },
+      "4": {
+        "eyebrow": "We All Breathe The Same Air · Chapter four",
+        "title": "The Letter",
+        "place": "Amsterdam",
+        "note": "Sound on · 1½ minutes · the film stops four times and waits for you",
+        "endEye": "End of chapter four",
+        "endTitle": "To lose myself<br>in the city.",
+        "endNext": ""
+      }
+    },
+    "cues": {
+      "1": [
+        [
+          0.1,
+          6.1,
+          "Schiphol. The air was heavy with stories I didn't want to tell."
+        ],
+        [
+          6.1,
+          11.1,
+          "I was swallowed up and locked away. The walls whispered in a foreign language."
+        ],
+        [
+          11.1,
+          14.1,
+          "And then I saw that dog."
+        ],
+        [
+          14.6,
+          22.6,
+          "He looked at me as if he knew what secrets I carried with me."
+        ],
+        [
+          22.6,
+          26.6,
+          "“Passport please…” Welcome to freedom, I thought."
+        ],
+        [
+          26.6,
+          30.1,
+          "“Wait here please… Something's not right.”"
+        ],
+        [
+          30.1,
+          33.6,
+          "But even freedom has guards."
+        ],
+        [
+          33.6,
+          38.6,
+          "Then the underbelly of Schiphol swallowed me."
+        ],
+        [
+          44.1,
+          46.6,
+          "Darker than my fear."
+        ],
+        [
+          47.6,
+          50.1,
+          "Time leaked away slowly."
+        ],
+        [
+          51.1,
+          53.6,
+          "I had never felt so alone."
+        ],
+        [
+          62.1,
+          64.6,
+          "“Where are you from?”"
+        ],
+        [
+          65.1,
+          68.6,
+          "“How did you get here?”"
+        ],
+        [
+          71.1,
+          76.6,
+          "“If you don't say anything, I can not help you…”"
+        ],
+        [
+          77.1,
+          84.6,
+          "Hold on. No words, no mistakes. Every second of silence is a step further from being sent back."
+        ],
+        [
+          84.6,
+          88.6,
+          "After about an hour of saying nothing, they took me to a waiting room."
+        ],
+        [
+          88.6,
+          93.6,
+          "The Somali man searched my face for answers, but found none."
+        ],
+        [
+          93.6,
+          99.1,
+          "After what felt like an eternity, a guard with a dog appeared again."
+        ],
+        [
+          99.1,
+          106.6,
+          "They put us in a cold bus. My heart pounded in my throat."
+        ],
+        [
+          106.6,
+          111.6,
+          "Fuck! They're sending me back!"
+        ],
+        [
+          113.1,
+          118.1,
+          "Planes roared overhead, their shadows warning of my fate."
+        ],
+        [
+          118.6,
+          123.6,
+          "Fuck!"
+        ],
+        [
+          123.6,
+          126.1,
+          "Then the bus took an exit."
+        ],
+        [
+          126.1,
+          131.6,
+          "We're going somewhere else. But where?"
+        ],
+        [
+          133.6,
+          137.6,
+          "“Take off your clothes!”"
+        ],
+        [
+          141.6,
+          147.1,
+          "They searched everything and everywhere…"
+        ],
+        [
+          147.6,
+          155.1,
+          "…then threw me into a cell."
+        ],
+        [
+          155.6,
+          164.1,
+          "I pulled on my clothes, wishing my dignity could be put back on just as easily."
+        ],
+        [
+          164.1,
+          168.1,
+          "What am I doing here?"
+        ],
+        [
+          168.1,
+          171.1,
+          "Mother…"
+        ],
+        [
+          171.6,
+          177.6,
+          "…I wish I was with you."
+        ],
+        [
+          184.1,
+          189.6,
+          "The next day they took me to a soulless building."
+        ],
+        [
+          189.6,
+          195.6,
+          "Every face was stern. Every voice brought another rule."
+        ],
+        [
+          195.6,
+          201.1,
+          "I was dropped off at the dormitory."
+        ],
+        [
+          203.1,
+          212.1,
+          "I had nothing but a $100 bill from my mother, hidden under my pillow as if it could keep me safe."
+        ],
+        [
+          212.1,
+          219.6,
+          "I tried to sleep, but every sound was danger and every shadow was a threat."
+        ],
+        [
+          220.1,
+          226.1,
+          "The few hours I slept…"
+        ],
+        [
+          232.6,
+          234.6,
+          "“Wake up!”"
+        ],
+        [
+          242.6,
+          246.6,
+          "That morning my old self got erased and I became a number in the system."
+        ],
+        [
+          246.6,
+          252.1,
+          "Then I got sent to something called the A… Z… C…"
+        ]
+      ],
+      "2": [
+        [
+          0,
+          3,
+          "I was dropped off in front of a large building."
+        ],
+        [
+          3,
+          9,
+          "Was this what an AZC was?"
+        ],
+        [
+          9.5,
+          18,
+          "After a brief introduction I was allowed to make a phone call."
+        ],
+        [
+          24.5,
+          33,
+          "For a moment, Mom's voice felt like home. Then the distance tore through me, and I swallowed the ache."
+        ],
+        [
+          33.5,
+          53,
+          "I was handed over to another guide. Who led me through a maze of hallways…"
+        ],
+        [
+          58.5,
+          63.5,
+          "…to my new room."
+        ],
+        [
+          65,
+          69,
+          "That night, all hell broke loose."
+        ],
+        [
+          94.5,
+          100.4,
+          "When will this nightmare end?"
+        ]
+      ],
+      "3": [
+        [
+          0.2,
+          4.2,
+          "That morning I was summoned for an interview."
+        ],
+        [
+          5.7,
+          9.2,
+          "“Good morning.”"
+        ],
+        [
+          9.2,
+          17.5,
+          "After a cold introduction, she noted inconsistencies in my story and asked for clarification."
+        ],
+        [
+          17.7,
+          22.6,
+          "What was I supposed to do? Lie? Tell the truth?"
+        ],
+        [
+          23.2,
+          29,
+          "Where school was like a military academy."
+        ],
+        [
+          29.2,
+          34.5,
+          "Where every day began with a sermon about piety and religion."
+        ],
+        [
+          34.7,
+          38.5,
+          "Where even meeting up with a woman was forbidden."
+        ],
+        [
+          38.7,
+          43,
+          "Where my hair was cut whenever it grew long."
+        ],
+        [
+          43.2,
+          46.5,
+          "After writing down what I said, she said:"
+        ],
+        [
+          46.7,
+          53.5,
+          "“We've opened a bank account for you. There's 500 guilders in it.”"
+        ],
+        [
+          53.7,
+          59.2,
+          "“For a bike, clothes and school supplies.”"
+        ],
+        [
+          59.2,
+          63.2,
+          "But I wasn't thinking about material stuff."
+        ],
+        [
+          64.7,
+          69.5,
+          "Amsterdam!"
+        ],
+        [
+          82.2,
+          87.2,
+          "Taking in every little thing this city had to offer."
+        ],
+        [
+          91.2,
+          95.7,
+          "Remembering what freedom tasted like."
+        ],
+        [
+          100.7,
+          105.7,
+          "I didn't want to feel scared anymore."
+        ],
+        [
+          113.2,
+          118,
+          "It's been a long time since I've felt this light."
+        ],
+        [
+          118.2,
+          123.7,
+          "The city kept giving me reasons to forget."
+        ],
+        [
+          143.29,
+          148.29,
+          "The city kept nourishing me, mind and body."
+        ],
+        [
+          161.29,
+          166.79,
+          "I found my way into the city's veins,"
+        ],
+        [
+          169.29,
+          174.38,
+          "moving with its rhythm, breathing in its life."
+        ],
+        [
+          185.19,
+          190.69,
+          "I found a wounded little creature, fragile and still."
+        ],
+        [
+          196.69,
+          201.69,
+          "Now, it was my turn to give something back."
+        ]
+      ],
+      "4": [
+        [
+          2.84,
+          6.74,
+          "From that day on, I finally started to feel a bit more at home."
+        ],
+        [
+          6.74,
+          10.84,
+          "I made friends. Both inside and outside the AZC."
+        ],
+        [
+          11.84,
+          22.34,
+          "I felt some freedom of movement in my life."
+        ],
+        [
+          25.84,
+          30.24,
+          "Shortly after, I turned 18."
+        ],
+        [
+          30.34,
+          36.84,
+          "I tried to be cheerful, but that day I had received a letter from the IND."
+        ],
+        [
+          57.34,
+          64.04,
+          "The letter said I could still file an objection."
+        ],
+        [
+          64.34,
+          71.24,
+          "But I decided to leave the AZC."
+        ],
+        [
+          71.34,
+          76.74,
+          "I returned to Amsterdam."
+        ],
+        [
+          76.84,
+          85.84,
+          "To lose myself in the city and in illegality."
+        ]
+      ]
+    }
+  }
+}

@@ -1,5 +1,6 @@
 /* We All Breathe the Same Air · Shared chapter overlay, HUD & URL routing (Web, iOS & Android via Capacitor). */
-@import url("fonts/fonts.css");
+@import url("../../fonts/fonts.css");
+@import url("../../i18n/i18n.css");
 :root{
   --ink:#0d0c0b;
   --paper:#efe6d2;

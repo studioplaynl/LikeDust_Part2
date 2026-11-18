@@ -1,0 +1,756 @@
+{
+  "meta": {
+    "lang": "nl",
+    "dir": "ltr",
+    "label": "NL",
+    "name": "Nederlands"
+  },
+  "common": {
+    "backHome": "← Home",
+    "backToRoom": "← Terug naar de kamer",
+    "skip": "Overslaan ›",
+    "fullScreen": "⛶ Volledig scherm",
+    "exitFullScreen": "✕ Sluit volledig scherm",
+    "play": "Afspelen",
+    "pause": "Pauze",
+    "close": "Sluiten ✕",
+    "ccLabel": "Ondertiteling",
+    "langAria": "Taal"
+  },
+  "landing": {
+    "title": "We All Breathe The Same Air · Sam Yazdanpanna",
+    "topSub": "Graphic novels · Waargebeurd verhaal",
+    "chooseStoryAria": "Kies een verhaal",
+    "part1": "Deel 1",
+    "part2": "Deel 2",
+    "waSubtitle": "De nieuwe interactieve graphic novel van Sam Yazdanpanna. Wat daarna kwam. Hoe ik illegaal werd.",
+    "start": "Start",
+    "ldRoute": "Iran → Europa",
+    "ldSubtitle": "De reis. Zwart-wit.",
+    "enter": "Open",
+    "introLead": "Op zijn zeventiende moest Sam Iran verlaten. <em>Like Dust</em> is de reis naar Europa. <b>We All Breathe The Same Air</b>, zijn nieuwe graphic novel, is wat daarna kwam.",
+    "waTag": "Nieuw · interactieve graphic novel",
+    "waReflectAlt": "Volwassen Sam kijkt door een vliegveldraam en ziet zijn zeventienjarige zelf weerspiegeld in het glas.",
+    "waBody": "Een smokkelaar genaamd Yilmaz, een vals paspoort, een vliegtuig naar Nederland. Verhoren, een asielzoekerscentrum, een wachten waar geen einde aan leek te komen. Liefde, een klein vogeltje, en een brief die alles veranderde.",
+    "waQuote": "We ademen allemaal dezelfde lucht… maar we zijn niet allemaal even vrij.",
+    "ldTag": "Interactieve graphic novel",
+    "ldTrailerAlt": "Zwart-wittekening: een grensbewaker bestudeert een paspoort terwijl de jonge Sam wacht.",
+    "ldBody": "De zeventienjarige Sam reist van Iran naar Europa, in de hoop elke grens over te steken. Een interactieve geïllustreerde roman in zwart-wit.",
+    "ldPlatforms": "iPhone · iPad · Mac · web",
+    "ldInfo": "Gratis · Engels · 13+",
+    "watchTrailer": "Bekijk de trailer · 0:17",
+    "readLikedust": "Lees op likedust.nl",
+    "appStore": "App Store",
+    "fundersHeading": "Mede mogelijk gemaakt door",
+    "creditsHeading": "Credits",
+    "roleScript": "Scenario",
+    "roleConsultant": "Scenariobegeleiding",
+    "roleIllustrations": "Illustraties",
+    "roleMotion": "Animatie",
+    "roleSound": "Geluid",
+    "roleInteractive": "Interactie & web",
+    "roleProducers": "Producenten"
+  },
+  "intro": {
+    "stageAria": "We All Breathe The Same Air — Intro",
+    "reflectAlt": "Volwassen Sam kijkt uit een vliegveldraam en ziet zijn zeventienjarige zelf weerspiegeld in het glas, met de verkeerstoren en een vliegtuig daarachter.",
+    "youngAria": "Klik op de jonge Sam om het verhaal te beginnen",
+    "windowHint": "Klik op <b>jonge Sam</b> om te beginnen",
+    "cues": [
+      [
+        0.8,
+        2.3,
+        "Mijn naam is Sam."
+      ],
+      [
+        3.1,
+        4.5,
+        "Ik ben geboren in Iran."
+      ],
+      [
+        6.2,
+        9.0,
+        "Ik was zeventien toen ik Iran moest verlaten."
+      ],
+      [
+        9.85,
+        12.1,
+        "Mijn moeder reisde met me mee tot aan Istanbul…"
+      ],
+      [
+        13.2,
+        14.9,
+        "…en keerde daarna terug naar Iran."
+      ],
+      [
+        16.4,
+        21.1,
+        "Daar gaf een smokkelaar die Yilmaz heette me een vals paspoort…"
+      ],
+      [
+        21.55,
+        23.5,
+        "…en zette me op een vliegtuig."
+      ],
+      [
+        23.8,
+        25.8,
+        "Bestemming: Nederland."
+      ],
+      [
+        27.0,
+        29.4,
+        "En toen begon het allemaal."
+      ],
+      [
+        30.3,
+        32.3,
+        "Verhoren… opvang…"
+      ],
+      [
+        32.45,
+        34.2,
+        "…en een wachten waar geen einde aan leek te komen."
+      ],
+      [
+        34.3,
+        36.8,
+        "In het asielzoekerscentrum werd ik verliefd."
+      ],
+      [
+        37.35,
+        39.4,
+        "Ik zorgde voor een klein vogeltje."
+      ],
+      [
+        40.05,
+        42.3,
+        "En daar bereikte mij een brief…"
+      ],
+      [
+        42.4,
+        44.1,
+        "…een brief die alles veranderde."
+      ],
+      [
+        46.05,
+        50.5,
+        "Toen ik achttien werd, begon mijn leven in Amsterdam…"
+      ],
+      [
+        51.95,
+        53.8,
+        "…ongedocumenteerd en illegaal."
+      ],
+      [
+        54.3,
+        57.0,
+        "Dit is het verhaal van wat daaraan voorafging…"
+      ],
+      [
+        57.7,
+        59.4,
+        "…hoe ik illegaal werd."
+      ],
+      [
+        60.9,
+        63.6,
+        "We ademen allemaal dezelfde lucht…"
+      ],
+      [
+        65.2,
+        70.5,
+        "…maar we zijn niet allemaal even vrij."
+      ]
+    ]
+  },
+  "room": {
+    "title": "We All Breathe the Same Air",
+    "canvasAria": "Interactieve kamer",
+    "startKicker": "Een graphic novel in vier hoofdstukken",
+    "startHeading": "We All Breathe<br>the Same Air",
+    "startBody": "Elk voorwerp in zijn kamer opent een hoofdstuk. Volg het kleine licht.",
+    "loading": "Laden…",
+    "startBtn": "Start",
+    "continueBtn": "Verder",
+    "endKicker": "Einde",
+    "endHeading": "We All Breathe<br>the Same Air",
+    "startAgain": "Opnieuw beginnen",
+    "samAria": "Sam",
+    "clickPassport": "Klik op het paspoort om te beginnen.",
+    "chaptersAria": "Hoofdstukken",
+    "completedAria": "Voltooide hoofdstukken",
+    "linkCopied": "Link gekopieerd: {0}",
+    "share": "Delen",
+    "sharePrompt": "Deelbare link:",
+    "comingSoon": "Pagina <b>{0}</b> volgt binnenkort.",
+    "chapterTitles": {
+      "1": "Schiphol",
+      "2": "Het AZC",
+      "3": "Amsterdam",
+      "4": "De Brief"
+    }
+  },
+  "chapters": {
+    "ui": {
+      "s_play": "▶ Speel het hoofdstuk",
+      "again": "↺ Opnieuw kijken",
+      "e_num": "Jouw nummer:",
+      "jump": "Ga naar: ",
+      "play": "Afspelen",
+      "pause": "Pauze",
+      "m_breath": "Adem inhouden",
+      "m_silence": "Het verhoor",
+      "m_wall": "De celmuur",
+      "m_mother": "Moeder",
+      "m_photo": "De foto",
+      "b_lbl": "Houd je<br>adem in",
+      "b_ask": "Druk en houd vast om je adem in te houden",
+      "b_held": "Je hield je adem {0} seconden in",
+      "b_stamp": "VALS",
+      "b_aria": "Druk en houd vast om je adem in te houden",
+      "q_label": "Hij wacht op je antwoord",
+      "q_ph": "Waar kom je vandaan? Hoe ben je hier gekomen?",
+      "q_answer": "Antwoorden",
+      "q_quiet": "Zwijgen",
+      "w_ask": "Wrijf met je vinger over de muur",
+      "w_alt": "De celmuur, vol zinnen van mensen die hier eerder zaten",
+      "w_canvas": "Wrijf over de muur om te lezen wat anderen schreven",
+      "w_v1": "De muren spraken. Rauwe verhalen waarvan ik het einde nooit zou weten.",
+      "w_v2": "Ik las iedere zin en luisterde naar elk verhaal.",
+      "w_q": "Wat zou jij op deze muur achterlaten?",
+      "w_ph": "Ik was hier…",
+      "w_btn": "Kras het erin",
+      "w_note": "Jouw zin blijft op de muur staan voor iedereen die na jou kijkt.",
+      "w_line": "Jouw zin op de muur",
+      "w_count_one": "1 persoon heeft een zin op deze muur achtergelaten",
+      "w_count_many": "{0} mensen hebben een zin op deze muur achtergelaten",
+      "w_fail": "Je zin staat alleen op jouw muur; hij kon niet voor anderen bewaard worden.",
+      "ph_hold": "Tik om<br>naar huis<br>te bellen",
+      "ph_calling": "Naar huis<br>bellen…",
+      "ph_hang": "Hij gaat over · tik nog eens om op te hangen",
+      "ph_rings_one": "1 keer overgegaan<br>geen antwoord",
+      "ph_rings_many": "{0} keer overgegaan<br>geen antwoord",
+      "ph_none": "Geen<br>antwoord",
+      "ph_ask": "Tik op de telefoon om naar huis te bellen",
+      "ph_aria": "Naar huis bellen",
+      "f_ask": "Tik om zijn foto te maken",
+      "f_aria": "Maak zijn foto",
+      "y_name": "Naam",
+      "y_num": "Nummer",
+      "y_aria": "Een geel pasje met Sams foto en het nummer {0} in plaats van zijn naam",
+      "f_v": "Mijn gezicht gevangen in een flits. Een foto voor op een geel pasje. Met een nummer dat vanaf nu mijn identiteit zou zijn.",
+      "m_call": "Naar huis bellen",
+      "m_locker": "De kamer",
+      "m_hide": "Die nacht",
+      "c_ring": "De telefoon bleef maar overgaan. Het duurde een eeuwigheid.",
+      "c_conn": "Verbonden",
+      "c_hold": "Tik om<br>naar huis<br>te bellen",
+      "c_calling": "Gaat over…",
+      "c_ask": "Tik op de telefoon om naar huis te bellen",
+      "c_aria": "Naar huis bellen",
+      "c_video_aria": "Sam aan de telefoon; thuis nemen zijn moeder en vader op",
+      "l_door": "Jouw kamer",
+      "l_open": "Open de deur",
+      "l_ask": "Tik op de deur om hem te openen",
+      "l_v": "In mijn kastje had degene vóór mij iets achtergelaten.",
+      "l_video_aria": "Sam opent zijn kastje en vindt een kleine glazen bol",
+      "h_hold": "Houd vast om<br>je te verstoppen",
+      "h_ask": "Druk en houd vast om je te verstoppen",
+      "h_aria": "Druk en houd vast om je te verstoppen",
+      "h_v": "Achter de gesloten deur voelde ik de muren op me afkomen. Waar was ik in hemelsnaam beland?",
+      "m_truth": "Liegen of waarheid",
+      "m_look": "Amsterdam",
+      "m_card": "Rood licht",
+      "m_bike": "De aderen van de stad",
+      "m_bird": "Het vogeltje",
+      "tr_ask": "Wat zou jij doen?",
+      "tr_lie": "Liegen",
+      "tr_true": "De waarheid vertellen",
+      "tr_vlie": "Een leugen was makkelijker geweest. Maar ik wilde niet terug. Dus vertelde ik haar waar ik vandaan kwam.",
+      "tr_vtrue": "Ik wilde niet terug. Dus vertelde ik haar waar ik vandaan kwam.",
+      "lk_ask": "Veeg over de stad om alles in je op te nemen",
+      "lk_v": "Amsterdam rook vreemd. Was dat de geur van vrijheid?",
+      "lk_aria": "Het station, grijs totdat je eroverheen veegt",
+      "cd_v1": "Het rode licht gloeide op mijn huid. Het maakte me onzeker.",
+      "cd_ask": "Houd het pasje vast · laat los wanneer je wilt",
+      "cd_aria": "Druk en houd het bankpasje vast",
+      "cd_hold": "Houd het<br>pasje vast",
+      "cd_v2": "Ik dacht aan mijn begeleider, en aan waar het geld voor bedoeld was.",
+      "cd_burn": "Het rode licht begon te branden.",
+      "bk_ask": "Fiets met je vinger langs de grachten",
+      "bk_aria": "Een kaart van de Amsterdamse grachtengordel; teken je route met je vinger",
+      "bk_v": "Voor het eerst die dag voelde ik me echt vrij.",
+      "bd_hold": "Houd hem<br>warm",
+      "bd_ask": "Houd vast om het kleine vogeltje warm te houden",
+      "bd_v": "Ik beloofde het kleine beestje dat ik hem beter zou maken.",
+      "bd_aria": "Druk en houd vast om het vogeltje warm te houden",
+      "m_dive": "Onder water",
+      "m_candles": "Achttien",
+      "m_free": "De vogel",
+      "m_erase": "Jouw nummer",
+      "dv_ask": "Raak het water aan",
+      "dv_aria": "Het water. Raak het aan",
+      "dv_alt": "Sam zwemt onder water",
+      "cn_label": "Doe een wens voordat je de kaarsjes uitblaast",
+      "cn_ph": "Ik wens…",
+      "cn_blow": "Blazen",
+      "cn_secret": "Geheim houden",
+      "cn_v": "Mijn vrienden hadden speciaal voor mij een taart gemaakt.",
+      "fr_ask": "Tik op de vogel om hem vrij te laten",
+      "fr_aria": "Laat de vogel vrij",
+      "er_ask": "Wis je nummer uit",
+      "er_aria": "Jouw nummer. Wis het uit met je vinger",
+      "er_v": "Geen nummer meer in een systeem. Gewoon nog een gezicht in de stad.",
+      "er_lab": "Nummer"
+    },
+    "meta": {
+      "1": {
+        "eyebrow": "We All Breathe The Same Air · Hoofdstuk één",
+        "title": "Schiphol",
+        "place": "Amsterdam, 1997",
+        "note": "Geluid aan · 4 minuten · de film stopt vijf keer en wacht op jou",
+        "endEye": "Einde van hoofdstuk één",
+        "endTitle": "Een nummer<br>voor een naam.",
+        "endNext": "Hoofdstuk twee: het AZC"
+      },
+      "2": {
+        "eyebrow": "We All Breathe The Same Air · Hoofdstuk twee",
+        "title": "Het AZC",
+        "place": "1997",
+        "note": "Geluid aan · bijna 2 minuten · de film stopt drie keer en wacht op jou",
+        "endEye": "Einde van hoofdstuk twee",
+        "endTitle": "Wanneer houdt deze<br>nachtmerrie op?",
+        "endNext": "Hoofdstuk drie: Amsterdam"
+      },
+      "3": {
+        "eyebrow": "We All Breathe The Same Air · Hoofdstuk drie",
+        "title": "Amsterdam",
+        "place": "1997",
+        "note": "Geluid aan · 3½ minuut · de film stopt vijf keer en wacht op jou",
+        "endEye": "Einde van hoofdstuk drie",
+        "endTitle": "Mijn beurt om iets<br>terug te geven.",
+        "endNext": "Hoofdstuk vier: De Brief"
+      },
+      "4": {
+        "eyebrow": "We All Breathe The Same Air · Hoofdstuk vier",
+        "title": "De Brief",
+        "place": "Amsterdam",
+        "note": "Geluid aan · 1½ minuut · de film stopt vier keer en wacht op jou",
+        "endEye": "Einde van hoofdstuk vier",
+        "endTitle": "Om te verdwijnen<br>in de stad.",
+        "endNext": ""
+      }
+    },
+    "cues": {
+      "1": [
+        [
+          0.1,
+          6.1,
+          "Schiphol. De lucht was zwaar van verhalen die ik niet wilde vertellen."
+        ],
+        [
+          6.1,
+          11.1,
+          "Ik werd opgeslokt en opgesloten. Muren fluisterden in een vreemde taal."
+        ],
+        [
+          11.1,
+          14.1,
+          "En toen zag ik die hond."
+        ],
+        [
+          14.6,
+          22.6,
+          "Hij keek naar me alsof hij wist welke geheimen ik met me meedroeg."
+        ],
+        [
+          22.6,
+          26.6,
+          "“Paspoort, alstublieft…” Welkom in vrijheid, dacht ik."
+        ],
+        [
+          26.6,
+          30.1,
+          "“Wacht hier even… Er klopt iets niet.”"
+        ],
+        [
+          30.1,
+          33.6,
+          "Maar zelfs vrijheid heeft bewakers."
+        ],
+        [
+          33.6,
+          38.6,
+          "En toen slokte de onderbuik van Schiphol mij op."
+        ],
+        [
+          44.1,
+          46.6,
+          "Donkerder dan mijn angst."
+        ],
+        [
+          47.6,
+          50.1,
+          "De tijd lekte langzaam weg."
+        ],
+        [
+          51.1,
+          53.6,
+          "Ik voelde me nog nooit zo alleen."
+        ],
+        [
+          62.1,
+          64.6,
+          "“Waar kom je vandaan?”"
+        ],
+        [
+          65.1,
+          68.6,
+          "“Hoe ben je hier gekomen?”"
+        ],
+        [
+          71.1,
+          76.6,
+          "“Als je niks zegt, kan ik je niet helpen…”"
+        ],
+        [
+          77.1,
+          84.6,
+          "Volhouden. Geen woorden, geen fouten. Elke seconde stilte is een stap verder van teruggestuurd worden."
+        ],
+        [
+          84.6,
+          88.6,
+          "Na ongeveer een uur niks zeggen brachten ze me naar een wachtruimte."
+        ],
+        [
+          88.6,
+          93.6,
+          "De Somalische man zocht in mijn gezicht naar antwoorden, maar vond er geen."
+        ],
+        [
+          93.6,
+          99.1,
+          "Na wat als een eeuwigheid voelde, verscheen er weer een bewaker met hond."
+        ],
+        [
+          99.1,
+          106.6,
+          "Ze stopten ons in een kille bus. Mijn hart bonsde in mijn keel."
+        ],
+        [
+          106.6,
+          111.6,
+          "Fuck, ze sturen me terug!"
+        ],
+        [
+          113.1,
+          118.1,
+          "Vliegtuigen raasden over ons heen. Hun schaduwen een voorbode van mijn lot."
+        ],
+        [
+          118.6,
+          123.6,
+          "Fuck!"
+        ],
+        [
+          123.6,
+          126.1,
+          "Toen nam de bus een afslag."
+        ],
+        [
+          126.1,
+          131.6,
+          "We gaan ergens anders heen. Maar waarheen?"
+        ],
+        [
+          133.6,
+          137.6,
+          "“Kleren uit!”"
+        ],
+        [
+          141.6,
+          147.1,
+          "Ze doorzochten alles. Overal…"
+        ],
+        [
+          147.6,
+          155.1,
+          "…en gooiden me in een cel."
+        ],
+        [
+          155.6,
+          164.1,
+          "Ik trok mijn kleren weer aan, en wenste dat ik mijn waardigheid net zo makkelijk terug kon aantrekken."
+        ],
+        [
+          164.1,
+          168.1,
+          "Wat doe ik hier?"
+        ],
+        [
+          168.1,
+          171.1,
+          "Moeder…"
+        ],
+        [
+          171.6,
+          177.6,
+          "…ik wou dat ik bij je was."
+        ],
+        [
+          184.1,
+          189.6,
+          "De volgende dag brachten ze me naar een zielloos gebouw."
+        ],
+        [
+          189.6,
+          195.6,
+          "Elk gezicht was streng. Elke stem bracht een nieuwe regel."
+        ],
+        [
+          195.6,
+          201.1,
+          "Bij de slaapzaal werd ik afgezet."
+        ],
+        [
+          203.1,
+          212.1,
+          "Ik had niets dan een briefje van 100 dollar van mijn moeder, verstopt onder mijn kussen alsof het me kon beschermen."
+        ],
+        [
+          212.1,
+          219.6,
+          "Ik probeerde te slapen. Maar ieder geluid klonk als gevaar, en elke schaduw voelde als een dreiging."
+        ],
+        [
+          220.1,
+          226.1,
+          "De paar uur die ik sliep…"
+        ],
+        [
+          232.6,
+          234.6,
+          "“Wakker worden!”"
+        ],
+        [
+          242.6,
+          246.6,
+          "Die ochtend werd mijn oude ik gewist en werd ik een nummer in het systeem."
+        ],
+        [
+          246.6,
+          252.1,
+          "Toen werd ik naar iets gestuurd dat het A… Z… C… heette."
+        ]
+      ],
+      "2": [
+        [
+          0,
+          3,
+          "Ik werd voor een groot gebouw afgezet."
+        ],
+        [
+          3,
+          9,
+          "Was dit wat een AZC was?"
+        ],
+        [
+          9.5,
+          18,
+          "Na een korte kennismaking mocht ik bellen."
+        ],
+        [
+          24.5,
+          33,
+          "Even voelde mama's stem als thuis. Toen scheurde de afstand door me heen, en slikte ik de pijn weg."
+        ],
+        [
+          33.5,
+          53,
+          "Ik werd overgedragen aan een andere begeleider. Die me door een doolhof van gangen leidde…"
+        ],
+        [
+          58.5,
+          63.5,
+          "…naar mijn nieuwe kamer."
+        ],
+        [
+          65,
+          69,
+          "Diezelfde nacht nog brak de hel los."
+        ],
+        [
+          94.5,
+          100.4,
+          "Wanneer houdt deze nachtmerrie op?"
+        ]
+      ],
+      "3": [
+        [
+          0.2,
+          4.2,
+          "Die ochtend werd ik opgeroepen voor een gesprek."
+        ],
+        [
+          5.7,
+          9.2,
+          "“Goedemorgen.”"
+        ],
+        [
+          9.2,
+          17.5,
+          "Na een kille kennismaking wees ze op tegenstrijdigheden in mijn verhaal en vroeg ze om uitleg."
+        ],
+        [
+          17.7,
+          22.6,
+          "Wat moest ik doen? Liegen? De waarheid vertellen?"
+        ],
+        [
+          23.2,
+          29,
+          "Daar waar school als een militaire academie voelde."
+        ],
+        [
+          29.2,
+          34.5,
+          "Waar iedere dag begon met een preek over vroomheid en religie."
+        ],
+        [
+          34.7,
+          38.5,
+          "Waar zelfs afspreken met een vrouw verboden was."
+        ],
+        [
+          38.7,
+          43,
+          "Waar ik iedere keer als mijn haar iets te lang was, verplicht werd het kort te knippen."
+        ],
+        [
+          43.2,
+          46.5,
+          "Nadat ze had opgeschreven wat ik zei, zei ze:"
+        ],
+        [
+          46.7,
+          53.5,
+          "“We hebben een bankrekening voor je geopend. Er staat 500 gulden op.”"
+        ],
+        [
+          53.7,
+          59.2,
+          "“Voor een fiets, kleren en schoolspullen.”"
+        ],
+        [
+          59.2,
+          63.2,
+          "Maar ik dacht niet aan spullen."
+        ],
+        [
+          64.7,
+          69.5,
+          "Amsterdam!"
+        ],
+        [
+          82.2,
+          87.2,
+          "Ik nam alles in me op wat deze stad te bieden had."
+        ],
+        [
+          91.2,
+          95.7,
+          "Ik herinnerde me weer hoe vrijheid smaakte."
+        ],
+        [
+          100.7,
+          105.7,
+          "Ik wilde niet meer bang zijn."
+        ],
+        [
+          113.2,
+          118,
+          "Het was lang geleden dat ik me zo licht voelde."
+        ],
+        [
+          118.2,
+          123.7,
+          "De stad bleef me redenen geven om te vergeten."
+        ],
+        [
+          143.29,
+          148.29,
+          "De stad bleef me voeden, lichaam en geest."
+        ],
+        [
+          161.29,
+          166.79,
+          "Ik vond mijn weg door de aderen van de stad,"
+        ],
+        [
+          169.29,
+          174.38,
+          "bewoog mee op haar ritme en ademde haar leven in."
+        ],
+        [
+          185.19,
+          190.69,
+          "Ik vond een gewond klein beestje, breekbaar en stil."
+        ],
+        [
+          196.69,
+          201.69,
+          "Nu was het mijn beurt om iets terug te geven."
+        ]
+      ],
+      "4": [
+        [
+          2.84,
+          6.74,
+          "Vanaf die dag begon ik me eindelijk wat meer op mijn plek te voelen."
+        ],
+        [
+          6.74,
+          10.84,
+          "Ik maakte vrienden. Zowel binnen als buiten het AZC."
+        ],
+        [
+          11.84,
+          22.34,
+          "Ik voelde eindelijk wat bewegingsvrijheid in mijn leven."
+        ],
+        [
+          25.84,
+          30.24,
+          "Kort daarna werd ik 18."
+        ],
+        [
+          30.34,
+          36.84,
+          "Ik probeerde vrolijk te zijn, maar ik had die dag een brief van de IND ontvangen."
+        ],
+        [
+          57.34,
+          64.04,
+          "Er stond in de brief dat ik nog bezwaar kon maken."
+        ],
+        [
+          64.34,
+          71.24,
+          "Maar ik besloot het AZC te verlaten."
+        ],
+        [
+          71.34,
+          76.74,
+          "Ik reisde terug naar Amsterdam."
+        ],
+        [
+          76.84,
+          85.84,
+          "Om te verdwijnen in de stad. In de illegaliteit."
+        ]
+      ]
+    }
+  }
+}

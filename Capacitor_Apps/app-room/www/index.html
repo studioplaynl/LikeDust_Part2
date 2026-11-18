@@ -12,13 +12,14 @@
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="stylesheet" href="fonts/fonts.css">
+<link rel="stylesheet" href="i18n/i18n.css">
 <style>:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;padding:0;-webkit-text-size-adjust:100%}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
 <style>
 /* Layout: the first screen is split in two doors, one per book.
-   Left: Like Dust, black and white with drifting dust. Right: We All Breathe The Same Air, ochre over moving film.
-   Hover or tap a door and it opens wider. Below, both stories continue as one quiet column. Single dark look by choice. */
+   Left: We All Breathe The Same Air (Part 2), ochre over moving film.
+   Right: Like Dust (Part 1), black and white with drifting dust. */
 :root{
   --ink:#070707;
   --ash:#121211;
@@ -29,6 +30,7 @@
   --f-display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
   --f-body:"Literata",Georgia,serif;
   --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --f-sub:Arial,Helvetica,"Helvetica Neue",sans-serif;
   color-scheme:dark;
 }
 *{box-sizing:border-box}
@@ -51,6 +53,7 @@ a{color:inherit}
 .bar{position:absolute;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px max(clamp(16px,3vw,32px),calc(16px + env(safe-area-inset-right,0px))) 18px max(clamp(16px,3vw,32px),calc(16px + env(safe-area-inset-left,0px)));pointer-events:none}
 .bar *{pointer-events:auto}
 .bar .name{font-family:var(--f-display);font-weight:700;letter-spacing:.2em;text-transform:uppercase;font-size:.95rem;text-decoration:none}
+.bar-right{display:flex;align-items:center;gap:14px}
 
 /* doors */
 .doors{position:relative;display:flex;height:100vh;height:100svh;height:100dvh;min-height:560px;border-bottom:1px solid var(--line)}
@@ -60,6 +63,11 @@ a{color:inherit}
 .doors:has(.ld:hover) .wa,.doors:has(.ld:focus-visible) .wa{flex-grow:2.4}
 .doors .ld:hover,.doors .ld:focus-visible{flex-grow:1.4}
 .door canvas,.door video,.door .bgimg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;pointer-events:none}
+.door video.bgv{opacity:0;transition:opacity .65s ease}
+.door video.bgv::-webkit-media-controls,
+.door video.bgv::-webkit-media-controls-panel,
+.door video.bgv::-webkit-media-controls-play-button,
+.door video.bgv::-webkit-media-controls-start-playback-button{display:none!important;-webkit-appearance:none!important;opacity:0!important}
 .door .shade{position:absolute;inset:0;pointer-events:none}
 .door .inner{position:relative;display:grid;gap:16px;max-width:30rem}
 .door{container-type:inline-size}
@@ -72,34 +80,35 @@ a{color:inherit}
 .door.ld{background:var(--ink);border-left:1px solid var(--line)}
 .door.ld .mono{font-size:.68rem}
 .door.ld h2{color:var(--paper)}
-.door.ld video,.door.ld .bgimg{opacity:.55;filter:grayscale(1)}
+.door.ld .bgimg{opacity:.55;filter:grayscale(1)}
+.door.ld video.bgv{filter:grayscale(1)}
+.door.ld video.bgv.playing{opacity:.55}
 .door.ld canvas{z-index:0}
 .door.ld .shade{background:linear-gradient(0deg,rgba(7,7,7,.94),rgba(7,7,7,.15) 60%)}
 .door.wa{background:#000}
-.door.wa video,.door.wa .bgimg{opacity:.85;object-position:center 35%}
+.door.wa .bgimg{opacity:.85;object-position:center 35%}
+.door.wa video.bgv{object-position:center 35%}
+.door.wa video.bgv.playing{opacity:.85}
 .door.wa .shade{background:linear-gradient(0deg,rgba(0,0,0,.9) 0%,rgba(0,0,0,.55) 35%,rgba(0,0,0,0) 65%),linear-gradient(90deg,rgba(0,0,0,.45),transparent 55%)}
 .door.wa h2,.door.wa .go{color:var(--ochre)}
 .door.wa .inner{max-width:44rem}
 .door.wa h2{font-size:clamp(3rem,10cqw,8.5rem)}
 .door .row{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-/* Part 1 / Part 2: the reading order of the two books, set large so it reads at a glance */
 .part{display:flex;align-items:center;gap:14px;font-family:var(--f-display);font-weight:800;letter-spacing:.2em;text-transform:uppercase;font-size:clamp(1.15rem,1.9vw,1.6rem);line-height:1;color:var(--paper)}
 .part::after{content:"";width:clamp(36px,5vw,64px);height:2px;background:currentColor;opacity:.7}
 .wa .part{color:var(--ochre)}
 .chapter .part{margin-bottom:12px}
-.new{font-family:var(--f-display);font-weight:800;letter-spacing:.16em;text-transform:uppercase;font-size:.85rem;color:#000;background:var(--ochre);padding:4px 10px}
 .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
 .btn.o.solid{background:var(--ochre);color:#000}
 .btn.o.solid:hover{background:transparent;color:var(--ochre)}
 .door.wa .acts .btn{font-size:clamp(1.15rem,1.65vw,1.45rem);padding:16px 40px;letter-spacing:.2em;border-width:2px}
 
-
 /* story column */
-.col{max-width:980px;margin-inline:auto;padding-left:max(clamp(16px,4vw,40px),calc(16px + env(safe-area-inset-left,0px)));padding-right:max(clamp(16px,4vw,40px),calc(16px + env(safe-area-inset-right,0px)))}
+.col{content-visibility:auto;contain-intrinsic-size:auto none auto 1600px;max-width:980px;margin-inline:auto;padding-left:max(clamp(16px,4vw,40px),calc(16px + env(safe-area-inset-left,0px)));padding-right:max(clamp(16px,4vw,40px),calc(16px + env(safe-area-inset-right,0px)))}
 .intro{padding-block:clamp(56px,9vw,100px);display:grid;gap:22px}
-.intro p.big{font-size:clamp(1.4rem,2.8vw,2.1rem);line-height:1.35;max-width:32ch}
-.intro p.big em{color:var(--smoke)}
-.intro p.big b{font-weight:400;color:var(--ochre)}
+.intro p.big-lead{font-size:clamp(1.4rem,2.8vw,2.1rem);line-height:1.35;max-width:32ch}
+.intro p.big-lead em{color:var(--smoke)}
+.intro p.big-lead b{font-weight:400;color:var(--ochre)}
 
 .chapter{border-top:1px solid var(--line);padding-block:clamp(44px,7vw,80px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);gap:clamp(24px,5vw,64px)}
 .chapter h3{font-size:clamp(2.4rem,5vw,4rem)}
@@ -111,17 +120,15 @@ a{color:inherit}
 .btn:hover{background:var(--paper);color:var(--ink)}
 .btn.o{border-color:var(--ochre);color:var(--ochre)}
 .btn.o:hover{background:var(--ochre);color:var(--ink)}
-.btn svg{width:11px;height:11px;fill:currentColor}
-.frame{aspect-ratio:16/9;max-width:100%;width:100%;object-fit:cover;display:block;border:1px solid var(--line)}
+.btn svg{width:11px;height:11px;fill:currentColor;flex:0 0 auto}
+.frame{aspect-ratio:16/9;max-width:100%;width:100%;height:auto;object-fit:cover;display:block;border:1px solid var(--line)}
 blockquote{margin:0;font-family:var(--f-display);font-weight:700;text-transform:uppercase;font-size:clamp(1.6rem,3.4vw,2.4rem);line-height:1;color:var(--ochre)}
 
 .funders{background:transparent;border-top:1px solid var(--line);padding-block:48px;display:grid;gap:20px}
-.logos{display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:clamp(12px,2.2vw,32px);list-style:none;margin:0;padding:0}
+.logos{display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:clamp(12px,2.2vw,32px);list-style:none;margin:0;padding:0;direction:ltr}
 .logos li{flex:0 1 auto;min-width:0}
 @media (max-width:640px){.logos{flex-wrap:wrap;justify-content:flex-start;gap:24px 28px}.logos li{flex:0 0 calc((100% - 56px)/3);display:flex;align-items:center}.logos img{max-height:44px}}
 .logos img{display:block;width:auto;max-width:100%;object-fit:contain}
-.logos li.txt-logo{font-family:var(--f-display);font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;line-height:1.1}
-/* credits: role above names, a quiet grid under the funders */
 .credits{background:transparent;border-top:1px solid var(--line);padding-block:44px;display:grid;gap:26px}
 .credits dl{margin:0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:26px clamp(20px,3vw,40px)}
 .credits dl>div{display:grid;gap:8px;align-content:start}
@@ -129,11 +136,9 @@ blockquote{margin:0;font-family:var(--f-display);font-weight:700;text-transform:
 .credits dd{margin:0;font-family:var(--f-display);font-weight:700;letter-spacing:.04em;font-size:1.15rem;line-height:1.25;color:var(--paper)}
 @media (max-width:820px){.credits dl{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media (max-width:360px){.credits dl{grid-template-columns:1fr}}
-footer{border-top:1px solid var(--line);padding-block:24px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+footer{border-top:1px solid var(--line);padding-block:24px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;direction:ltr}
 
 /* cinema */
-/* paper + film grain laid over the picture, so the film itself stays light to load.
-   Pure black stays black under both blend modes, so letterboxing and title cards are untouched. */
 .cinema .fx{position:absolute;inset:0;pointer-events:none;overflow:hidden;display:none}
 .cinema.tex .fx{display:block}
 .cinema .fx .paper{position:absolute;inset:0;z-index:1;background:url(img/paper.jpg) center/cover;mix-blend-mode:soft-light;opacity:.6}
@@ -148,7 +153,6 @@ footer{border-top:1px solid var(--line);padding-block:24px;display:flex;justify-
 body.locked{overflow:hidden}
 
 @media (max-width:760px){
-  /* phone portrait: both doors share the first screen, stacked */
   .doors{flex-direction:column;height:100vh;height:100svh;height:100dvh;min-height:460px;max-height:none}
   .door{flex:1 1 0;min-height:0;padding:20px max(20px,calc(16px + env(safe-area-inset-right,0px))) 20px max(20px,calc(16px + env(safe-area-inset-left,0px)))}
   .door.wa{flex-grow:2.3;padding-top:58px}
@@ -167,7 +171,6 @@ body.locked{overflow:hidden}
   .chapter{grid-template-columns:minmax(0,1fr)}
 }
 @media (max-height:520px) and (orientation:landscape){
-  /* phone landscape: keep side-by-side within visible viewport height so START & ENTER never require scrolling */
   .bar{padding-top:10px;padding-bottom:10px}
   .bar .name{font-size:.82rem}
   .bar .mono{display:none}
@@ -203,7 +206,7 @@ body.locked{overflow:hidden}
 }
 @media (prefers-reduced-motion:reduce){.door{transition:none}}
 
-/* ---------- Unified Part 2 Pre-Room Stage (Intro Video -> Airport Window -> Fade to Room) ---------- */
+/* ---------- Unified Part 2 Pre-Room Stage (Intro Film -> Window Scene -> Fade to Room) ---------- */
 #stage{position:fixed;inset:0;z-index:60;overflow:hidden;background:#000;color:#ece8de}
 #stage .screen{position:absolute;inset:0;opacity:1;visibility:visible;transition:opacity 1.2s ease,visibility 0s linear 0s}
 #stage .screen.off{opacity:0;visibility:hidden;pointer-events:none;transition:opacity 1.2s ease,visibility 0s linear 1.2s}
@@ -212,20 +215,29 @@ body.locked{overflow:hidden}
 #stage .ghost:hover,#stage .ghost[aria-pressed="true"]{border-color:var(--ochre);color:var(--ochre)}
 #stage .ghost:focus-visible,#stage .play:focus-visible{outline:2px solid var(--ochre);outline-offset:4px}
 #young,#young:focus,#young:focus-visible{outline:none;-webkit-tap-highlight-color:transparent}
-#intro{background:#000}
+#intro{background:#000;display:grid;place-items:center}
+#introFrame{position:relative;width:min(100%,calc(100dvh * 16 / 9));height:min(100%,calc(100dvw * 9 / 16));aspect-ratio:16/9;max-width:100%;max-height:100%;overflow:hidden;background:#000}
 #intro video{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#000;opacity:0;transition:opacity .7s ease}
 #intro video.on{opacity:1}
+#stage .big{position:absolute;left:0;right:0;bottom:0;z-index:3;display:flex;justify-content:center;pointer-events:none}
+#stage .big span{display:block;width:100%;box-sizing:border-box;padding:1.2% 6% 1.6%;background:rgba(0,0,0,.86);font:700 clamp(.95rem,2.4vw,1.85rem)/1.35 var(--f-sub);color:var(--ochre);text-align:center;text-wrap:balance;opacity:0;transition:opacity .15s linear}
+#stage .big span.on{opacity:1}
 #stage .top{position:fixed;top:calc(12px + env(safe-area-inset-top,0px));left:max(16px,calc(12px + env(safe-area-inset-left,0px)));right:max(16px,calc(12px + env(safe-area-inset-right,0px)));display:flex;justify-content:space-between;align-items:center;gap:10px;z-index:20}
-#stage .tools{display:flex;gap:8px;align-items:center}
+#stage .tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 #stage .ctl{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:center;gap:12px;padding:10px max(16px,calc(12px + env(safe-area-inset-right,0px))) calc(12px + env(safe-area-inset-bottom,0px)) max(16px,calc(12px + env(safe-area-inset-left,0px)));background:linear-gradient(to top,rgba(0,0,0,.82),rgba(0,0,0,0))}
 #stage .ctl,#stage .top{opacity:0!important;pointer-events:none!important;transition:opacity .35s ease!important}
 body.show-ctl #stage #intro:not(.off) .ctl,body.show-ctl #stage #intro:not(.off) .top{opacity:1!important;pointer-events:auto!important}
+#stage #scene:not(.off) ~ .scene-top{opacity:1!important;pointer-events:auto!important}
 #stage .play{width:36px;height:36px;border-radius:50%;border:1px solid rgba(236,232,222,.4);background:rgba(0,0,0,.62);color:#ece8de;cursor:pointer;font-size:.9rem;flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center}
 #stage .play:hover{border-color:var(--ochre);color:var(--ochre)}
 #stage .tl{position:relative;flex:1 1 auto;height:22px;min-width:0;cursor:pointer;touch-action:none}
 #stage .tl .rail{position:absolute;left:0;right:0;top:10px;height:2px;background:rgba(236,232,222,.2)}
 #stage .tl .fill{position:absolute;left:0;top:10px;height:2px;background:var(--ochre);width:0}
 #stage .time{font:600 .78rem var(--f-display);letter-spacing:.12em;color:#a3a59e;font-variant-numeric:tabular-nums;flex:0 0 auto}
+#stage .cc{display:inline-flex;align-items:center;justify-content:center;padding:5px 7px;border:0;background:transparent;color:#ece8de;opacity:.86;cursor:pointer;flex:0 0 auto;transition:color .2s,opacity .2s,filter .2s}
+#stage .cc:hover,#stage .cc[aria-pressed="true"]{color:var(--ochre);opacity:1}
+#stage .cc[aria-pressed="true"]{filter:drop-shadow(0 0 6px rgba(214,169,62,.45))}
+#stage .cc svg{width:30px;height:22px;display:block}
 @media (max-height:500px) and (orientation:landscape){
   #stage .top{top:calc(6px + env(safe-area-inset-top,0px))}
   #stage .top .ghost{padding:5px 9px;font-size:.64rem}
@@ -242,9 +254,8 @@ body.show-ctl #stage #intro:not(.off) .ctl,body.show-ctl #stage #intro:not(.off)
 #stage .zoom>img.scene-bg{width:100%;height:100%;object-fit:cover;display:block}
 @keyframes breathe{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
 #young{position:absolute;left:48%;top:0;width:46%;height:96%;border:0;background:transparent;cursor:pointer;border-radius:45% 45% 10% 10%;z-index:2}
-#stage .sil{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.92;transition:opacity 2.2s cubic-bezier(.4,0,.2,1);will-change:opacity;backface-visibility:hidden}
-#sceneWrap.hover .sil{opacity:.02!important;transition:opacity .45s ease!important}
-#sceneWrap.chosen .sil{opacity:0!important;transition:opacity .35s ease!important}
+#stage .sil{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.90;will-change:opacity;backface-visibility:hidden}
+#sceneWrap.chosen .sil{opacity:0!important;transition:opacity .32s ease-out!important}
 #stage .hint{position:absolute;left:50%;transform:translateX(-50%);bottom:max(14px,calc(10px + env(safe-area-inset-bottom,0px)));z-index:3;font-family:var(--f-display);letter-spacing:.24em;text-transform:uppercase;font-size:.85rem;color:#ece8de;text-shadow:0 2px 12px #000,0 0 6px rgba(0,0,0,.9);white-space:nowrap;pointer-events:none}
 #stage .hint b{color:var(--ochre);font-weight:700}
 @media (max-width:600px),(max-height:500px){#stage .hint{font-size:.72rem}}
@@ -252,39 +263,42 @@ body.show-ctl #stage #intro:not(.off) .ctl,body.show-ctl #stage #intro:not(.off)
 #stage .fx{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 #stage .fx .paper{position:absolute;inset:0;z-index:40;background:url(img/paper.jpg) center/cover;mix-blend-mode:soft-light;opacity:.6}
 #stage .fx .grain{position:absolute;inset:-120px;z-index:40;background:url(img/grain.png);mix-blend-mode:overlay;opacity:.18;animation:grain .5s steps(1) infinite}
-@media (prefers-reduced-motion:reduce){#stage .fx .grain,#stage .zoom{animation:none}#stage .sil{opacity:.1!important;transition:none!important}}
+@media (prefers-reduced-motion:reduce){#stage .fx .grain,#stage .zoom{animation:none}#stage .sil{opacity:.28!important;transition:none!important}}
 @media (hover:none),(pointer:coarse){#stage .fx{display:none!important}}
 </style>
 
-<div class="bar">
+<header class="bar" id="landingBar">
   <a class="name" href="#top">Sam Yazdanpanna</a>
-  <span class="mono">Graphic novels · True story</span>
-</div>
+  <div class="bar-right">
+    <span class="mono" data-i18n="landing.topSub">Graphic novels · True story</span>
+    <span id="barLang"></span>
+  </div>
+</header>
 
 <main id="top">
-  <section class="doors" aria-label="Choose a story">
+  <section class="doors" id="doors" aria-label="Choose a story" data-i18n-aria="landing.chooseStoryAria">
     <div class="door wa" data-bg-video="vid/wa-intro-bg.mp4">
-      <img src="img/wa-intro-bg-poster.jpg" alt="" aria-hidden="true" class="bgimg">
+      <img src="img/wa-intro-bg-poster.jpg" width="1280" height="720" fetchpriority="high" alt="" aria-hidden="true" class="bgimg">
       <div class="shade"></div>
       <div class="inner">
-        <span class="part">Part 2</span>
-        <h2 class="display">We All Breathe<br>The Same Air</h2>
-        <p class="what">The new interactive graphic novel by Sam Yazdanpanna. What came after. How I became illegal.</p>
+        <span class="part" data-i18n="landing.part2">Part 2</span>
+        <h1 class="display" style="font-size:clamp(3rem,10cqw,8.5rem);color:var(--ochre)">We All Breathe<br>The Same Air</h1>
+        <p class="what" data-i18n="landing.waSubtitle">The new interactive graphic novel by Sam Yazdanpanna. What came after. How I became illegal.</p>
         <div class="acts">
-          <a class="btn o" href="intro/index.html">Start</a>
+          <a class="btn o" href="intro/index.html" data-i18n="landing.start">Start</a>
         </div>
       </div>
     </div>
     <a class="door ld" href="#like-dust" data-bg-video="vid/ld-loop.mp4">
-      <img src="img/ld-poster.jpg" alt="" aria-hidden="true" class="bgimg">
+      <img src="img/ld-poster.jpg" width="1280" height="720" alt="" aria-hidden="true" class="bgimg">
       <canvas id="dust" aria-hidden="true"></canvas>
       <div class="shade"></div>
       <div class="inner">
-        <span class="part">Part 1</span>
-        <span class="mono">Iran → Europe</span>
+        <span class="part" data-i18n="landing.part1">Part 1</span>
+        <span class="mono" data-i18n="landing.ldRoute">Iran → Europe</span>
         <h2 class="display">Like<br>Dust</h2>
-        <p class="what">The journey. Black and white.</p>
-        <span class="go"><i></i>Enter</span>
+        <p class="what" data-i18n="landing.ldSubtitle">The journey. Black and white.</p>
+        <span class="go"><i></i><span data-i18n="landing.enter">Enter</span></span>
       </div>
     </a>
   </section>
@@ -292,66 +306,65 @@ body.show-ctl #stage #intro:not(.off) .ctl,body.show-ctl #stage #intro:not(.off)
   <div class="col">
     <section class="intro">
       <span class="mono">Sam Yazdanpanna</span>
-      <p class="big">At seventeen, Sam had to leave Iran. <em>Like Dust</em> is the journey to Europe. <b>We All Breathe The Same Air</b>, his new graphic novel, is what came after.</p>
+      <p class="big-lead" data-i18n-html="landing.introLead">At seventeen, Sam had to leave Iran. <em>Like Dust</em> is the journey to Europe. <b>We All Breathe The Same Air</b>, his new graphic novel, is what came after.</p>
     </section>
 
     <section class="chapter wa" id="we-all-breathe" aria-labelledby="wa-h">
       <div>
-        <span class="part">Part 2</span>
-        <span class="mono">New · interactive graphic novel</span>
+        <span class="part" data-i18n="landing.part2">Part 2</span>
+        <span class="mono" data-i18n="landing.waTag">New · interactive graphic novel</span>
         <h3 class="display" id="wa-h">We All Breathe The Same Air</h3>
       </div>
       <div class="txt">
-        <img class="frame" src="img/reflect.jpg" alt="Grown-up Sam at an airport window sees his seventeen-year-old self reflected in the glass.">
-        <p>A smuggler named Yilmaz, a fake passport, a plane to the Netherlands. Interrogations, a refugee camp, a wait that never seemed to end. Love, a little bird, and a letter that changed everything.</p>
-        <blockquote>We all breathe the same air… but not all of us are equally free.</blockquote>
+        <img class="frame" src="img/reflect.jpg" width="1280" height="720" loading="lazy" alt="Grown-up Sam at an airport window sees his seventeen-year-old self reflected in the glass." data-i18n-alt="landing.waReflectAlt">
+        <p data-i18n="landing.waBody">A smuggler named Yilmaz, a fake passport, a plane to the Netherlands. Interrogations, a refugee camp, a wait that never seemed to end. Love, a little bird, and a letter that changed everything.</p>
+        <blockquote data-i18n="landing.waQuote">We all breathe the same air… but not all of us are equally free.</blockquote>
         <div class="links">
-          <a class="btn o" href="intro/index.html">Start</a>
+          <a class="btn o" href="intro/index.html" data-i18n="landing.start">Start</a>
         </div>
       </div>
     </section>
 
     <section class="chapter ld" id="like-dust" aria-labelledby="ld-h">
       <div>
-        <span class="part">Part 1</span>
-        <span class="mono">Interactive novel</span>
+        <span class="part" data-i18n="landing.part1">Part 1</span>
+        <span class="mono" data-i18n="landing.ldTag">Interactive novel</span>
         <h3 class="display" id="ld-h">Like Dust</h3>
       </div>
       <div class="txt">
-        <div class="trailer"><img class="frame" src="img/ld-trailer-poster.jpg" alt="Black-and-white drawing: a border officer studies a passport while young Sam waits."></div>
-        <p>Seventeen-year-old Sam travels from Iran to Europe, hoping to cross every kind of border. An interactive illustrated novel in black and white.</p>
-        <div class="meta"><span class="mono">iPhone · iPad · Mac · web</span><span class="mono">Free · English · 13+</span></div>
+        <div class="trailer"><img class="frame" src="img/ld-trailer-poster.jpg" width="1280" height="720" loading="lazy" alt="Black-and-white drawing: a border officer studies a passport while young Sam waits." data-i18n-alt="landing.ldTrailerAlt"></div>
+        <p data-i18n="landing.ldBody">Seventeen-year-old Sam travels from Iran to Europe, hoping to cross every kind of border. An interactive illustrated novel in black and white.</p>
+        <div class="meta"><span class="mono" data-i18n="landing.ldPlatforms">iPhone · iPad · Mac · web</span><span class="mono" data-i18n="landing.ldInfo">Free · English · 13+</span></div>
         <div class="links">
-          <button class="btn" type="button" data-film="vid/ld-trailer.mp4"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M0 0l10 6-10 6z"/></svg>Watch the trailer · 0:17</button>
-          <a class="btn" href="https://likedust.nl" target="_blank" rel="noopener">Read on likedust.nl</a>
-          <a class="btn" href="https://apps.apple.com/app/like-dust/id6608977988" target="_blank" rel="noopener">App Store</a>
+          <button class="btn" type="button" data-film="vid/ld-trailer.mp4"><svg viewBox="0 0 10 12" aria-hidden="true"><path d="M0 0l10 6-10 6z"/></svg><span data-i18n="landing.watchTrailer">Watch the trailer · 0:17</span></button>
+          <a class="btn" href="https://likedust.nl" target="_blank" rel="noopener" data-i18n="landing.readLikedust">Read on likedust.nl</a>
+          <a class="btn" href="https://apps.apple.com/app/like-dust/id6608977988" target="_blank" rel="noopener" data-i18n="landing.appStore">App Store</a>
         </div>
       </div>
     </section>
 
-
     <section class="funders" aria-labelledby="f-h">
-      <span class="mono" id="f-h">Made possible with support from</span>
+      <span class="mono" id="f-h" data-i18n="landing.fundersHeading">Made possible with support from</span>
       <ul class="logos">
-        <li><img src="img/logos/afk.png" alt="Amsterdams Fonds voor de Kunst" style="height:40px"></li>
-        <li><img src="img/logos/fonds21.png" alt="Fonds 21" style="height:20px"></li>
-        <li><img src="img/logos/cultuurfonds.png" alt="het Cultuurfonds" style="height:28px"></li>
-        <li><img src="img/logos/fcp.png" alt="Fonds voor Cultuurparticipatie" style="height:50px"></li>
-        <li><img src="img/logos/stimuleringsfonds.png" alt="Stimuleringsfonds Creatieve Industrie" style="height:28px"></li>
-        <li><img src="img/logos/vfonds.png" alt="vfonds" style="height:34px"></li>
+        <li><img src="img/logos/afk.png" width="120" height="40" loading="lazy" alt="Amsterdams Fonds voor de Kunst" style="height:40px"></li>
+        <li><img src="img/logos/fonds21.png" width="100" height="20" loading="lazy" alt="Fonds 21" style="height:20px"></li>
+        <li><img src="img/logos/cultuurfonds.png" width="120" height="28" loading="lazy" alt="het Cultuurfonds" style="height:28px"></li>
+        <li><img src="img/logos/fcp.png" width="120" height="50" loading="lazy" alt="Fonds voor Cultuurparticipatie" style="height:50px"></li>
+        <li><img src="img/logos/stimuleringsfonds.png" width="140" height="28" loading="lazy" alt="Stimuleringsfonds Creatieve Industrie" style="height:28px"></li>
+        <li><img src="img/logos/vfonds.png" width="100" height="34" loading="lazy" alt="vfonds" style="height:34px"></li>
       </ul>
     </section>
 
     <section class="credits" aria-labelledby="c-h">
-      <span class="mono" id="c-h">Credits</span>
+      <span class="mono" id="c-h" data-i18n="landing.creditsHeading">Credits</span>
       <dl>
-        <div><dt>Script</dt><dd>Sam Yazdanpanna</dd></div>
-        <div><dt>Script consultant</dt><dd>David Henrichs</dd></div>
-        <div><dt>Illustrations</dt><dd>Maysam Barza</dd></div>
-        <div><dt>Motion</dt><dd>Mostafa Kandaz</dd></div>
-        <div><dt>Sound</dt><dd>Oliver Rekkers<br>Said Rasouli</dd></div>
-        <div><dt>Interactive &amp; web</dt><dd>Maarten van de Glas<br>Sam Yazdanpanna</dd></div>
-        <div><dt>Producers</dt><dd>Metafoor<br>Bas Broertjes<br>Sam Yazdanpanna</dd></div>
+        <div><dt data-i18n="landing.roleScript">Script</dt><dd>Sam Yazdanpanna</dd></div>
+        <div><dt data-i18n="landing.roleConsultant">Script consultant</dt><dd>David Henrichs</dd></div>
+        <div><dt data-i18n="landing.roleIllustrations">Illustrations</dt><dd>Maysam Barza</dd></div>
+        <div><dt data-i18n="landing.roleMotion">Motion</dt><dd>Mostafa Kandaz</dd></div>
+        <div><dt data-i18n="landing.roleSound">Sound</dt><dd>Oliver Rekkers<br>Said Rasouli</dd></div>
+        <div><dt data-i18n="landing.roleInteractive">Interactive &amp; web</dt><dd>Maarten van de Glas<br>Sam Yazdanpanna</dd></div>
+        <div><dt data-i18n="landing.roleProducers">Producers</dt><dd>Metafoor<br>Bas Broertjes<br>Sam Yazdanpanna</dd></div>
       </dl>
     </section>
 
@@ -363,20 +376,24 @@ body.show-ctl #stage #intro:not(.off) .ctl,body.show-ctl #stage #intro:not(.off)
 </main>
 
 <div class="cinema" id="cinema" role="dialog" aria-modal="true" aria-label="Film" hidden>
-  <button class="close" type="button" id="close">Close ✕</button>
-  <video id="cv" playsinline webkit-playsinline controls preload="none" disablepictureinpicture></video>
+  <button class="close" type="button" id="close" data-i18n="common.close">Close ✕</button>
+  <video id="cv" width="1280" height="720" playsinline webkit-playsinline controls preload="none" disablepictureinpicture></video>
   <div class="fx" aria-hidden="true"><i class="paper"></i><i class="grain"></i></div>
 </div>
 
-<div id="stage" role="dialog" aria-modal="true" aria-label="We All Breathe The Same Air — Intro" hidden>
+<div id="stage" role="dialog" aria-modal="true" aria-label="We All Breathe The Same Air — Intro" data-i18n-aria="intro.stageAria" hidden>
   <section class="screen off" id="intro">
-    <video id="iv" playsinline webkit-playsinline preload="metadata" disablepictureinpicture src="vid/intro.mp4"></video>
+    <div id="introFrame">
+      <video id="iv" width="1280" height="720" playsinline webkit-playsinline preload="metadata" disablepictureinpicture src="vid/intro.mp4"></video>
+      <div class="big" aria-live="polite"><span id="introBig"></span></div>
+    </div>
 
     <div class="top" id="topBar">
-      <a class="ghost" id="stageHome" href="#top">← Home</a>
+      <a class="ghost" id="stageHome" href="#top" data-i18n="common.backHome">← Home</a>
       <span class="tools">
-        <button class="ghost" id="skip" type="button">Skip ›</button>
-        <button class="ghost" id="fs" type="button" hidden>⛶ Full screen</button>
+        <span id="stageLang"></span>
+        <button class="ghost" id="skip" type="button" data-i18n="common.skip">Skip ›</button>
+        <button class="ghost" id="fs" type="button" hidden data-i18n="common.fullScreen">⛶ Full screen</button>
       </span>
     </div>
 
@@ -386,18 +403,28 @@ body.show-ctl #stage #intro:not(.off) .ctl,body.show-ctl #stage #intro:not(.off)
         <div class="rail"></div>
         <div class="fill" id="fill"></div>
       </div>
-      <span class="time" id="time">0:00 / 1:13</span>
+      <span class="time" id="time">0:00 / 1:12</span>
+      <button class="cc" id="cc" type="button" aria-pressed="true" aria-label="Subtitles" data-i18n-aria="common.ccLabel" hidden>
+        <svg viewBox="0 0 32 24" aria-hidden="true">
+          <rect x="2" y="2" width="28" height="20" rx="2.8" fill="none" stroke="currentColor" stroke-width="2.4"/>
+          <rect x="6" y="14.8" width="6.6" height="1.85" rx=".35" fill="currentColor"/>
+          <rect x="14.4" y="14.8" width="3.2" height="1.85" rx=".35" fill="currentColor"/>
+          <rect x="19.4" y="14.8" width="6.6" height="1.85" rx=".35" fill="currentColor"/>
+          <rect x="8.8" y="17.6" width="5.8" height="1.85" rx=".35" fill="currentColor"/>
+          <rect x="17.4" y="17.6" width="5.8" height="1.85" rx=".35" fill="currentColor"/>
+        </svg>
+      </button>
     </div>
   </section>
 
   <section class="screen off" id="scene">
     <div id="sceneWrap">
       <div class="zoom">
-        <img class="scene-bg" src="img/reflect.jpg" alt="Grown-up Sam looks out of an airport window and sees his seventeen-year-old self reflected in the glass, with the control tower and a plane behind.">
-        <img class="sil" src="img/young-silhouette.png" alt="">
+        <img class="scene-bg" src="img/reflect.jpg" width="1920" height="1080" alt="Grown-up Sam looks out of an airport window and sees his seventeen-year-old self reflected in the glass, with the control tower and a plane behind." data-i18n-alt="intro.reflectAlt">
+        <img class="sil" src="img/young-silhouette.png" width="1920" height="1080" alt="">
       </div>
-      <button id="young" type="button" aria-label="Click young Sam to begin the story"></button>
-      <div class="hint">Click <b>young Sam</b> to begin</div>
+      <button id="young" type="button" aria-label="Click young Sam to begin the story" data-i18n-aria="intro.youngAria"></button>
+      <div class="hint" data-i18n-html="intro.windowHint">Click <b>young Sam</b> to begin</div>
     </div>
   </section>
 
@@ -405,53 +432,146 @@ body.show-ctl #stage #intro:not(.off) .ctl,body.show-ctl #stage #intro:not(.off)
   <div class="fx" aria-hidden="true"><i class="paper"></i><i class="grain"></i></div>
 </div>
 
+<script src="i18n/i18n.js"></script>
+<script src="intro/intro-shared.js"></script>
 <script>
 const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
-/* Like Dust door: the trailer loops silently underneath, dust drifts on top */
+const mainEl=document.getElementById("top");
+const landingBarEl=document.getElementById("landingBar");
+const doorsEl=document.getElementById("doors");
+let doorsVisible=true;
+
+if(window.WABTSA_I18N){
+  WABTSA_I18N.mountSwitcher(document.getElementById("barLang"));
+  WABTSA_I18N.mountSwitcher(document.getElementById("stageLang"));
+}
+
+function syncLandingInert(){
+  const overlayOpen=!document.getElementById("stage").hidden || !document.getElementById("cinema").hidden;
+  mainEl.toggleAttribute("inert",overlayOpen);
+  landingBarEl.toggleAttribute("inert",overlayOpen);
+}
+
+/* Like Dust door: drifting dust canvas, paused when off-screen or overlay open */
+let dustRunning=false, startDust=()=>{}, stopDust=()=>{};
 (()=>{
-  const c=document.getElementById("dust"), g=c.getContext("2d"); let w,h,ps=[];
-  function size(){ const r=c.getBoundingClientRect(), d=Math.min(devicePixelRatio||1,2); w=r.width; h=r.height; c.width=w*d; c.height=h*d; g.setTransform(d,0,0,d,0,0);
-    ps=Array.from({length:Math.round(w*h/2200)},()=>({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.5+.3,z:Math.random()*.9+.1,a:Math.random()*.5+.2})); draw(); }
-  function draw(){ g.clearRect(0,0,w,h); for(const p of ps){ g.fillStyle=`rgba(238,237,232,${p.a})`; g.beginPath(); g.arc(p.x,p.y,p.r,0,6.283); g.fill(); } }
-  let t=0;
-  function step(){ t++; const gust=.6+.4*Math.sin(t*.004); for(const p of ps){ p.x-=(.2+gust*.9)*p.z; p.y+=Math.sin((t+p.x)*.01)*.1; if(p.x<-4){p.x=w+4;p.y=Math.random()*h;} } draw(); requestAnimationFrame(step); }
-  new ResizeObserver(size).observe(c); size(); if(!reduce) requestAnimationFrame(step);
+  const c=document.getElementById("dust"), g=c.getContext("2d"); let w=0,h=0,ps=[],raf=0,t=0;
+  function size(){
+    const r=c.getBoundingClientRect(), d=Math.min(devicePixelRatio||1,2);
+    w=r.width; h=r.height; c.width=w*d; c.height=h*d; g.setTransform(d,0,0,d,0,0);
+    ps=Array.from({length:Math.round(w*h/2200)},()=>({x:Math.random()*w,y:Math.random()*h,r:Math.random()*1.5+.3,z:Math.random()*.9+.1,a:Math.random()*.5+.2}));
+    draw();
+  }
+  function draw(){
+    g.clearRect(0,0,w,h);
+    for(const p of ps){ g.fillStyle=`rgba(238,237,232,${p.a})`; g.beginPath(); g.arc(p.x,p.y,p.r,0,6.283); g.fill(); }
+  }
+  function step(){
+    if(!dustRunning) return;
+    t++;
+    const gust=.6+.4*Math.sin(t*.004);
+    for(const p of ps){
+      p.x-=(.2+gust*.9)*p.z;
+      p.y+=Math.sin((t+p.x)*.01)*.1;
+      if(p.x<-4){ p.x=w+4; p.y=Math.random()*h; }
+    }
+    draw();
+    raf=requestAnimationFrame(step);
+  }
+  startDust=()=>{ if(reduce||dustRunning) return; dustRunning=true; raf=requestAnimationFrame(step); };
+  stopDust=()=>{ dustRunning=false; if(raf){ cancelAnimationFrame(raf); raf=0; } };
+  new ResizeObserver(size).observe(c);
+  size();
+  if(!reduce) startDust();
 })();
-const canHoverFine=matchMedia("(hover: hover) and (pointer: fine)").matches;
+
+/* Silent autoplaying background videos across BOTH desktop and mobile/iOS.
+   Starts at opacity 0 over the poster image, fades in on `playing`, and hides cleanly if
+   iOS Low Power Mode blocks autoplay so native WebKit play overlays never appear. */
 const bgs=[];
-if(!reduce && canHoverFine){
+if(!reduce){
   document.querySelectorAll(".door[data-bg-video]").forEach(door=>{
     const v=document.createElement("video");
-    v.src=door.dataset.bgVideo;
-    v.muted=true; v.loop=true; v.playsInline=true; v.autoplay=true;
-    v.preload="auto"; v.disablePictureInPicture=true;
-    v.setAttribute("webkit-playsinline",""); v.setAttribute("aria-hidden","true");
+    v.defaultMuted=true;
+    v.muted=true;
+    v.loop=true;
+    v.playsInline=true;
+    v.autoplay=true;
+    v.preload="metadata";
+    v.width=1280;
+    v.height=720;
+    v.disablePictureInPicture=true;
+    v.setAttribute("muted","");
+    v.setAttribute("playsinline","");
+    v.setAttribute("webkit-playsinline","");
+    v.setAttribute("aria-hidden","true");
     v.className="bgv";
+    v.addEventListener("playing",()=>{
+      v.hidden=false;
+      v.classList.add("playing");
+    });
+    v.src=door.dataset.bgVideo;
     const img=door.querySelector(".bgimg");
     if(img) img.after(v); else door.prepend(v);
     bgs.push(v);
   });
 }
-const playBgs=()=>{ if(!reduce) bgs.forEach(v=>v.play().catch(()=>{})); };
+
+function playBgs(){
+  if(reduce || !doorsVisible || !document.getElementById("stage").hidden || !document.getElementById("cinema").hidden) return;
+  bgs.forEach(v=>{
+    v.defaultMuted=true;
+    v.muted=true;
+    v.hidden=false;
+    const p=v.play();
+    if(p&&p.catch){
+      p.catch(()=>{
+        /* Hide paused video immediately so iOS Low Power Mode never paints a native play icon */
+        v.classList.remove("playing");
+        v.hidden=true;
+      });
+    }
+  });
+}
+function pauseBgs(){ bgs.forEach(v=>v.pause()); }
 playBgs();
 
-/* cinema: any button with data-film opens that film full screen, with sound from the tap */
+/* Retry silent hero video playback once on first user touch if mobile browser deferred autoplay */
+["touchstart","pointerdown"].forEach(ev=>{
+  window.addEventListener(ev,()=>{ playBgs(); },{once:true,passive:true});
+});
+
+/* Pause hero videos & dust canvas when scrolled out of viewport (efficient-background-processing) */
+if("IntersectionObserver" in window && doorsEl){
+  new IntersectionObserver(entries=>{
+    for(const e of entries){
+      doorsVisible=e.isIntersecting;
+      if(doorsVisible){ playBgs(); startDust(); }
+      else { pauseBgs(); stopDust(); }
+    }
+  },{rootMargin:"120px 0px"}).observe(doorsEl);
+}
+
+/* cinema: Watch the trailer modal */
 const cin=document.getElementById("cinema"), cv=document.getElementById("cv");
 let opener=null;
 document.querySelectorAll("[data-film]").forEach(btn=>btn.addEventListener("click",()=>{
   opener=btn;
   if(cv.getAttribute("src")!==btn.dataset.film) cv.src=btn.dataset.film;
   cin.classList.toggle("tex",btn.dataset.film.indexOf("intro")>-1);
-  cin.hidden=false; document.body.classList.add("locked"); bgs.forEach(v=>v.pause());
+  cin.hidden=false; document.body.classList.add("locked"); syncLandingInert(); pauseBgs(); stopDust();
   cv.currentTime=0; cv.muted=false; cv.play().catch(()=>{ cv.muted=true; cv.play().catch(()=>{}); });
   requestAnimationFrame(()=>cin.classList.add("on")); document.getElementById("close").focus({preventScroll:true});
 }));
-function close(){ cv.pause(); cin.classList.remove("on"); document.body.classList.remove("locked"); setTimeout(()=>cin.hidden=true,450); playBgs(); if(opener) opener.focus({preventScroll:true}); }
-document.getElementById("close").addEventListener("click",close);
-cv.addEventListener("ended",close);
-document.addEventListener("keydown",e=>{ if(e.key==="Escape" && !cin.hidden) close(); });
+function closeCinema(){
+  cv.pause(); cin.classList.remove("on"); document.body.classList.remove("locked");
+  setTimeout(()=>{ cin.hidden=true; syncLandingInert(); playBgs(); startDust(); if(opener) opener.focus({preventScroll:true}); },450);
+}
+document.getElementById("close").addEventListener("click",closeCinema);
+cv.addEventListener("ended",closeCinema);
+document.addEventListener("keydown",e=>{ if(e.key==="Escape" && !cin.hidden) closeCinema(); });
 
-/* Preserve ?dev=0 / ?dev=1 query flags on Start links and wire unified pre-room stage */
+/* Preserve ?dev=0 / ?dev=1 / ?lang= query flags on Start links */
 if(location.search){
   document.querySelectorAll('a[href="intro/index.html"]').forEach(a=>{
     a.href="intro/index.html"+location.search;
@@ -460,8 +580,10 @@ if(location.search){
 
 (()=>{
   const $=id=>document.getElementById(id);
-  const stageEl=$("stage"), iv=$("iv"), sceneWrap=$("sceneWrap"), yb=$("young");
-  let running=false, openedFromLanding=false, enteringRoom=false, windowToken=0;
+  const stageEl=$("stage"), iv=$("iv"), introFrame=$("introFrame"), sceneWrap=$("sceneWrap"), yb=$("young"), ccBtn=$("cc"), bigEl=$("introBig");
+  const flicker=WABTSA_INTRO_SHARED.createReflectionFlicker(stageEl.querySelector("#scene .sil"),sceneWrap);
+  const ambience=WABTSA_INTRO_SHARED.createTerminalAmbience();
+  let running=false, openedFromLanding=false, enteringRoom=false, windowToken=0, lastCue=-1;
 
   function showScreen(n, instant=false){
     if(instant) stageEl.classList.add("instant");
@@ -475,8 +597,10 @@ if(location.search){
     const sh=stageEl.clientHeight||window.innerHeight||1;
     let w=sw, h=sw*9/16;
     if(h>sh){ h=sh; w=sh*16/9; }
-    sceneWrap.style.width=Math.floor(w)+"px";
-    sceneWrap.style.height=Math.floor(h)+"px";
+    const wf=Math.floor(w)+"px", hf=Math.floor(h)+"px";
+    sceneWrap.style.width=wf;
+    sceneWrap.style.height=hf;
+    if(introFrame){ introFrame.style.width=wf; introFrame.style.height=hf; }
   }
   window.addEventListener("resize",fitSceneWrap);
   window.addEventListener("orientationchange",()=>setTimeout(fitSceneWrap,150));
@@ -488,17 +612,57 @@ if(location.search){
   }
   function setPlaying(p){
     $("play").textContent=p?"❚❚":"▶";
-    $("play").setAttribute("aria-label",p?"Pause":"Play");
+    const lbl=window.WABTSA_I18N?WABTSA_I18N.t(p?"common.pause":"common.play"):(p?"Pause":"Play");
+    $("play").setAttribute("aria-label",lbl);
   }
+
+  function syncIntroSubtitles(){
+    if(!window.WABTSA_I18N || !ccBtn || !bigEl) return;
+    const allowed=WABTSA_I18N.isCcAllowed();
+    const ccOn=WABTSA_I18N.getCcEnabled();
+    ccBtn.hidden=!allowed;
+    ccBtn.setAttribute("aria-pressed",ccOn?"true":"false");
+    if(!allowed || !ccOn || !running || iv.ended){
+      bigEl.classList.remove("on");
+      lastCue=-1;
+      return;
+    }
+    const list=WABTSA_I18N.cues("intro");
+    const cur=iv.currentTime||0;
+    const i=list.findIndex(c=>cur>=c[0]&&cur<c[1]);
+    if(i!==lastCue){
+      lastCue=i;
+      if(i>=0) bigEl.textContent=list[i][2];
+    }
+    bigEl.classList.toggle("on",i>=0);
+  }
+
+  if(ccBtn){
+    ccBtn.addEventListener("click",()=>{
+      if(window.WABTSA_I18N) WABTSA_I18N.toggleCc();
+      syncIntroSubtitles();
+      showControls();
+    });
+  }
+  if(window.WABTSA_I18N){
+    WABTSA_I18N.onChange(()=>{
+      lastCue=-1;
+      setPlaying(!iv.paused);
+      syncIntroSubtitles();
+      updFsLabel();
+    });
+  }
+
   function tick(){
     if(!running) return;
-    const dur=iv.duration||73, cur=iv.currentTime||0;
+    const dur=iv.duration||72, cur=iv.currentTime||0;
     $("fill").style.width=Math.min(100,cur/dur*100)+"%";
     $("time").textContent=`${fmt(cur)} / ${fmt(dur)}`;
+    syncIntroSubtitles();
     requestAnimationFrame(tick);
   }
 
-  /* ---------- auto-show/hide video controls on click/tap ---------- */
+  /* auto-show/hide video controls on click/tap */
   let ctlTimer=null, lastPaneTap=0;
   function hideControls(){
     clearTimeout(ctlTimer); ctlTimer=null;
@@ -540,10 +704,12 @@ if(location.search){
     function seek(e){
       const r=tl.getBoundingClientRect(); if(!r.width) return;
       const pct=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
-      const dur=iv.duration||73;
+      const dur=iv.duration||72;
       try{ iv.currentTime=pct*dur; }catch(_){}
       $("fill").style.width=(pct*100)+"%";
       $("time").textContent=`${fmt(pct*dur)} / ${fmt(dur)}`;
+      lastCue=-1;
+      syncIntroSubtitles();
       showControls();
     }
     tl.addEventListener("pointerdown",e=>{ dragging=true; try{tl.setPointerCapture(e.pointerId);}catch(_){} seek(e); });
@@ -553,6 +719,7 @@ if(location.search){
   })();
 
   /* full screen: offered on web (hidden in native Capacitor iOS/Android app) */
+  let updFsLabel=()=>{};
   (()=>{
     const IS_NATIVE_APP=!!((window.Capacitor&&window.Capacitor.isNativePlatform&&window.Capacitor.isNativePlatform())||location.protocol==="capacitor:"||/; wv\)/.test(navigator.userAgent));
     const b=$("fs"); if(!b||IS_NATIVE_APP) return;
@@ -561,7 +728,10 @@ if(location.search){
     if(!(d.fullscreenEnabled||d.webkitFullscreenEnabled)||!req) return;
     b.hidden=false;
     const isFs=()=>d.fullscreenElement||d.webkitFullscreenElement;
-    const upd=()=>{ b.textContent=isFs()?"✕ Exit full screen":"⛶ Full screen"; };
+    updFsLabel=()=>{
+      const key=isFs()?"common.exitFullScreen":"common.fullScreen";
+      b.textContent=window.WABTSA_I18N?WABTSA_I18N.t(key):(isFs()?"✕ Exit full screen":"⛶ Full screen");
+    };
     b.addEventListener("click",()=>{
       try{
         if(isFs()) ext.call(d);
@@ -571,120 +741,12 @@ if(location.search){
         }
       }catch(_){}
     });
-    d.addEventListener("fullscreenchange",upd);
-    d.addEventListener("webkitfullscreenchange",upd);
-    upd();
+    d.addEventListener("fullscreenchange",updFsLabel);
+    d.addEventListener("webkitfullscreenchange",updFsLabel);
+    updFsLabel();
   })();
 
-  /* ---------- young Sam silhouette breathing controller ---------- */
-  const silhouette=(()=>{
-    const sil=stageEl.querySelector("#scene .sil");
-    let timer=null, active=false, hovering=false;
-    function clear(){ clearTimeout(timer); timer=null; }
-    function setOpacity(val,dur){
-      if(!sil) return;
-      sil.style.transition=`opacity ${dur}ms cubic-bezier(.4,0,.2,1)`;
-      sil.style.opacity=val;
-    }
-    function emerge(){
-      if(!active||hovering||sceneWrap.classList.contains("chosen")) return;
-      const dur=Math.round(2200+Math.random()*600);
-      const target=+(0.04+Math.random()*0.08).toFixed(2);
-      setOpacity(target,dur);
-      timer=setTimeout(()=>hold(target),dur);
-    }
-    function hold(cur){
-      if(!active||hovering||sceneWrap.classList.contains("chosen")) return;
-      const dur=Math.round(2400+Math.random()*1000);
-      const drift=Math.max(0,+(cur-0.02+Math.random()*0.04).toFixed(2));
-      setOpacity(drift,dur);
-      timer=setTimeout(dissolve,dur);
-    }
-    function dissolve(){
-      if(!active||hovering||sceneWrap.classList.contains("chosen")) return;
-      const dur=Math.round(2000+Math.random()*500);
-      const target=+(0.88+Math.random()*0.06).toFixed(2);
-      setOpacity(target,dur);
-      timer=setTimeout(rest,dur);
-    }
-    function rest(){
-      if(!active||hovering||sceneWrap.classList.contains("chosen")) return;
-      timer=setTimeout(emerge,Math.round(1200+Math.random()*800));
-    }
-    return {
-      start(){
-        if(reduce) return;
-        active=true; clear();
-        if(sil){ sil.style.transition="none"; sil.style.opacity="0.92"; void sil.offsetHeight; }
-        timer=setTimeout(emerge,350);
-      },
-      stop(){ active=false; clear(); if(sil) sil.style.transition=""; },
-      setHover(h){
-        hovering=h;
-        if(!active||sceneWrap.classList.contains("chosen")) return;
-        clear();
-        if(hovering) setOpacity(0.02,400);
-        else timer=setTimeout(()=>hold(0.08),250);
-      }
-    };
-  })();
-
-  /* ---------- ambience: empty terminal room tone, strip-light hum, rain on glass, distant jet ---------- */
-  const ambience=(()=>{
-    let ctx=null, master=null, jetTimer=null, active=false;
-    function noise(seconds,brown){
-      const b=ctx.createBuffer(1,ctx.sampleRate*seconds,ctx.sampleRate), d=b.getChannelData(0); let last=0;
-      for(let i=0;i<d.length;i++){ const w=Math.random()*2-1; if(brown){ last=(last+.02*w)/1.02; d[i]=last*3.5; } else d[i]=w; }
-      return b;
-    }
-    function loop(buf){ const s=ctx.createBufferSource(); s.buffer=buf; s.loop=true; return s; }
-    function build(){
-      ctx=new (window.AudioContext||window.webkitAudioContext)();
-      master=ctx.createGain(); master.gain.value=0; master.connect(ctx.destination);
-      const room=loop(noise(6,true)), lp=ctx.createBiquadFilter(); lp.type="lowpass"; lp.frequency.value=380;
-      const rg=ctx.createGain(); rg.gain.value=.55; room.connect(lp).connect(rg).connect(master); room.start();
-      [100,200,300].forEach((f,i)=>{ const o=ctx.createOscillator(); o.frequency.value=f; const g=ctx.createGain(); g.gain.value=[.012,.006,.003][i]; o.connect(g).connect(master); o.start(); });
-      const rain=loop(noise(4,false)), bp=ctx.createBiquadFilter(); bp.type="bandpass"; bp.frequency.value=2600; bp.Q.value=.6;
-      const rgn=ctx.createGain(); rgn.gain.value=.05; rain.connect(bp).connect(rgn).connect(master); rain.start();
-      const lfo=ctx.createOscillator(); lfo.frequency.value=.07; const lg=ctx.createGain(); lg.gain.value=.02; lfo.connect(lg).connect(rgn.gain); lfo.start();
-    }
-    function jet(){
-      if(!ctx) return;
-      const s=ctx.createBufferSource(); s.buffer=noise(10,true);
-      const f=ctx.createBiquadFilter(); f.type="lowpass"; f.frequency.value=200;
-      const g=ctx.createGain(); const t=ctx.currentTime;
-      g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(.9,t+4); g.gain.linearRampToValueAtTime(0,t+9.5);
-      f.frequency.setValueAtTime(140,t); f.frequency.linearRampToValueAtTime(420,t+4); f.frequency.linearRampToValueAtTime(160,t+9.5);
-      s.connect(f).connect(g).connect(master); s.start(); s.stop(t+10);
-      jetTimer=setTimeout(jet,22000+Math.random()*14000);
-    }
-    return {
-      unlock(){
-        try{
-          if(!ctx) build();
-          if(ctx.state!=="running") ctx.resume().catch(()=>{});
-          if(active){
-            const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t);
-            master.gain.linearRampToValueAtTime(.8,t+1.5);
-          }
-        }catch(_){}
-      },
-      start(){
-        active=true;
-        try{ if(!ctx) build(); if(ctx.state!=="running") ctx.resume().catch(()=>{}); }catch(_){ return; }
-        const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t);
-        master.gain.linearRampToValueAtTime(.8,t+2.5);
-        clearTimeout(jetTimer); jetTimer=setTimeout(jet,6000);
-      },
-      stop(){
-        active=false;
-        clearTimeout(jetTimer); if(!ctx) return;
-        const t=ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t); master.gain.linearRampToValueAtTime(0,t+1.2);
-      }
-    };
-  })();
-
-  /* ---------- intro video lifecycle & watchdog ---------- */
+  /* intro video lifecycle & watchdog */
   const MAX_WAIT_MS=10000;
   let introWatchdog=null;
   function clearIntroWatchdog(){ clearTimeout(introWatchdog); introWatchdog=null; }
@@ -695,13 +757,14 @@ if(location.search){
     hideControls();
     iv.pause();
     iv.classList.remove("on");
-    silhouette.stop();
+    if(bigEl) bigEl.classList.remove("on");
+    flicker.stop();
   }
 
   let prefetched=false;
   function prefetchRoom(){
     if(prefetched) return; prefetched=true;
-    ["room/index.html","room/shared/shared.css","room/shared/lib/three.min.js","room/shared/shared.js","room/app.js","room/assets/room.jpg"].forEach(href=>{
+    ["room/index.html","room/shared/shared.css","room/shared/lib/three.min.js","room/shared/fsm.js","room/shared/shared.js","room/app.js","room/assets/room.jpg"].forEach(href=>{
       const l=document.createElement("link"); l.rel="prefetch"; l.href=href; document.head.appendChild(l);
     });
   }
@@ -722,16 +785,20 @@ if(location.search){
   function openIntroStage({fromHistory=false}={}){
     ++windowToken;
     enteringRoom=false;
-    silhouette.stop();
+    flicker.stop();
     ambience.stop();
-    sceneWrap.classList.remove("chosen","hover");
+    sceneWrap.classList.remove("chosen");
     showScreen("intro",true);
     stageEl.hidden=false;
     document.body.classList.add("locked");
-    bgs.forEach(v=>v.pause());
+    syncLandingInert();
+    pauseBgs();
+    stopDust();
     fitSceneWrap();
 
     running=true;
+    lastCue=-1;
+    syncIntroSubtitles();
     iv.preload="auto";
     iv.classList.remove("on");
     try{ iv.currentTime=0; }catch(_){}
@@ -760,17 +827,19 @@ if(location.search){
 
     if(!fromHistory && location.hash!=="#intro"){
       openedFromLanding=true;
-      try{ history.pushState({stage:"intro"},"",location.pathname+location.search+"#intro"); }catch(_){}
+      try{ history.pushState({wabtsa:"landing",stage:"intro"},"",location.pathname+location.search+"#intro"); }catch(_){}
     }
   }
 
   function toWindow(fromHistory=false, instant=false){
     const token=++windowToken;
     stopIntro();
-    sceneWrap.classList.remove("chosen","hover");
+    sceneWrap.classList.remove("chosen");
     stageEl.hidden=false;
     document.body.classList.add("locked");
-    bgs.forEach(v=>v.pause());
+    syncLandingInert();
+    pauseBgs();
+    stopDust();
     fitSceneWrap();
     ensureSceneReady().then(()=>{
       if(token!==windowToken) return;
@@ -778,11 +847,11 @@ if(location.search){
         if(token!==windowToken) return;
         fitSceneWrap();
         showScreen("scene",instant);
-        silhouette.start();
+        flicker.start();
         ambience.start();
         prefetchRoom();
         if(!fromHistory && location.hash!=="#window"){
-          try{ history.pushState({stage:"window"},"",location.pathname+location.search+"#window"); }catch(_){}
+          try{ history.pushState({wabtsa:"landing",stage:"window"},"",location.pathname+location.search+"#window"); }catch(_){}
         }
       });
     });
@@ -794,18 +863,20 @@ if(location.search){
     openedFromLanding=false;
     stopIntro();
     ambience.stop();
-    sceneWrap.classList.remove("chosen","hover");
+    sceneWrap.classList.remove("chosen");
     stageEl.hidden=true;
     document.body.classList.remove("locked");
+    syncLandingInert();
     playBgs();
+    startDust();
     if(updateHistory && (location.hash==="#intro" || location.hash==="#window")){
-      try{ history.replaceState(null,"",location.pathname+location.search); }catch(_){}
+      try{ history.replaceState({wabtsa:"landing",stage:"doors"},"",location.pathname+location.search); }catch(_){}
     }
   }
 
   iv.addEventListener("loadeddata",()=>{ if(running) iv.classList.add("on"); });
   iv.addEventListener("canplay",()=>{ if(running) iv.classList.add("on"); });
-  iv.addEventListener("timeupdate",()=>{ if(iv.currentTime>0){ iv.classList.add("on"); clearIntroWatchdog(); } });
+  iv.addEventListener("timeupdate",()=>{ if(iv.currentTime>0){ iv.classList.add("on"); clearIntroWatchdog(); } syncIntroSubtitles(); });
   iv.addEventListener("playing",()=>{
     iv.classList.add("on");
     clearIntroWatchdog();
@@ -842,15 +913,10 @@ if(location.search){
     else closeStage({updateHistory:true});
   });
 
-  yb.addEventListener("pointerenter",()=>{ sceneWrap.classList.add("hover"); silhouette.setHover(true); });
-  yb.addEventListener("pointerleave",()=>{ sceneWrap.classList.remove("hover"); silhouette.setHover(false); });
-  yb.addEventListener("focus",()=>{ sceneWrap.classList.add("hover"); silhouette.setHover(true); });
-  yb.addEventListener("blur",()=>{ sceneWrap.classList.remove("hover"); silhouette.setHover(false); });
-
   function afterYoungSam(){
     if(enteringRoom) return; enteringRoom=true;
     if(location.hash!=="#window"){
-      try{ history.replaceState({stage:"window"},"",location.pathname+location.search+"#window"); }catch(_){}
+      try{ history.replaceState({wabtsa:"landing",stage:"window"},"",location.pathname+location.search+"#window"); }catch(_){}
     }
     showScreen("begin");
     setTimeout(()=>{
@@ -861,7 +927,7 @@ if(location.search){
     if(enteringRoom) return;
     ambience.unlock();
     sceneWrap.classList.add("chosen");
-    silhouette.stop();
+    flicker.choose();
     ambience.stop();
     setTimeout(afterYoungSam,450);
   };
@@ -880,7 +946,7 @@ if(location.search){
 
   function syncFromLocation(instantWindow=false){
     enteringRoom=false;
-    sceneWrap.classList.remove("chosen","hover");
+    sceneWrap.classList.remove("chosen");
     if(location.hash==="#window") toWindow(true,instantWindow);
     else if(location.hash==="#intro") openIntroStage({fromHistory:true});
     else if(!stageEl.hidden) closeStage({updateHistory:false});

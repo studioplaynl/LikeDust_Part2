@@ -8,8 +8,6 @@
   <meta name="mobile-web-app-capable" content="yes">
   <title>We All Breathe the Same Air</title>
   <link rel="icon" href="data:,">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap">
   <link rel="stylesheet" href="shared/shared.css">
   <style>
     :root {
@@ -60,7 +58,7 @@
       cursor: default;
     }
 
-    /* Cinematic dove fly-out interlude (Ch 4 ending) */
+    /* Cinematic dove fly-out interlude (Ch 4 Finale) */
     #cine {
       position: fixed;
       inset: 0;
@@ -82,7 +80,7 @@
       display: block;
     }
 
-    /* UI layer (captions, Start card, End card, Portrait rotate notice) */
+    /* UI layer (Room Caption, Start card, End card) */
     #ui {
       position: fixed;
       inset: 0;
@@ -241,12 +239,12 @@
 </head>
 <body>
   <div id="wrap">
-    <canvas class="gl" id="gl" aria-label="Interactive room"></canvas>
+    <canvas class="gl" id="gl" aria-label="Interactive room" data-i18n-aria="room.canvasAria"></canvas>
     <div id="hots"></div>
   </div>
 
   <div id="cine" aria-hidden="true">
-    <video id="cineV" muted playsinline preload="none"></video>
+    <video id="cineV" width="1920" height="1080" muted playsinline preload="none"></video>
   </div>
 
   <div id="ui">
@@ -257,28 +255,30 @@
 
   <div class="card" id="start">
     <div>
-      <div class="k">A graphic novel in four chapters</div>
-      <h1>We All Breathe<br>the Same Air</h1>
-      <p>Every object in his room opens a chapter. Follow the small light.</p>
+      <div class="k" data-i18n="room.startKicker">A graphic novel in four chapters</div>
+      <h1 data-i18n-html="room.startHeading">We All Breathe<br>the Same Air</h1>
+      <p data-i18n="room.startBody">Every object in his room opens a chapter. Follow the small light.</p>
       <div id="loadbar"><span></span></div>
-      <button class="big" id="startBtn" type="button" disabled>Loading&hellip;</button>
+      <button class="big" id="startBtn" type="button" disabled data-i18n="room.loading">Loading&hellip;</button>
     </div>
   </div>
 
   <div class="card" id="end">
     <div>
-      <div class="k">The End</div>
-      <h2>We All Breathe<br>the Same Air</h2>
+      <div class="k" data-i18n="room.endKicker">The End</div>
+      <h2 data-i18n-html="room.endHeading">We All Breathe<br>the Same Air</h2>
       <div class="rule"></div>
       <div class="end-acts">
-        <button class="big" id="again" type="button">Start again</button>
-        <a class="big ghost-link" id="backHome" href="../index.html">← Home</a>
+        <button class="big" id="again" type="button" data-i18n="room.startAgain">Start again</button>
+        <a class="big ghost-link" id="backHome" href="../index.html" data-i18n="common.backHome">← Home</a>
       </div>
     </div>
   </div>
 
+  <script src="../i18n/i18n.js"></script>
   <script src="shared/lib/three.min.js"></script>
-  <script src="shared/shared.js?v=6"></script>
-  <script src="app.js?v=6"></script>
+  <script src="shared/fsm.js?v=7"></script>
+  <script src="shared/shared.js?v=7"></script>
+  <script src="app.js?v=7"></script>
 </body>
 </html>

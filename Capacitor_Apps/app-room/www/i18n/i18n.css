@@ -1,0 +1,169 @@
+/* Shared Language Switcher (EN · NL · فارسی) & Scoped Farsi (RTL) Typography */
+.lang-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: rgba(0, 0, 0, 0.62);
+  border: 1px solid rgba(236, 232, 222, 0.32);
+  padding: 3px;
+  border-radius: 3px;
+  direction: ltr;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  pointer-events: auto;
+  z-index: 30;
+}
+
+.lang-switch button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #a3a59e;
+  font-family: "Big Shoulders Display", "Arial Narrow", sans-serif;
+  font-weight: 700;
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: color 0.18s ease, background 0.18s ease;
+}
+
+.lang-switch button[data-lang-opt="fa"] {
+  font-family: "Vazirmatn", Tahoma, sans-serif;
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0;
+  padding: 5px 8px;
+}
+
+.lang-switch button:hover {
+  color: #ece8de;
+}
+
+.lang-switch button[aria-pressed="true"] {
+  background: #D6A93E;
+  color: #070707;
+}
+
+.lang-switch button:focus-visible {
+  outline: 2px solid #D6A93E;
+  outline-offset: 2px;
+}
+
+/* Room floating language switcher (top-left, clear of top-right chapter icons) */
+.ld-room-lang {
+  position: fixed;
+  top: max(14px, env(safe-area-inset-top, 0px));
+  left: max(16px, env(safe-area-inset-left, 0px));
+  z-index: 32;
+}
+body.dev-room .ld-room-lang {
+  top: max(56px, calc(46px + env(safe-area-inset-top, 0px)));
+}
+body.chapter-open .ld-room-lang {
+  opacity: 0;
+  pointer-events: none;
+}
+
+@media (max-height: 520px) and (orientation: landscape) {
+  .lang-switch button {
+    font-size: 0.66rem;
+    padding: 4px 6px;
+  }
+  .lang-switch button[data-lang-opt="fa"] {
+    font-size: 0.65rem;
+    padding: 3px 6px;
+  }
+}
+
+/* ============================================================================
+   Scoped Farsi (RTL) Typography & Directionality
+   CRITICAL: Never mirror 16:9 spatial canvases (#sceneWrap, #hots, .doors) or
+   video scrubbers (.tl), and ALWAYS set letter-spacing: 0 so cursive Persian
+   glyph ligatures connect naturally.
+   ============================================================================ */
+html[data-lang="fa"] body,
+html[data-lang="fa"] button,
+html[data-lang="fa"] input,
+html[data-lang="fa"] textarea {
+  font-family: "Vazirmatn", Tahoma, sans-serif;
+}
+
+html[data-lang="fa"] .display,
+html[data-lang="fa"] .mono,
+html[data-lang="fa"] .part,
+html[data-lang="fa"] .btn,
+html[data-lang="fa"] .ghost,
+html[data-lang="fa"] .go,
+html[data-lang="fa"] .eyebrow,
+html[data-lang="fa"] .h-title,
+html[data-lang="fa"] .place,
+html[data-lang="fa"] .ask,
+html[data-lang="fa"] .hold .lbl,
+html[data-lang="fa"] .phone,
+html[data-lang="fa"] .choice button,
+html[data-lang="fa"] .stamp,
+html[data-lang="fa"] .ycard .lab,
+html[data-lang="fa"] .door .plate small,
+html[data-lang="fa"] .card .k,
+html[data-lang="fa"] .card h1,
+html[data-lang="fa"] .card h2,
+html[data-lang="fa"] .card p,
+html[data-lang="fa"] .card .big,
+html[data-lang="fa"] #caption,
+html[data-lang="fa"] #stage .hint,
+html[data-lang="fa"] .hint,
+html[data-lang="fa"] blockquote,
+html[data-lang="fa"] .credits dt,
+html[data-lang="fa"] .credits dd {
+  font-family: "Vazirmatn", Tahoma, sans-serif !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+}
+
+html[data-lang="fa"] .door h2,
+html[data-lang="fa"] .h-title,
+html[data-lang="fa"] .card h1,
+html[data-lang="fa"] .card h2,
+html[data-lang="fa"] blockquote {
+  line-height: 1.18;
+}
+
+html[data-lang="fa"] .door .inner,
+html[data-lang="fa"] .col,
+html[data-lang="fa"] .card > div,
+html[data-lang="fa"] .card,
+html[data-lang="fa"] .voice,
+html[data-lang="fa"] .ask,
+html[data-lang="fa"] .answer,
+html[data-lang="fa"] .write,
+html[data-lang="fa"] #caption,
+html[data-lang="fa"] #stage .hint,
+html[data-lang="fa"] .hint,
+html[data-lang="fa"] .big span,
+html[data-lang="fa"] .ld-modal-box,
+html[data-lang="fa"] .ycard .info {
+  direction: rtl;
+}
+
+html[data-lang="fa"] .big span {
+  font-family: "Vazirmatn", Tahoma, sans-serif !important;
+  line-height: 1.55;
+  letter-spacing: 0 !important;
+}
+
+/* Keep spatial coordinates, video timelines, numbers & switcher strictly LTR */
+.doors,
+#sceneWrap,
+.wrap,
+#hots,
+.tl,
+.ctl,
+.time,
+.ycard .num,
+.endnum b,
+.lang-switch {
+  direction: ltr;
+}

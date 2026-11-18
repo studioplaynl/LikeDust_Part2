@@ -1,7 +1,8 @@
 /* We All Breathe the Same Air · Flat 2D Room in Three.js integrated with the 4 Interactive Video Chapters.
-   Preserves the exact flat 2D artwork, Sam green-screen/sprite-sheet clips, lighting, sunbeams, dust,
-   blackboard chalk, growing letter stack, foley/ambient audio, and dove finale from DEF 2 — rendered in Three.js
-   and wired to the interactive video chapters (Hoofdstuk 1–4) for Web, iOS & Android (Capacitor). */
+   Governed by zero-dependency state machines (RoomFlow & SamPose):
+   - Sam has ONLY Sitting Pose -> Stand-Up (0..1.83s) -> continuous Think Pose (idle.webp) -> Window Gaze (1.83..5.08s) -> hidden.
+   - Quiet progressive room props (passport, frame, bike + money, reject_rolled -> reject_open), sunbeams, dust,
+     Dutch blackboard, growing letter stack, ambient Dove, and Finale dove window flight. */
 (function () {
   "use strict";
 
@@ -14,93 +15,32 @@
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const lerp = (a, b, t) => a + (b - a) * t;
   const lp = (p, q, t) => [lerp(p[0], q[0], t), lerp(p[1], q[1], t)];
+  const tr = (key, fallback) => {
+    if (window.WABTSA_I18N) {
+      const v = WABTSA_I18N.t(key);
+      if (v && v !== key) return v;
+    }
+    return fallback;
+  };
 
   /* ===== Chapters & Stage Coordinates (1920 × 1080) ===== */
   const CHAPTERS = [
-    {
-      n: 1,
-      id: "passport",
-      amb: "airport",
-      label: "Passport",
-      title: "Schiphol",
-      sub: "Arrival",
-      clip: "think",
-      real: ["passport2", 0.2],
-      fb: "rustle",
-      hit: [1378, 918, 152, 110],
-      silObj: "passport",
-      text: "His passport. Arriving at Schiphol.",
-    },
-    {
-      n: 2,
-      id: "frame",
-      amb: "azc",
-      label: "Photo",
-      title: "The Asylum Centre",
-      sub: "",
-      clip: "frame",
-      hide: "frame",
-      real: ["frame", 0],
-      fb: "pickup",
-      hit: [1600, 749, 205, 250],
-      silObj: "frame",
-      text: "A photo from the asylum centre.",
-    },
-    {
-      n: 3,
-      id: "bike",
-      amb: "city",
-      label: "Bike",
-      title: "Amsterdam",
-      sub: "",
-      clip: "bike",
-      hide: "bike",
-      real: ["bike", 0.25],
-      fb: "bell",
-      hit: [790, 508, 426, 271],
-      mark: [1065, 565],
-      silObj: "bike",
-      flutter: "money",
-      text: "His bike. Amsterdam.",
-      afterChapter: {
-        clip: "money",
-        real: "money",
-        sfx: "rustle",
-        text: "He counts what is left.",
-      },
-    },
-    {
-      n: 4,
-      id: "reject",
-      amb: "wind",
-      label: "Letter",
-      title: "The Letter",
-      sub: "Rejected · final chapter",
-      clip: "sad",
-      real: ["sad", 0.5],
-      fb: "cloth",
-      hit: [330, 415, 105, 190],
-      openHit: [255, 398, 420, 238],
-      silObj: "rejectOpen",
-      text: "The letter. Rejected.",
-    },
+    { n: 1, id: "passport", title: "Schiphol",          fb: "rustle", hit: [1378, 918, 152, 110] },
+    { n: 2, id: "frame",    title: "The Asylum Centre", fb: "pickup", hit: [1600, 749, 205, 250] },
+    { n: 3, id: "bike",     title: "Amsterdam",         fb: "bell",   hit: [790, 508, 426, 271], mark: [1065, 565] },
+    { n: 4, id: "reject",   title: "The Letter",        fb: "cloth",  hit: [330, 415, 105, 190], openHit: [255, 398, 420, 238] },
   ];
 
+  /* Only the 3 active sprite sheets: standup (opening Stand-Up + closing Window Gaze), idle (Think Pose), pigeon (Dove) */
   const CLIPS = {
     standup: { rect: [417, 330, 983, 644], order: 17 },
     idle:    { rect: [349, 332, 1121, 625], loop: true, order: 18 },
-    think:   { rect: [349, 332, 1121, 625], order: 19 },
-    frame:   { rect: [382, 332, 1121, 625], order: 20 },
-    bike:    { rect: [219, 396, 1264, 706], grade: 0.92, order: 21 },
-    money:   { rect: [176, 332, 1121, 625], order: 22 },
-    sad:     { rect: [363, 343, 1121, 625], order: 23 },
     pigeon:  { rect: [1005, 303, 599, 306], order: 24 },
   };
 
   const LAYERS = {
     rejectOpen: { src: "assets/reject_open.png",   rect: [233, 392, 801, 250], order: 2,  gone: true, interactive: true },
     reject:     { src: "assets/reject_rolled.png", rect: [233, 392, 801, 250], order: 3,  gone: true, interactive: true },
-    roll:       { src: "assets/reject_roll.png",   rect: [351, 471, 81, 32],   order: 4,  gone: true, interactive: true },
     bike:       { src: "assets/bike.png",          rect: [790, 508, 426, 271], order: 5,  gone: true, interactive: true },
     bedBack:    { src: "assets/bedfront.png",      rect: [1056, 440, 244, 362], order: 6 },
     man:        { src: "assets/man.png",           rect: [960, 540, 261, 415], order: 7,  interactive: true },
@@ -109,7 +49,6 @@
     money:      { src: "assets/money.png",         rect: [1518, 1010, 146, 67], order: 13, gone: true, interactive: true },
     frame:      { src: "assets/frame.png",         rect: [1591, 749, 214, 295], order: 14, gone: true, interactive: true },
     passport:   { src: "assets/passport.png",      rect: [1380, 922, 149, 106], order: 15, gone: true, interactive: true },
-    seat:       { src: "assets/seat.png",          rect: [1140, 777, 105, 178], order: 25, gone: true, interactive: true },
     bed:        { src: "assets/bedfront.png",      rect: [1056, 440, 244, 362], order: 26, gone: true, interactive: true },
     post:       { src: "assets/post.png",          rect: [1210, 510, 50, 538], order: 27 },
     light1:     { src: "assets/light1.png",        rect: [436, 368, 539, 650], order: 28, softLight: true },
@@ -122,7 +61,7 @@
   const LITE = SAFARI || matchMedia("(pointer: coarse)").matches || Math.min(screen.width, screen.height) < 820;
   const REDUCED_MOTION = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  /* ===== Persistent Chapter Progress (shared with HUD & Dashboard) ===== */
+  /* ===== Persistent Chapter Progress ===== */
   const st = LD.state("main");
 
   /* ===== Three.js Flat 2D Setup ===== */
@@ -131,7 +70,7 @@
   const cv = $("gl");
   const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, alpha: false, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-  renderer.outputColorSpace = THREE.LinearSRGBColorSpace; // Raw sRGB pass-through matching 2D artwork & green-screen keys
+  renderer.outputColorSpace = THREE.LinearSRGBColorSpace;
 
   const scene = new THREE.Scene();
   scene.background = new THREE.Color(0x0d0c0b);
@@ -143,7 +82,6 @@
   scene.add(stageGroup);
 
   let stageScale = 1;
-  let uiScale = 1;
 
   function fit() {
     const W = wrap.clientWidth || innerWidth || 1;
@@ -175,7 +113,6 @@
     const Y = ty + s * (C.dy + C.cy * (1 - C.z));
 
     stageScale = S;
-    uiScale = Math.max(1, 0.8 / s);
     stageGroup.position.set(X, -Y, 0);
     stageGroup.scale.set(S, S, 1);
 
@@ -208,7 +145,6 @@
     }
   `;
 
-  /* Object shader: supports smooth alpha, golden hover drop-shadow glow (.obj.glow), and vertical unroll clipping */
   const objFS = `
     precision mediump float;
     varying vec2 vUv;
@@ -217,11 +153,9 @@
     uniform float uPad;
     uniform float uAlpha;
     uniform float uGlow;
-    uniform float uClipY;
 
     vec4 sampleClamped(vec2 uv) {
       if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) return vec4(0.0);
-      if (1.0 - uv.y > uClipY) return vec4(0.0);
       return texture2D(map, uv);
     }
 
@@ -293,7 +227,6 @@
         uPad: { value: pad },
         uAlpha: { value: cfg.gone ? 0 : 1 },
         uGlow: { value: 0 },
-        uClipY: { value: 2.0 },
       };
       u.map.value = rawTex(cfg.src, (tex) => {
         if (tex.image && tex.image.width) {
@@ -326,7 +259,6 @@
         targetAlpha: cfg.gone ? 0 : 1,
         alphaSpeed: 1 / 0.35,
         glowTarget: 0,
-        flutter: false,
       };
     } else {
       const mat = new THREE.MeshBasicMaterial({
@@ -369,7 +301,7 @@
     }
   }
 
-  /* ===== Dynamic Canvas Planes in Three.js (Blackboard, Desk Letter Stack, Money Counter) ===== */
+  /* ===== Dynamic Canvas Planes (Dutch Blackboard & Growing Desk Letter Stack) ===== */
   function makeCanvasPlane(w, h, rect, order) {
     const canvas = document.createElement("canvas");
     canvas.width = w;
@@ -389,17 +321,11 @@
 
   const boardPlane = makeCanvasPlane(560, 1200, [1640, 120, 280, 600], 9);
   const stackPlane = makeCanvasPlane(480, 440, [392, 524, 240, 220], 10);
-  const countPlane = makeCanvasPlane(720, 360, [1400, 900, 360, 180], 16);
 
-  /* ===== Sam & Pigeon Pre-Keyed Sprite-Sheet Clips in Three.js ===== */
+  /* ===== Sam & Dove Sprite-Sheet Clips ===== */
   const SP = {
     standup: { vw: 1024, vh: 672, bx: 382, by: 48,  bw: 468, bh: 606, fw: 281, fh: 364, cols: 14, n: 61,  fps: 12 },
     idle:    { vw: 1024, vh: 572, bx: 446, by: 42,  bw: 132, bh: 524, fw: 92,  fh: 367, cols: 44, n: 61,  fps: 12 },
-    think:   { vw: 1024, vh: 572, bx: 446, by: 42,  bw: 130, bh: 524, fw: 91,  fh: 367, cols: 45, n: 61,  fps: 12 },
-    frame:   { vw: 1024, vh: 572, bx: 443, by: 48,  bw: 205, bh: 518, fw: 133, fh: 337, cols: 30, n: 61,  fps: 12 },
-    bike:    { vw: 1024, vh: 572, bx: 246, by: 18,  bw: 584, bh: 536, fw: 350, fh: 322, cols: 11, n: 61,  fps: 12 },
-    money:   { vw: 1024, vh: 572, bx: 556, by: 54,  bw: 201, bh: 512, fw: 131, fh: 333, cols: 31, n: 61,  fps: 12 },
-    sad:     { vw: 1024, vh: 572, bx: 384, by: 194, bw: 284, bh: 362, fw: 185, fh: 235, cols: 22, n: 61,  fps: 12 },
     pigeon:  { vw: 1024, vh: 522, bx: 480, by: 108, bw: 232, bh: 226, fw: 139, fh: 136, cols: 29, n: 121, fps: 24 },
   };
 
@@ -490,16 +416,11 @@
       if (!L || !L.length) return;
       this._ev[e] = L.filter((x) => !x.once);
       for (const x of L) {
-        try {
-          x.f({ type: e, target: this });
-        } catch (err) {
-          console.error(err);
-        }
+        try { x.f({ type: e, target: this }); } catch (err) { console.error(err); }
       }
     }
   }
 
-  /* Sprite-sheet sub-UV shader (used across all devices with pre-keyed .webp sprite sheets) */
   const stoolMaskGLSL = `
     float stoolMask(vec2 fullUv, vec3 rgb, float p) {
       if (p < 0.0) return 0.0;
@@ -540,7 +461,6 @@
     }
   `;
 
-  /* Horizontal stride offset for standup clip so frame 22 lands at the exact X of idle (916.9) */
   function standupOffsetX(f12) {
     if (f12 <= 13) return 0;
     if (f12 <= 22) return -70 * ((f12 - 13) / 9);
@@ -596,39 +516,49 @@
 
   let clipLayers = [];
   const findClipLayer = (n) => clipLayers.find((l) => l.name === n);
-  function showClip(n, d = 280) {
+  function showClip(n, d = 250) {
     let l = findClipLayer(n);
+    const speed = 1000 / Math.max(1, d);
     if (!l) {
-      l = { name: n, alpha: 0, target: 1, speed: 1000 / Math.max(1, d) };
+      l = { name: n, alpha: d <= 16 ? 1 : 0, target: 1, speed };
       clipLayers.push(l);
     } else {
       l.target = 1;
-      l.speed = 1000 / Math.max(1, d);
+      l.speed = speed;
+      if (d <= 16) l.alpha = 1;
     }
   }
-  function hideClip(n, d = 280) {
+  function hideClip(n, d = 250) {
     const l = findClipLayer(n);
-    if (l) {
+    if (!l) {
+      if (clipMeshes[n]) clipMeshes[n].mesh.visible = false;
+      return;
+    }
+    if (d <= 16) {
+      l.alpha = 0;
+      l.target = 0;
+      if (clipMeshes[n]) {
+        clipMeshes[n].mat.uniforms.uAlpha.value = 0;
+        clipMeshes[n].mesh.visible = false;
+      }
+      clipLayers = clipLayers.filter((x) => x.name !== n);
+    } else {
       l.target = 0;
       l.speed = 1000 / Math.max(1, d);
     }
   }
 
-  function firstFrame() {
-    return Promise.resolve();
-  }
   async function startClip(n) {
     const v = vids[n];
     v.pause();
     try { v.currentTime = 0; } catch (_) {}
     const p = v.play();
     if (p) p.catch(() => {});
-    await firstFrame(v);
     return v;
   }
   const waitClipEnded = (v) => new Promise((r) => v.addEventListener("ended", r, { once: true }));
 
-  /* ===== Sunbeams (raysA / raysB) & Evening Atmosphere in Three.js ===== */
+  /* ===== Sunbeams (raysA / raysB) & Evening Atmosphere ===== */
   function beamsFor(e) {
     return [
       { top: [[790, 388], [905, 388]], bot: [lp([430, 1015], [40, 1080], e), lp([985, 1015], [600, 1080], e)], k: 1 },
@@ -661,7 +591,6 @@
     tex.minFilter = THREE.LinearFilter;
     tex.magFilter = THREE.LinearFilter;
     tex.generateMipmaps = false;
-    /* Premultiplied screen blend in shader: rgb*opacity + dst*(1 - rgb*opacity) */
     const mat = new THREE.ShaderMaterial({
       vertexShader: baseVS,
       fragmentShader: `
@@ -746,12 +675,8 @@
           const u0 = cI / 4 + 0.02, u1 = (cI + 1) / 4 - 0.02, v0 = rI / 2 + 0.04, v1 = (rI + 1) / 2 - 0.04;
           const p1 = P(u0, v0), p2 = P(u1, v0), p3 = P(u1, v1), p4 = P(u0, v1);
           x.beginPath();
-          x.moveTo(...p1);
-          x.lineTo(...p2);
-          x.lineTo(...p3);
-          x.lineTo(...p4);
-          x.closePath();
-          x.fill();
+          x.moveTo(...p1); x.lineTo(...p2); x.lineTo(...p3); x.lineTo(...p4);
+          x.closePath(); x.fill();
         }
       }
     }
@@ -777,9 +702,7 @@
     rayObj.tex.needsUpdate = true;
   }
 
-  let rayE = -1;
-  let eveCur = 0;
-  let eveTarget = 0;
+  let rayE = -1, eveCur = 0, eveTarget = 0;
   function setRays(e) {
     if (Math.abs(e - rayE) < 0.004) return;
     rayE = e;
@@ -789,7 +712,6 @@
   }
   setRays(0);
 
-  /* Evening Multiply Layer (exact match to CSS mix-blend-mode: multiply #34385f -> #4d4266 -> #6a4636) */
   const eveMultMat = new THREE.ShaderMaterial({
     vertexShader: baseVS,
     fragmentShader: `
@@ -819,7 +741,6 @@
   placeRect(eveMultMesh, 0, 0, STAGE_W, STAGE_H);
   stageGroup.add(eveMultMesh);
 
-  /* Warmth + Evening Window Glow (Screen) & Subtle Room Vignette (#shade) */
   const warmGlowMat = new THREE.ShaderMaterial({
     vertexShader: baseVS,
     fragmentShader: `
@@ -828,12 +749,10 @@
       uniform float uEve;
       void main() {
         vec2 p = vec2(vUv.x, 1.0 - vUv.y);
-        /* Afternoon warm center wash */
         vec2 dWarm = (p - vec2(0.44, 0.55)) / vec2(0.55, 0.60);
         float wMask = 1.0 - smoothstep(0.0, 1.0, length(dWarm));
         vec3 aft = vec3(1.0, 0.68, 0.36) * wMask * 0.14 * (1.0 - uEve * 0.6);
 
-        /* Evening warm orange window glow */
         vec2 dEve = (p - vec2(0.40, 0.41)) / vec2(0.26, 0.34);
         float eMask = 1.0 - smoothstep(0.0, 0.85, length(dEve));
         vec3 eveGlow = vec3(1.0, 0.50, 0.20) * eMask * 0.34 * uEve;
@@ -876,7 +795,7 @@
   placeRect(shadeMesh, 0, 0, STAGE_W, STAGE_H);
   stageGroup.add(shadeMesh);
 
-  /* ===== Floating Dust Motes in Three.js (3 Air Vortices + Sam Turbulence + Sunbeam Catch) ===== */
+  /* ===== Floating Dust Motes ===== */
   const DUST_N = LITE ? 80 : 300;
   const dustParticles = [];
   const dustPos = new Float32Array(DUST_N * 3);
@@ -891,13 +810,10 @@
     dustParticles.push({
       x: Math.random() * STAGE_W,
       y: Math.random() * STAGE_H,
-      z,
-      r,
-      blur,
+      z, r, blur,
       ph: Math.random() * 6.283,
       sp: 0.15 + Math.random() * 0.5,
-      vx: 0,
-      vy: 0,
+      vx: 0, vy: 0,
       tw: 1 + Math.random() * 3,
       spin: (Math.random() < 0.5 ? -1 : 1) * (0.3 + Math.random() * 0.7),
       orb: 4 + Math.random() * 14,
@@ -963,11 +879,8 @@
     { x: 450, y: 850, r: 240, s: -1 },
   ];
 
-  /* ===== Golden Ripple Marker in Three.js (#marker) ===== */
-  const markerUniforms = {
-    uTime: { value: 0 },
-    uAlpha: { value: 0 },
-  };
+  /* ===== Golden Ripple Marker ===== */
+  const markerUniforms = { uTime: { value: 0 }, uAlpha: { value: 0 } };
   const markerMat = new THREE.ShaderMaterial({
     vertexShader: baseVS,
     fragmentShader: `
@@ -977,7 +890,7 @@
       uniform float uAlpha;
       void main() {
         if (uAlpha < 0.01) discard;
-        float d = length(vUv - vec2(0.5)) * 2.0; // 0..1 where 1 = 80px radius
+        float d = length(vUv - vec2(0.5)) * 2.0;
         float p = mod(uTime, 3.4) / 3.4;
         float r = mix(0.11, 0.52, 1.0 - pow(1.0 - p, 2.2));
         float w = 0.026;
@@ -999,7 +912,7 @@
   stageGroup.add(markerMesh);
   let markerTargetAlpha = 0;
 
-  /* ===== WebAudio Engine (Room Ambience + Recorded Foley + Procedural Fallbacks) ===== */
+  /* ===== WebAudio Engine (Clean WebAudio Only — NO 10Hz keepAlive <audio> loop!) ===== */
   let muted = false;
   let actx = null;
   try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (_) {}
@@ -1014,27 +927,17 @@
     return actx;
   }
 
-  const SILENT = (() => {
-    const n = 4410, b = new ArrayBuffer(44 + n * 2), v = new DataView(b);
-    const w = (o, t) => { for (let i = 0; i < t.length; i++) v.setUint8(o + i, t.charCodeAt(i)); };
-    w(0, "RIFF"); v.setUint32(4, 36 + n * 2, true); w(8, "WAVE"); w(12, "fmt ");
-    v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true);
-    v.setUint32(24, 44100, true); v.setUint32(28, 88200, true); v.setUint16(32, 2, true);
-    v.setUint16(34, 16, true); w(36, "data"); v.setUint32(40, n * 2, true);
-    return URL.createObjectURL(new Blob([b], { type: "audio/wav" }));
-  })();
-  const keepAlive = new Audio(SILENT);
-  keepAlive.loop = true;
-  keepAlive.setAttribute("playsinline", "");
-
   function unlockAudio() {
+    try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (_) {}
     const c = ac();
     if (!c) return;
     try {
-      const bf = c.createBuffer(1, 1, 22050), src = c.createBufferSource();
-      src.buffer = bf; src.connect(c.destination); src.start(0);
+      const bf = c.createBuffer(1, 1, 22050);
+      const src = c.createBufferSource();
+      src.buffer = bf;
+      src.connect(c.destination);
+      src.start(0);
     } catch (_) {}
-    try { const q = keepAlive.play(); if (q) q.catch(() => {}); } catch (_) {}
   }
 
   let audioPrimed = false;
@@ -1044,26 +947,21 @@
     unlockAudio();
     loadSounds();
     loadAmb();
-    if (started && !LD.busy) amb("room", 3.5);
-    try {
-      if (cineV.paused) {
-        const q = cineV.play();
-        cineV.pause();
-        if (q) q.catch(() => {});
-      }
-    } catch (_) {}
+    if (!LD.busy) amb("room", 3.0);
   }
 
-  ["pointerdown", "pointermove", "touchstart", "touchend", "keydown", "click"].forEach((ev) => {
+  ["pointerdown", "touchstart", "touchend", "keydown", "click"].forEach((ev) => {
     addEventListener(ev, () => {
       primeRoomAudioAndVideo();
       if (actx && actx.state !== "running") unlockAudio();
-      if (started && !LD.busy && !ambCur && ambWant && AMB[ambWant]) amb(ambWant, 2.5);
+      if (!LD.busy && !ambCur && ambWant && AMB[ambWant]) amb(ambWant, 2.5);
     }, { passive: true });
   });
 
   function nz(c, sec, shape) {
-    const len = Math.max(1, Math.floor(c.sampleRate * sec)), b = c.createBuffer(1, len, c.sampleRate), d = b.getChannelData(0);
+    const len = Math.max(1, Math.floor(c.sampleRate * sec));
+    const b = c.createBuffer(1, len, c.sampleRate);
+    const d = b.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * shape(i / len);
     const s = c.createBufferSource();
     s.buffer = b;
@@ -1097,18 +995,6 @@
     const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
     s.buffer = b; f.type = "bandpass"; f.frequency.value = 3200; f.Q.value = 0.7; g.gain.value = 0.22;
     s.connect(f).connect(g).connect(c.destination); s.start();
-  }
-  function chime() {
-    const c = ac(); if (!c) return;
-    const t = c.currentTime;
-    [196, 293.7, 392].forEach((f, i) => {
-      const o = c.createOscillator(), a = c.createGain();
-      o.type = "triangle"; o.frequency.value = f;
-      a.gain.setValueAtTime(0, t + i * 0.09);
-      a.gain.linearRampToValueAtTime(0.07, t + i * 0.09 + 0.04);
-      a.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.09 + 2.2);
-      o.connect(a).connect(c.destination); o.start(t + i * 0.09); o.stop(t + 2.5);
-    });
   }
   function creak() {
     const c = ac(); if (!c) return;
@@ -1149,23 +1035,6 @@
     const s = nz(c, 0.05, (p) => Math.pow(1 - p, 3)), f = c.createBiquadFilter();
     f.type = "bandpass"; f.frequency.value = 1800; s.connect(f).connect(out(c, 0.12)); s.start(t);
   }
-  function unrollSnd() {
-    const c = ac(); if (!c) return;
-    const t = c.currentTime;
-    const s = nz(c, 1.35, (p) => Math.pow(Math.sin(Math.PI * Math.min(1, p * 1.1)), 0.8) * (1 - p * 0.6) * (0.55 + 0.45 * Math.random()));
-    const f = c.createBiquadFilter(); f.type = "bandpass"; f.Q.value = 0.9;
-    f.frequency.setValueAtTime(1400, t); f.frequency.exponentialRampToValueAtTime(4200, t + 1.2);
-    s.connect(f).connect(out(c, 0.2)); s.start(t);
-    for (let i = 0; i < 9; i++) {
-      const k = nz(c, 0.02, (p) => 1 - p), kf = c.createBiquadFilter();
-      kf.type = "highpass"; kf.frequency.value = 3500;
-      k.connect(kf).connect(out(c, 0.07 + Math.random() * 0.05)); k.start(t + 0.1 + Math.random() * 1.1);
-    }
-    const th = c.createOscillator(), tg = c.createGain();
-    th.frequency.setValueAtTime(110, t + 1.3); th.frequency.exponentialRampToValueAtTime(60, t + 1.45);
-    tg.gain.setValueAtTime(0.0001, t + 1.29); tg.gain.linearRampToValueAtTime(0.09, t + 1.3); tg.gain.exponentialRampToValueAtTime(0.0001, t + 1.5);
-    th.connect(tg).connect(c.destination); th.start(t + 1.29); th.stop(t + 1.55);
-  }
   function chirp(vol = 0.12) {
     const c = ac(); if (!c || muted) return;
     let t = c.currentTime + 0.02;
@@ -1194,7 +1063,8 @@
     s.connect(f).connect(g).connect(c.destination); s.start(t);
   }
 
-  const SND = {}, SNDV = { standup2: 0.85, passport2: 0.9, frame: 0.8, bike: 0.75, money: 0.8, poster: 0.8, sad: 0.85, bird: 0.8 };
+  /* Only load the 2 used foley sounds & 1 room ambience (saves ~1.5 MB network + 50 MB RAM on iOS) */
+  const SND = {}, SNDV = { standup2: 0.85, bird: 0.8 };
   let sndLoading = false;
   function loadSounds() {
     const c = ac();
@@ -1224,30 +1094,26 @@
     if (muted || !n) return;
     if (n === "bell") bell();
     else if (n === "rustle") rustle();
-    else if (n === "chime") chime();
     else if (n === "creak") creak();
     else if (n === "cloth") cloth();
     else if (n === "pickup") pickup();
-    else if (n === "unroll") unrollSnd();
     else if (n === "pigeon") chirp(0.14);
   }
 
-  const AMB = {}, AMBV = { room: 0.55, airport: 0.55, azc: 0.55, city: 0.55, wind: 0.6 };
+  const AMB = {}, AMBV = { room: 0.55 };
   let ambCur = null, ambWant = null, ambLoading = false;
   function loadAmb() {
     const c = ac();
     if (!c || ambLoading) return;
     ambLoading = true;
-    for (const n in AMBV) {
-      fetch("assets/snd/amb_" + n + ".mp3")
-        .then((r) => r.arrayBuffer())
-        .then((b) => new Promise((ok, no) => c.decodeAudioData(b, ok, no)))
-        .then((buf) => {
-          AMB[n] = buf;
-          if (ambWant === n && (!ambCur || ambCur.n !== n)) amb(n);
-        })
-        .catch(() => {});
-    }
+    fetch("assets/snd/amb_room.mp3")
+      .then((r) => r.arrayBuffer())
+      .then((b) => new Promise((ok, no) => c.decodeAudioData(b, ok, no)))
+      .then((buf) => {
+        AMB.room = buf;
+        if (ambWant === "room" && (!ambCur || ambCur.n !== "room")) amb("room");
+      })
+      .catch(() => {});
   }
   function amb(n, fade = 2.5) {
     ambWant = n;
@@ -1276,106 +1142,8 @@
     ambCur = { n, s, g };
   }
 
-  /* ===== Money Counting Canvas (Ch 3 after Amsterdam) ===== */
-  const countMoney = (() => {
-    const x = countPlane.ctx;
-    x.scale(2, 2);
-    let bill = null;
-    const img = new Image();
-    img.onload = () => {
-      const c = document.createElement("canvas");
-      c.width = 52; c.height = 30;
-      c.getContext("2d").drawImage(img, 5, 5, 52, 30, 0, 0, 52, 30);
-      bill = c;
-    };
-    img.src = "assets/money.png";
-
-    let on = false, fly = [], pile = [], lastSpawn = 0, fade = 1;
-    const FROM = [180, 118], TO = [78, 142];
-    function flick() {
-      const c = ac(); if (!c || muted) return;
-      const len = Math.floor(c.sampleRate * 0.07), b = c.createBuffer(1, len, c.sampleRate), d = b.getChannelData(0);
-      for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2);
-      const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
-      s.buffer = b; f.type = "highpass"; f.frequency.value = 2500; g.gain.value = 0.12;
-      s.connect(f).connect(g).connect(c.destination); s.start();
-    }
-    function drawBill(cx, cy, rot, sy, shade, alpha) {
-      if (!bill) return;
-      x.save();
-      x.globalAlpha = alpha;
-      x.translate(cx, cy);
-      x.rotate(rot);
-      x.scale(1, Math.max(0.06, Math.abs(sy)));
-      x.drawImage(bill, -26, -15);
-      if (shade > 0) {
-        x.fillStyle = `rgba(20,30,20,${shade})`;
-        x.fillRect(-26, -15, 52, 30);
-      }
-      x.restore();
-    }
-    let lastCountSt = -1;
-    function update(now) {
-      if (!on && fade <= 0 && !pile.length && !fly.length) return;
-      const stNow = step12(now);
-      if (stNow === lastCountSt) return;
-      lastCountSt = stNow;
-      x.clearRect(0, 0, 360, 180);
-      if (on && stNow - lastSpawn > 430) {
-        lastSpawn = stNow;
-        fly.push({ t0: stNow, r: (Math.random() - 0.5) * 0.25 });
-      }
-      if (!on) fade = Math.max(0, fade - 0.03);
-      for (const p of pile) drawBill(p.x, p.y, p.r, 1, 0, fade);
-      fly = fly.filter((b) => {
-        const t = Math.min(1, (stNow - b.t0) / 520);
-        const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-        const px = FROM[0] + (TO[0] - FROM[0]) * e;
-        const py = FROM[1] + (TO[1] - FROM[1]) * e - Math.sin(Math.PI * e) * 38 - pile.length * 0.9 * e;
-        const sy = Math.cos(Math.PI * e);
-        drawBill(px, py, -0.15 + b.r * e + Math.sin(Math.PI * e) * 0.35, sy, sy < 0 ? 0.25 : 0, fade);
-        if (t >= 1) {
-          pile.push({ x: TO[0] + (Math.random() - 0.5) * 5, y: TO[1] - pile.length * 0.9, r: b.r + (Math.random() - 0.5) * 0.12 });
-          flick();
-          if (pile.length > 14) pile.shift();
-          return false;
-        }
-        return true;
-      });
-      if (!on && fade <= 0) {
-        pile = [];
-        fly = [];
-        x.clearRect(0, 0, 360, 180);
-      }
-      countPlane.tex.needsUpdate = true;
-    }
-    return {
-      set(active) {
-        if (active) {
-          on = true;
-          fade = 1;
-          pile = [];
-          fly = [];
-          lastSpawn = 0;
-        } else {
-          on = false;
-        }
-      },
-      reset() {
-        on = false;
-        fade = 0;
-        pile = [];
-        fly = [];
-        x.clearRect(0, 0, 360, 180);
-        countPlane.tex.needsUpdate = true;
-      },
-      update,
-    };
-  })();
-
   /* ===== Blackboard Chalk Progression & Growing Desk Letter Stack ===== */
   const timeProgression = (() => {
-    /* 1. Blackboard (starts wiped clean with board_clean.png; chalk regions gradually revealed per chapter) */
     const bx = boardPlane.ctx;
     const boardImg = new Image();
     boardImg.src = "assets/board_clean.png";
@@ -1466,7 +1234,6 @@
       boardPlane.tex.needsUpdate = true;
     }
 
-    /* 2. Desk Letter & Form Stack */
     const sx = stackPlane.ctx;
     const MAP = [[0, 1], [0.12, 1], [0.35, 2], [0.51, 5], [0.675, 9], [0.84, 14], [1, 19]];
     const wantStack = (t) => { let n = 1; for (const [a, c] of MAP) if (t >= a - 1e-4) n = c; return n; };
@@ -1582,7 +1349,7 @@
     };
   })();
 
-  /* ===== Captions ===== */
+  /* ===== Room Caption ===== */
   const capEl = $("caption");
   let capTimer = null;
   function say(text, ms = 4200) {
@@ -1596,7 +1363,7 @@
     if (ms) capTimer = setTimeout(() => capEl.classList.remove("show"), ms);
   }
 
-  /* ===== Camera Zoom Tween (camTo) & Dove Cinematic Interlude (birdCine) ===== */
+  /* ===== Camera Zoom Tween & Finale Dove Window Flight ===== */
   function camTo(z, dx, dy, cx, cy, ms) {
     return new Promise((res) => {
       const from = Object.assign({ z: 1, dx: 0, dy: 0, cx, cy }, window.CAM || {});
@@ -1608,8 +1375,7 @@
           z: from.z + (z - from.z) * e,
           dx: from.dx + (dx - from.dx) * e,
           dy: from.dy + (dy - from.dy) * e,
-          cx,
-          cy,
+          cx, cy,
         };
         fit();
         if (p < 1) requestAnimationFrame(f);
@@ -1700,61 +1466,139 @@
     birdBusy = false;
   }
 
-  /* ===== Reject Poster Unrolling Animation (Ch 4) ===== */
-  async function unrollPoster() {
-    if (objs.reject.gone) return;
-    playReal("poster", () => playSfx("unroll"));
-    const top = 392, h = 250, startY = 487, endY = 612, dur = 1300;
-    const rollBaseY = objs.roll.baseY;
-    objs.rejectOpen.uniforms.uClipY.value = (startY - top) / h;
-    setGone("rejectOpen", false, 0);
-    setGone("roll", false, 0);
-    setGone("reject", true, 0);
+  /* ============================================================================
+     EXPLICIT FINITE STATE MACHINES: SamPose & RoomFlow
+     Guarantees mutual exclusion across sitting (man / standup@0), standingUp,
+     thinkPose (idle), windowGaze (standup@1.83..end), and hidden.
+     ============================================================================ */
+  const STANDUP_TO_IDLE_TIME = 1.83;
 
-    await new Promise((res) => {
-      const t0 = performance.now();
-      (function f(now) {
-        const stNow = step12(now - t0) + t0;
-        const p = Math.min(1, (stNow - t0) / dur);
-        const e = 1 - Math.pow(1 - p, 3);
-        const y = startY + (endY - startY) * e;
-        objs.rejectOpen.uniforms.uClipY.value = (y - top) / h;
-        objs.roll.mesh.position.y = rollBaseY - (y - startY);
-        objs.roll.mesh.scale.setScalar(1 - 0.35 * e);
-        objs.roll.alpha = 1 - Math.max(0, (p - 0.75) / 0.25);
-        objs.roll.targetAlpha = objs.roll.alpha;
-        objs.roll.uniforms.uAlpha.value = objs.roll.alpha;
-        if (p < 1) requestAnimationFrame(f);
-        else res();
-      })(performance.now());
-    });
+  const samPose = LD_FSM.createMachine({
+    name: "SamPose",
+    initial: "sitting",
+    states: {
+      sitting: {
+        onEnter({ token }) {
+          /* Strictly hide Think Pose */
+          vids.idle.pause();
+          hideClip("idle", 0);
 
-    objs.rejectOpen.uniforms.uClipY.value = 2.0;
-    setGone("roll", true, 0);
-    objs.roll.mesh.position.y = rollBaseY;
-    objs.roll.mesh.scale.setScalar(1);
-    await sleep(450);
-  }
+          vids.standup.pause();
+          if (clipMeshes.standup) {
+            clipMeshes.standup.mesh.position.x = clipMeshes.standup.baseX;
+            clipMeshes.standup.mat.uniforms.uStool.value = -1;
+          }
+          hideClip("standup", 0);
+          setGone("man", false, 0);
 
-  /* ===== Room State, Hotspots & Refresh ===== */
-  let started = false;
-  let introSeen = false;
-  let busy = false;
+          const sv = vids.standup;
+          let swapped = false;
+          const doSwap = () => {
+            if (swapped || samPose.token !== token || !samPose.is("sitting")) return;
+            if (sv.readyState < 4) {
+              sv.addEventListener("canplaythrough", doSwap, { once: true });
+              return;
+            }
+            swapped = true;
+            showClip("standup", 260);
+            setTimeout(() => {
+              if (samPose.token === token && samPose.is("sitting")) {
+                setGone("man", true, 0.22);
+              }
+            }, 280);
+          };
+          const seekZero = () => {
+            if (swapped || samPose.token !== token || !samPose.is("sitting")) return;
+            sv.addEventListener("seeked", doSwap, { once: true });
+            setTimeout(doSwap, 500);
+            try { sv.currentTime = 0.04; } catch (_) { doSwap(); }
+          };
+          if (sv.readyState >= 4) seekZero();
+          else sv.addEventListener("canplaythrough", seekZero, { once: true });
+        }
+      },
+      standingUp: {
+        onEnter() {
+          vids.idle.pause();
+          hideClip("idle", 0);
+          setGone("man", true, 0.06);
+        }
+      },
+      thinkPose: {
+        onEnter({ payload }) {
+          const instant = Boolean(payload && payload.instant);
+          const fadeMs = payload && typeof payload.fadeMs === "number" ? payload.fadeMs : (instant ? 0 : 120);
+          /* Hard invariant: neither sitting man.png nor standup sprite may remain visible */
+          setGone("man", true, 0);
+          vids.standup.pause();
+          hideClip("standup", instant ? 0 : Math.min(fadeMs, 90));
+          startClip("idle");
+          showClip("idle", instant ? 0 : fadeMs);
+        }
+      },
+      windowGaze: {
+        onEnter() {
+          setGone("man", true, 0);
+        }
+      },
+      hidden: {
+        onEnter({ payload }) {
+          const fadeMs = payload && typeof payload.fadeMs === "number" ? payload.fadeMs : 1800;
+          setGone("man", true, 0);
+          vids.standup.pause();
+          vids.idle.pause();
+          hideClip("standup", fadeMs);
+          hideClip("idle", Math.min(600, fadeMs));
+        }
+      }
+    }
+  });
+
+  const roomFlow = LD_FSM.createMachine({
+    name: "RoomFlow",
+    initial: "booting",
+    states: {
+      booting: {},
+      prologueSitting: {},
+      standingUp: {},
+      roomIdle: {},
+      chapterOpening: {},
+      chapterActive: {},
+      chapterClosing: {},
+      finale: {},
+      endCard: {}
+    }
+  });
+
+  /* ===== Room Hotspots, Accessibility Inert & Refresh ===== */
   const hots = {};
+  const hasStoodUp = () => !samPose.is("sitting");
+  const isBusy = () => !roomFlow.in("prologueSitting", "roomIdle") || LD.busy;
+
+  function syncInert() {
+    const blocked = LD.busy
+      || $("start").classList.contains("show")
+      || $("end").classList.contains("show")
+      || Boolean(document.querySelector(".ld-modal.on"));
+    wrap.toggleAttribute("inert", blocked);
+  }
+  window.addEventListener("ld:overlay", syncInert);
 
   function nextIdx() {
     const nxt = st.next();
     return nxt ? nxt - 1 : CHAPTERS.length;
   }
+
   function isChapterVisible(chNum) {
-    if (chNum === 1) return introSeen || st.has(1);
+    const stood = hasStoodUp();
+    if (chNum === 1) return stood || st.has(1);
     if (st.has(chNum) || st.has(chNum - 1)) return true;
-    return nextIdx() >= chNum - 1;
+    return stood && nextIdx() >= chNum - 1;
   }
+
   function syncChapterObjects(instant = false) {
     const fadeSec = instant ? 0 : 0.45;
-    const ch1Vis = isChapterVisible(1);
-    setGone("passport", !ch1Vis, fadeSec);
+    setGone("passport", !isChapterVisible(1), fadeSec);
     setGone("frame", !isChapterVisible(2), fadeSec);
     const ch3Vis = isChapterVisible(3);
     setGone("bike", !ch3Vis, fadeSec);
@@ -1766,21 +1610,21 @@
     } else if (st.has(4)) {
       setGone("reject", true, 0);
       setGone("rejectOpen", false, fadeSec);
-      objs.rejectOpen.uniforms.uClipY.value = 2.0;
     } else if (objs.reject.gone && objs.rejectOpen.gone) {
       setGone("reject", false, fadeSec);
       setGone("rejectOpen", true, 0);
     }
   }
+
   function unlocked(i) {
-    return introSeen && isChapterVisible(i + 1) && (st.has(i + 1) || i <= nextIdx());
+    return hasStoodUp() && isChapterVisible(i + 1) && (st.has(i + 1) || i <= nextIdx());
   }
 
-  function mkHot(id, hit, label, onClick, glowObjFn) {
+  function mkHot(id, hit, labelFn, onClick, glowObjFn) {
     const b = document.createElement("button");
     b.type = "button";
     b.className = "hot";
-    b.setAttribute("aria-label", label);
+    b.setAttribute("aria-label", labelFn());
     const [x, y, w, h] = hit;
     Object.assign(b.style, { left: x + "px", top: y + "px", width: w + "px", height: h + "px" });
     b.onmouseenter = b.onfocus = () => {
@@ -1799,34 +1643,45 @@
     return b;
   }
 
-  mkHot("sam", [985, 545, 235, 405], "Sam", () => standUp(), () => "man");
+  mkHot("sam", [985, 545, 235, 405], () => tr("room.samAria", "Sam"), () => standUp(), () => "man");
   CHAPTERS.forEach((c, i) => {
     mkHot(
       c.id,
       c.hit,
-      `Chapter ${c.n} · ${c.title}`,
+      () => `${c.n} · ${tr(`room.chapterTitles.${c.n}`, c.title)}`,
       () => triggerChapter(i),
       () => (c.id === "reject" ? (objs.reject.gone ? "rejectOpen" : "reject") : c.id)
     );
   });
 
+  if (window.WABTSA_I18N) {
+    WABTSA_I18N.onChange(() => {
+      if (hots.sam) hots.sam.setAttribute("aria-label", tr("room.samAria", "Sam"));
+      CHAPTERS.forEach((c) => {
+        if (hots[c.id]) hots[c.id].setAttribute("aria-label", `${c.n} · ${tr(`room.chapterTitles.${c.n}`, c.title)}`);
+      });
+    });
+  }
+
   function refresh(instantTime = false) {
     const count = st.count;
-    const pEve = introSeen ? Math.min(1, count / (CHAPTERS.length - 1)) : 0;
+    const stood = hasStoodUp();
+    const busyNow = isBusy();
+
+    const pEve = stood ? Math.min(1, count / (CHAPTERS.length - 1)) : 0;
     eveTarget = pEve;
     if (instantTime) {
       eveCur = pEve;
       setRays(pEve);
     }
 
-    const pt = introSeen ? 0.35 + 0.65 * Math.min(1, count / CHAPTERS.length) : 0.12;
+    const pt = stood ? 0.35 + 0.65 * Math.min(1, count / CHAPTERS.length) : 0.12;
     if (instantTime) timeProgression.setNow(pt);
     else timeProgression.advanceTo(pt);
 
-    const n = introSeen ? nextIdx() : -1;
-    const sb = hots.sam;
-    sb.hidden = introSeen;
-    sb.disabled = busy || LD.busy;
+    const n = stood ? nextIdx() : -1;
+    hots.sam.hidden = stood;
+    hots.sam.disabled = busyNow;
 
     syncChapterObjects(instantTime);
 
@@ -1834,31 +1689,33 @@
       const b = hots[c.id];
       const vis = isChapterVisible(c.n);
       b.hidden = !vis;
-      b.disabled = busy || LD.busy || !vis;
-      const isOpen = unlocked(i);
-      b.classList.toggle("locked", !isOpen);
+      b.disabled = busyNow || !vis;
+      b.classList.toggle("locked", !unlocked(i));
       if (c.id === "reject") {
         const rect = objs.reject.gone ? c.openHit : c.hit;
         Object.assign(b.style, { left: rect[0] + "px", top: rect[1] + "px", width: rect[2] + "px", height: rect[3] + "px" });
       }
     });
 
-    /* Preload next interactive chapter iframe quietly when idle in room */
+    /* Preload next interactive chapter quietly when idle in room */
     const nxt = st.next() || 1;
-    if (nxt && !busy && !LD.busy) {
+    if (nxt && !busyNow) {
       LD.prepareChapter(nxt);
     }
 
-    /* Update Three.js Golden Ripple Marker */
+    /* Update Golden Ripple Marker */
     let tgt = null;
-    if (!introSeen) {
+    if (!stood) {
       tgt = [985, 545, 235, 405];
     } else if (n >= 0 && n < CHAPTERS.length) {
       const c = CHAPTERS[n];
       tgt = c.mark ? [c.mark[0], c.mark[1], 0, 0] : c.hit;
     }
-    const showMarker = !!tgt && !busy && !LD.busy && !$("start").classList.contains("show") && !$("end").classList.contains("show");
-    document.body.classList.toggle("card-open", $("start").classList.contains("show") || $("end").classList.contains("show"));
+    const cardOpen = $("start").classList.contains("show") || $("end").classList.contains("show");
+    document.body.classList.toggle("card-open", cardOpen);
+    syncInert();
+
+    const showMarker = Boolean(tgt) && !busyNow && !cardOpen;
     markerTargetAlpha = showMarker ? 1 : 0;
     if (tgt) {
       markerMesh.visible = true;
@@ -1866,14 +1723,15 @@
     }
   }
 
-  /* ===== Prologue: Sam Stands Up From Bed -> Immediately to Hand-on-Chin Idle ===== */
-  const STANDUP_TO_IDLE_TIME = 1.83; // Frame 22: Sam has stood up and brought both feet together, before turning to window
-
+  /* ===== Opening: Sam Stands Up From Bed -> Continuous Think Pose ===== */
   async function standUp() {
-    if (busy || introSeen || LD.busy) return;
+    if (!roomFlow.is("prologueSitting") || LD.busy) return;
     primeRoomAudioAndVideo();
     unlockAudio();
-    busy = true;
+
+    roomFlow.transition("standingUp");
+    const poseTok = samPose.token + 1;
+    samPose.transition("standingUp");
     clearAllGlows();
     refresh();
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
@@ -1883,12 +1741,11 @@
     if (preLayer && preLayer.alpha > 0.5 && v.currentTime < 0.15) {
       const p = v.play();
       if (p) p.catch(() => {});
-      await firstFrame(v);
     } else {
       await startClip("standup");
     }
     showClip("standup", 60);
-    setGone("man", true, 0.06);
+
     if (!muted && actx) {
       playReal("standup2", () => {
         playSfx("creak");
@@ -1899,47 +1756,35 @@
 
     await new Promise((r) => {
       const iv = setInterval(() => {
-        if (v.currentTime >= STANDUP_TO_IDLE_TIME || v.ended) {
+        if (samPose.token !== poseTok || v.currentTime >= STANDUP_TO_IDLE_TIME || v.ended) {
           clearInterval(iv);
           r();
         }
       }, 20);
       v.addEventListener("ended", () => { clearInterval(iv); r(); }, { once: true });
     });
-    v.pause();
 
-    await startClip("idle");
-    showClip("idle", 70);
-    hideClip("standup", 70);
-    introSeen = true;
-    busy = false;
+    if (samPose.token !== poseTok) return;
+    samPose.transition("thinkPose", { fadeMs: 70 });
+    roomFlow.transition("roomIdle");
     refresh();
-    say("Click the passport to begin.", 4500);
+    say(tr("room.clickPassport", "Click the passport to begin."), 4500);
   }
 
-  /* ===== Finale After Chapter 4: Sam Turns to Look Out the Window -> Dove Flies Out -> Slow Window Zoom ===== */
+  /* ===== Closing Finale After Chapter 4: Window Gaze -> Dove Flight -> Window Zoom -> End Card ===== */
   async function playWindowGaze() {
     const v = vids.standup;
     v.pause();
     await new Promise((res) => {
       let done = false;
-      const ok = () => {
-        if (!done) {
-          done = true;
-          res();
-        }
-      };
+      const ok = () => { if (!done) { done = true; res(); } };
       v.addEventListener("seeked", ok, { once: true });
       setTimeout(ok, 400);
-      try {
-        v.currentTime = STANDUP_TO_IDLE_TIME;
-      } catch (_) {
-        ok();
-      }
+      try { v.currentTime = STANDUP_TO_IDLE_TIME; } catch (_) { ok(); }
     });
+    samPose.transition("windowGaze");
     const p = v.play();
     if (p) p.catch(() => {});
-    await firstFrame(v);
     showClip("standup", 90);
     hideClip("idle", 90);
 
@@ -1956,92 +1801,89 @@
     v.pause();
   }
 
-  async function playFinale(c) {
+  async function playFinale() {
+    roomFlow.transition("finale");
+    const flowTok = roomFlow.token;
     await playWindowGaze();
+    if (roomFlow.token !== flowTok) return;
     if (!objs.bird.gone) {
       await birdCine();
     }
+    if (roomFlow.token !== flowTok) return;
     await sleep(900);
-    hideClip("standup", 1800);
-    hideClip("idle", 600);
+    samPose.transition("hidden", { fadeMs: 1800 });
     refresh();
     await sleep(1900);
+    if (roomFlow.token !== flowTok) return;
     const zoom = camTo(1.14, 0, 0, 870, 470, 7000);
     await sleep(4200);
+    if (roomFlow.token !== flowTok) return;
+    roomFlow.transition("endCard");
     $("end").classList.add("final", "show");
     document.body.classList.add("card-open");
+    syncInert();
     await zoom;
-    busy = false;
   }
 
-  /* ===== Chapter Trigger: Smooth Fade -> Interactive Video Chapter -> Return ===== */
-  async function triggerChapter(i, skipInRoomLead = false, fromHistory = false) {
+  /* ===== Chapter Trigger: Clean Black Fade -> Interactive Video Chapter -> Return to Think Pose ===== */
+  async function triggerChapter(i, skipUnlockCheck = false, fromHistory = false) {
     const c = CHAPTERS[i];
-    if (!c || busy || LD.busy) return;
+    if (!c || LD.busy) return;
+    if (!skipUnlockCheck && isBusy()) return;
+
     primeRoomAudioAndVideo();
     unlockAudio();
-    stopIdleReact();
 
-    if (!introSeen) {
-      if (!skipInRoomLead) return;
-      introSeen = true;
-      setGone("man", true, 0);
-      await startClip("idle");
-      showClip("idle", 10);
+    if (!hasStoodUp()) {
+      if (!skipUnlockCheck) return;
+      /* Deep-linked directly into a chapter (#ch=1..4): place Sam cleanly in Think Pose (zero Double Sam!) */
+      samPose.transition("thinkPose", { instant: true });
     }
 
-    if (!skipInRoomLead && !unlocked(i)) {
-      return;
-    }
+    if (!skipUnlockCheck && !unlocked(i)) return;
 
-    busy = true;
+    roomFlow.transition("chapterOpening", { ch: c.n });
     clearAllGlows();
     say("", 0);
     refresh();
 
-    /* Ensure Chapter 4 letter is open when Chapter 4 is triggered */
+    /* Reveal open REJECT letter when Chapter 4 is opened */
     if (c.id === "reject") {
       setGone("reject", true, 0);
       setGone("rejectOpen", false, 0);
-      objs.rejectOpen.uniforms.uClipY.value = 2.0;
     }
 
-    /* Advance blackboard & desk letters as Sam progresses */
     const nextCount = st.count + (st.has(c.n) ? 0 : 1);
     timeProgression.advanceTo(0.35 + 0.65 * Math.min(1, nextCount / CHAPTERS.length));
 
     if (c.id === "bike" || c.id === "reject") loadCine();
 
-    /* Subtle foley feedback when clicking the object, then fade out room ambience for chapter video */
-    if (!skipInRoomLead && c.fb) playSfx(c.fb);
+    if (!skipUnlockCheck && c.fb) playSfx(c.fb);
     amb(null, 0.8);
 
+    roomFlow.transition("chapterActive", { ch: c.n });
     LD.openChapter(c.n, {
       fromHistory,
       onClose: async (chNum, seen) => {
+        roomFlow.transition("chapterClosing", { ch: chNum });
         if (seen && !st.has(chNum)) {
           st.mark(chNum);
           hudUi.update();
         }
 
-        /* Update evening light, blackboard, desk stack, and progressive chapter objects */
-        refresh(false);
-
-        /* Chapter 4 Finale: Sam turns to look out the window -> Dove flies out -> Sam fades out -> Slow window zoom -> The End */
         if (chNum === 4 && st.count === CHAPTERS.length && seen) {
           setGone("reject", true, 0);
           setGone("rejectOpen", false, 0);
-          objs.rejectOpen.uniforms.uClipY.value = 2.0;
-          await playFinale(c);
+          samPose.transition("thinkPose", { instant: true });
+          refresh(false);
+          await playFinale();
           return;
         }
 
-        /* Return Sam to calm room idle loop & fade room ambience back in */
-        await startClip("idle");
-        showClip("idle", 250);
-        hideClip(c.clip, 250);
-        amb("room", 3.5);
-        busy = false;
+        /* Enforce Think Pose immediately when returning to The Room */
+        samPose.transition("thinkPose", { instant: true });
+        roomFlow.transition("roomIdle");
+        amb("room", 3.2);
         refresh(false);
       },
     });
@@ -2051,100 +1893,47 @@
   LD.onRouteChapter((chNum, fromHistory) => {
     if ($("start").classList.contains("show")) {
       $("start").classList.remove("show");
-      started = true;
     }
+    if (curtainEl) curtainEl.classList.add("off");
+    roomRevealed = true;
     triggerChapter(chNum - 1, true, !!fromHistory);
   });
 
   /* ===== Restore / Reset Room State ===== */
-  function poseSittingOnBed() {
-    introSeen = false;
-    for (const l of clipLayers) l.target = 0;
-    Object.values(vids).forEach((v) => v.pause());
-    if (clipMeshes.standup) {
-      clipMeshes.standup.mesh.position.x = clipMeshes.standup.baseX;
-      clipMeshes.standup.mat.uniforms.uStool.value = -1;
-    }
-    setGone("man", false, 0);
-    const sv = vids.standup;
-    sv.pause();
-    let swapped = false;
-    const minReady = 4;
-    const doSwap = () => {
-      if (swapped || introSeen || busy) return;
-      if (sv.readyState < minReady) {
-        sv.addEventListener("canplaythrough", doSwap, { once: true });
-        return;
-      }
-      swapped = true;
-      const l = findClipLayer("standup");
-      if (l) l.alpha = 0;
-      showClip("standup", 300);
-      setTimeout(() => {
-        if (!introSeen && !busy) setGone("man", true, 0.25);
-      }, 320);
-    };
-    const seekFirstFrame = () => {
-      if (swapped || introSeen || busy) return;
-      sv.addEventListener("seeked", doSwap, { once: true });
-      setTimeout(doSwap, 550);
-      try { sv.currentTime = 0.04; } catch (_) { doSwap(); }
-    };
-    if (sv.readyState >= minReady) seekFirstFrame();
-    else sv.addEventListener("canplaythrough", seekFirstFrame, { once: true });
-  }
-
-  async function syncRoomFromSavedState(instant = true) {
+  function syncRoomFromSavedState(instant = true) {
     $("end").classList.remove("final", "show");
     window.CAM = null;
     fit();
-    stopIdleReact();
     say("", 0);
-    countMoney.reset();
-    objs.money.flutter = false;
-    setGone("seat", true, 0);
-    setGone("roll", true, 0);
     syncChapterObjects(true);
 
     if (st.count === 0) {
       setGone("bird", false, 0);
-      poseSittingOnBed();
-      busy = false;
+      samPose.transition("sitting");
+      roomFlow.transition("prologueSitting");
       refresh(true);
-      if (started && actx) amb("room", 3);
+      if (actx) amb("room", 3);
       return;
     }
 
-    /* Saved progress exists: Sam is already standing in the room */
-    introSeen = true;
-    busy = false;
-    setGone("man", true, 0);
     setGone("bird", st.has(4), 0);
+    samPose.transition("thinkPose", { instant: true });
+    roomFlow.transition("roomIdle");
     refresh(instant);
-    for (const l of clipLayers) {
-      if (l.name !== "idle") l.target = 0;
-    }
-    await startClip("idle");
-    showClip("idle", instant ? 10 : 300);
-    refresh(instant);
-    if (started && actx) amb("room", 3);
+    if (actx) amb("room", 3);
   }
 
-  /* ===== Shared HUD (Production 4 Icons in ?dev=0 / Dev Bar & Shortcuts 1-4, 0 in ?dev=1) ===== */
+  /* ===== Shared HUD ===== */
   const hudUi = LD.hud({
     name: "The Room",
     st,
     onReset: () => {
-      if ($("start").classList.contains("show")) {
-        $("start").classList.remove("show");
-        started = true;
-      }
+      $("start").classList.remove("show");
       syncRoomFromSavedState(true);
     },
     onDev: () => {
       if ($("start").classList.contains("show")) {
         $("start").classList.remove("show");
-        started = true;
         unlockAudio();
         loadSounds();
         loadAmb();
@@ -2159,50 +1948,6 @@
     syncRoomFromSavedState(true);
   };
 
-  /* ===== Idle 15s Room Reaction (Sam looks around / thinks) ===== */
-  let idleT = performance.now();
-  let reacting = false;
-  let reactAbort = null;
-  const poke = () => { idleT = performance.now(); };
-  addEventListener("pointerdown", poke, { passive: true });
-  addEventListener("keydown", poke);
-  addEventListener("pointermove", poke, { passive: true });
-
-  function stopIdleReact() {
-    if (!reacting) return;
-    reacting = false;
-    if (reactAbort) reactAbort();
-    reactAbort = null;
-    showClip("idle", 250);
-    hideClip("think", 250);
-    try { vids.think.pause(); } catch (_) {}
-  }
-
-  setInterval(async () => {
-    if (busy || LD.busy || !started || !introSeen || document.hidden || st.count >= CHAPTERS.length) {
-      idleT = performance.now();
-      return;
-    }
-    if ($("start").classList.contains("show") || $("end").classList.contains("show")) return;
-    if (performance.now() - idleT < 15000 || reacting) return;
-
-    reacting = true;
-    idleT = performance.now();
-    const v = await startClip("think");
-    if (!reacting) return;
-    showClip("think", 450);
-    hideClip("idle", 450);
-    if (!muted && actx) setTimeout(() => { if (reacting) playSfx("cloth"); }, 400);
-    await Promise.race([waitClipEnded(v), new Promise((r) => { reactAbort = r; })]);
-    if (reacting) {
-      reacting = false;
-      reactAbort = null;
-      showClip("idle", 450);
-      hideClip("think", 450);
-      idleT = performance.now();
-    }
-  }, 1000);
-
   /* ===== Initial Asset Preloading & Direct Entry Into 2D Room ===== */
   const startBtn = $("startBtn");
   const loadBarFill = document.querySelector("#loadbar span");
@@ -2214,13 +1959,13 @@
   function revealRoom() {
     if (roomRevealed) return;
     roomRevealed = true;
-    started = true;
     $("start").classList.remove("show");
     if (curtainEl) curtainEl.classList.add("off");
+    syncInert();
     unlockAudio();
     loadSounds();
     loadAmb();
-    amb("room", 4);
+    amb("room", 3.5);
     LD.prepareChapter(st.next() || 1);
     if (!st.has(4)) setTimeout(() => birdMove(), 2000);
   }
@@ -2230,22 +1975,17 @@
     if (loadBarFill) loadBarFill.style.width = Math.min(100, (loadedClips / totalClips) * 100) + "%";
     if (loadedClips >= totalClips) {
       startBtn.disabled = false;
-      startBtn.textContent = st.count > 0 && st.count < 4 ? "Continue" : "Start";
+      startBtn.textContent = st.count > 0 && st.count < 4 ? tr("room.continueBtn", "Continue") : tr("room.startBtn", "Start");
       revealRoom();
     }
   }
 
   for (const v of Object.values(vids)) {
     let done = false;
-    const ok = () => {
-      if (!done) {
-        done = true;
-        onClipLoaded();
-      }
-    };
+    const ok = () => { if (!done) { done = true; onClipLoaded(); } };
     v.addEventListener("canplaythrough", ok, { once: true });
     v.addEventListener("error", ok, { once: true });
-    setTimeout(ok, 1800);
+    setTimeout(ok, 1500);
     v.load();
   }
 
@@ -2258,21 +1998,35 @@
     $("backHome").href = "../index.html" + location.search;
   }
 
-  /* Initialize stage sizing & background room state */
-  started = true;
   fit();
   syncRoomFromSavedState(true);
-  setTimeout(revealRoom, 900);
+  setTimeout(revealRoom, 650);
 
   /* ===== Pause / Resume When Chapter Video Opens or App Backgrounds ===== */
   let running = true;
   let lastFrameNow = performance.now();
 
+  function flushClosingClips() {
+    /* Ensure any clip fading to 0 finishes cleanly so pausing renderLoop never leaves a ghost Sam */
+    for (const l of clipLayers) {
+      if (l.target === 0) {
+        l.alpha = 0;
+        if (clipMeshes[l.name]) {
+          clipMeshes[l.name].mat.uniforms.uAlpha.value = 0;
+          clipMeshes[l.name].mesh.visible = false;
+        }
+      }
+    }
+    clipLayers = clipLayers.filter((l) => l.target > 0);
+  }
+
   window.addEventListener("ld:pause", () => {
+    flushClosingClips();
     running = false;
     amb(null, 0.3);
   });
   window.addEventListener("ld:resume", () => {
+    flushClosingClips();
     if (!running) {
       running = true;
       lastFrameNow = performance.now();
@@ -2288,7 +2042,7 @@
     const T = now / 1000;
     const st12 = step12(now);
 
-    /* 1. Evening progression (~5s smooth transition) & Sunbeam updates */
+    /* 1. Evening progression & Sunbeams */
     if (Math.abs(eveTarget - eveCur) > 0.0005) {
       eveCur += (eveTarget - eveCur) * Math.min(1, dt * 0.55);
       if (Math.abs(eveTarget - eveCur) < 0.001) eveCur = eveTarget;
@@ -2304,7 +2058,7 @@
       raysB.mat.uniforms.uGain.value = 0.40 - 0.40 * Math.cos((T / 13) * Math.PI * 2);
     }
 
-    /* 2. Interactive object fades, hover glows & Ch 3 money flutter */
+    /* 2. Interactive object fades & hover glows */
     for (const k in objs) {
       const o = objs[k];
       if (!o.uniforms) continue;
@@ -2322,23 +2076,7 @@
       }
     }
 
-    if (objs.money.flutter && !REDUCED_MOTION) {
-      const stepIdx = Math.floor((now % 1100) / (1100 / 4));
-      const poses = [
-        [0, 0],
-        [-0.044, 4],
-        [0.026, 1],
-        [-0.018, 5],
-      ];
-      const [rot, liftY] = poses[stepIdx] || poses[0];
-      objs.money.mesh.rotation.z = rot;
-      objs.money.mesh.position.y = objs.money.baseY + liftY;
-    } else if (objs.money.mesh.rotation.z !== 0) {
-      objs.money.mesh.rotation.z = 0;
-      objs.money.mesh.position.y = objs.money.baseY;
-    }
-
-    /* 3. Sam & Pigeon Clips (Video chroma-key on desktop / WebP sprite sheets on LITE) */
+    /* 3. Sam & Dove Sprite-Sheet Clips */
     for (const l of clipLayers) {
       l.alpha += Math.sign(l.target - l.alpha) * Math.min(Math.abs(l.target - l.alpha), l.speed * dt);
     }
@@ -2359,10 +2097,7 @@
       }
       const v = vids[n];
       const f12 = Math.floor(v.currentTime * 12 + 1e-4);
-      const stoolP =
-        n === "standup" && f12 >= 4 && f12 <= 11
-          ? (f12 - 4) / 7
-          : -1;
+      const stoolP = n === "standup" && f12 >= 4 && f12 <= 11 ? (f12 - 4) / 7 : -1;
       if (v.readyState >= 4 && v.img.naturalWidth) {
         const f = v.frame();
         if (f !== cm.lastFrame) {
@@ -2387,70 +2122,75 @@
       }
     }
 
-    /* 4. Blackboard, Desk Letter Stack & Money Counter Canvas Updates */
+    /* 4. Blackboard & Desk Letter Stack */
     timeProgression.update(now);
-    countMoney.update(now);
 
-    /* 5. Floating Dust Motes Physics & Illumination */
+    /* 5. Floating Dust Motes */
     VORTICES[0].x = 700 + Math.sin(T * 0.05) * 180;
     VORTICES[0].y = 640 + Math.cos(T * 0.04) * 90;
     VORTICES[1].x = 1150 + Math.cos(T * 0.045) * 150;
     VORTICES[1].y = 520 + Math.sin(T * 0.06) * 110;
     VORTICES[2].x = 430 + Math.sin(T * 0.035) * 120;
+    VORTICES[2].y = 850 + Math.cos(T * 0.05) * 80;
 
-    const samMoving = clipLayers.some((l) => l.alpha > 0.5 && l.name !== "idle" && l.name !== "pigeon");
+    let samTurb = 0;
+    if (!vids.standup.paused) samTurb = 1;
+
     for (let i = 0; i < DUST_N; i++) {
       const p = dustParticles[i];
       if (!REDUCED_MOTION) {
-        p.ph += dt * p.sp;
-        let fx = Math.sin(p.y * 0.0042 + T * 0.21) * 9 + Math.sin(p.y * 0.012 - T * 0.15) * 4;
-        let fy = Math.cos(p.x * 0.0033 + T * 0.16) * 6 + Math.sin(p.x * 0.009 + T * 0.11) * 2.5 - 2.2 * beamAt(p.x, p.y);
+        let ax = 0, ay = -0.004 * p.sp;
         for (const v of VORTICES) {
-          const dx = p.x - v.x, dy = p.y - v.y, d2 = dx * dx + dy * dy, R2 = v.r * v.r;
-          if (d2 < R2) {
-            const k = (1 - d2 / R2) * 14 * v.s;
-            fx += (-dy / v.r) * k;
-            fy += (dx / v.r) * k;
+          const dx = p.x - v.x, dy = p.y - v.y, d2 = dx * dx + dy * dy;
+          if (d2 < v.r * v.r && d2 > 4) {
+            const d = Math.sqrt(d2), k = (1 - d / v.r) * 0.018 * v.s;
+            ax += (-dy / d) * k;
+            ay += (dx / d) * k;
           }
         }
-        if (samMoving) {
-          const dx = p.x - 927, dy = p.y - 680, d = Math.hypot(dx, dy) + 1;
-          if (d < 320) {
-            const k = (1 - d / 320) * 22;
-            fx += (dx / d) * k;
-            fy += (dy / d) * k - 6 * (1 - d / 320);
+        if (samTurb) {
+          const dx = p.x - 860, dy = p.y - 680, d2 = dx * dx + dy * dy;
+          if (d2 < 90000 && d2 > 9) {
+            const d = Math.sqrt(d2), k = (1 - d / 300) * 0.14;
+            ax += (dx / d) * k;
+            ay += (dy / d) * k;
           }
         }
-        p.vx += (fx * (0.45 + p.z) - p.vx) * Math.min(1, dt * 1.6);
-        p.vy += (fy * (0.45 + p.z) - p.vy) * Math.min(1, dt * 1.6);
-        p.x += (p.vx + Math.cos(p.ph * p.spin) * p.orb * 0.25) * dt;
-        p.y += (p.vy + Math.sin(p.ph * p.spin) * p.orb * 0.2) * dt;
-        if (p.x < -20) p.x += STAGE_W + 40;
-        if (p.x > STAGE_W + 20) p.x -= STAGE_W + 40;
-        if (p.y < -20) p.y += STAGE_H + 40;
-        if (p.y > STAGE_H + 20) p.y -= STAGE_H + 40;
+        p.vx = p.vx * 0.96 + ax;
+        p.vy = p.vy * 0.96 + ay;
+        p.x += p.vx + Math.cos(T * 0.25 + p.ph) * 0.12 * p.sp;
+        p.y += p.vy + Math.sin(T * 0.2 + p.ph * 1.3) * 0.10 * p.sp;
+        if (p.x < -20) p.x = STAGE_W + 20;
+        if (p.x > STAGE_W + 20) p.x = -20;
+        if (p.y < -20) p.y = STAGE_H + 20;
+        if (p.y > STAGE_H + 20) p.y = -20;
       }
-      dustPos[i * 3] = p.x;
-      dustPos[i * 3 + 1] = -p.y;
-      const L = beamAt(p.x, p.y) * (1 - 0.55 * eveCur);
-      const glint = 0.5 + 0.5 * Math.pow(Math.max(0, Math.sin(p.ph * p.tw * 2)), 3);
-      const a = L * 1.05 * glint + 0.02;
-      dustAlpha[i] = a < 0.03 ? 0 : Math.min(1, a * (p.blur ? 0.45 : 1));
+
+      const ox = REDUCED_MOTION ? 0 : Math.cos(T * p.spin + p.ph) * p.orb * (0.3 + p.z * 0.7);
+      const oy = REDUCED_MOTION ? 0 : Math.sin(T * p.spin + p.ph) * p.orb * 0.45;
+      const px = p.x + ox, py = p.y + oy;
+      dustPos[i * 3] = px;
+      dustPos[i * 3 + 1] = -py;
+
+      const b = beamAt(px, py);
+      const tw = 0.55 + 0.45 * Math.sin(T * p.tw + p.ph * 3);
+      const glint = Math.pow(Math.max(0, Math.sin(T * p.tw * 0.7 + p.ph * 5)), 14);
+      const a = (0.04 + b * 0.62) * (0.25 + p.z * 0.75) * tw + b * glint * 0.5;
+      dustAlpha[i] = a < 0.02 ? 0 : Math.min(0.95, a);
     }
     dustGeo.attributes.position.needsUpdate = true;
     dustGeo.attributes.aAlpha.needsUpdate = true;
-    dustMat.uniforms.uScale.value = stageScale * renderer.getPixelRatio();
+    dustMat.uniforms.uScale.value = stageScale * (window.devicePixelRatio ? Math.min(window.devicePixelRatio, 2) : 1);
 
     /* 6. Golden Ripple Marker */
-    markerUniforms.uTime.value = T;
+    if (!REDUCED_MOTION) markerUniforms.uTime.value = st12 / 1000;
     const mDiff = markerTargetAlpha - markerUniforms.uAlpha.value;
-    if (Math.abs(mDiff) > 0.002) {
-      markerUniforms.uAlpha.value += mDiff * Math.min(1, dt * 4);
+    if (Math.abs(mDiff) > 0.003) {
+      markerUniforms.uAlpha.value += mDiff * Math.min(1, dt * 6);
     } else {
       markerUniforms.uAlpha.value = markerTargetAlpha;
     }
-    markerMesh.scale.setScalar(uiScale);
-    markerMesh.visible = markerUniforms.uAlpha.value > 0.004 && !REDUCED_MOTION;
+    markerMesh.visible = markerUniforms.uAlpha.value > 0.005;
 
     renderer.render(scene, camera);
     requestAnimationFrame(renderLoop);

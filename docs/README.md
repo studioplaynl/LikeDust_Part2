@@ -27,8 +27,18 @@ This interactive video-comic experience is built as a single unified codebase ta
 
 4. [**Store Release Checklist**](file:///Users/maarten/Github_may_be_deleted/LikeDust_Part2/docs/STORE_RELEASE_CHECKLIST.md)
    - Steps to prepare for Apple App Store and Google Play releases.
-   - Toggling `DEV_DEFAULT = false` in `www/room/shared/shared.js`.
-   - Building and deploying to Cloudflare Pages.
+   - Verifying `DEV_DEFAULT = false` in `www/room/shared/shared.js`.
+   - Building and deploying to Cloudflare Pages (`thesameair.nl` & review dashboard).
+
+5. [**Shared Terminology, States & Flow Map**](file:///Users/maarten/Github_may_be_deleted/LikeDust_Part2/docs/TERMINOLOGY_AND_STATE_MAP.md)
+   - Canonical names for every Space (`Doors`, `Intro Film`, `Window Scene`, `The Room`, `Chapter 1–4`), `SamPose` (`sitting`, `standingUp`, `thinkPose`, `windowGaze`), `RoomFlow` states, `Moments`, and text layers.
+
+6. [**Optimalisation, Bug Analysis & Farsi i18n Plan (`docs/optimalisation/`)**](file:///Users/maarten/Github_may_be_deleted/LikeDust_Part2/docs/optimalisation/README.md)
+   - Prioritized roadmap (*quick wins first*).
+   - Root-cause analysis for iOS audio glitches, mobile hero video autoplay, airport window flicker, Double Sam, dead animation cleanup, and Farsi (`fa` / RTL) translation JSON.
+
+7. [**Domain Glossary (`GLOSSARY.md`)**](file:///Users/maarten/Github_may_be_deleted/LikeDust_Part2/GLOSSARY.md) & [**Architecture Decision Records (`docs/adr/`)**](file:///Users/maarten/Github_may_be_deleted/LikeDust_Part2/docs/adr/0001-zero-dependency-fsm-and-shared-chapter-runtime.md)
+   - Pure domain vocabulary and key architectural trade-offs.
 
 ---
 

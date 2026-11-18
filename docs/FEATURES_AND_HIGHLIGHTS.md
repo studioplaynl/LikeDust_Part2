@@ -1,45 +1,46 @@
 # Features & Highlights
 
-A comprehensive guide to the visual, audio, and interactive systems implemented in **We All Breathe the Same Air** (`Capacitor_Apps/app-room/`).
+A comprehensive guide to the visual, audio, and interactive systems in **We All Breathe the Same Air** (`Capacitor_Apps/app-room/`).
+
+For shared project terminology (`Doors`, `Window Scene`, `The Room`, `SamPose`, `Chapters`, `Moments`), see [**Shared Terminology, States & Flow Map**](file:///Users/maarten/Github_may_be_deleted/LikeDust_Part2/docs/TERMINOLOGY_AND_STATE_MAP.md) and [**GLOSSARY.md**](file:///Users/maarten/Github_may_be_deleted/LikeDust_Part2/GLOSSARY.md).
 
 ---
 
-## 1. Landing Page & Pre-Room Intro Stage (`index.html` & `intro/index.html`)
+## 1. Landing Page (`Doors`) & Pre-Room Stage (`index.html` & `intro/index.html`)
 
-- **Two-Book Doors (`www/index.html`):** Full-viewport split hero for **Part 2 (*We All Breathe The Same Air*)** and **Part 1 (*Like Dust*)** with drifting dust particles (`<canvas id="dust">`), desktop-only silent background video loops (`(hover: hover) and (pointer: fine)`), static poster images on mobile/touch devices, and safe-area + short-landscape responsive layout.
-- **Unified `#stage` Overlay (`#intro` → `#scene` → `#begin`):**
-  - Tapping **Start** opens `#stage` and starts `vid/intro.mp4` synchronously inside the user gesture with auto-hiding player controls (controls stay visible while paused).
-  - After the intro video (or **Skip ›**), `#scene` reveals the airport window (`reflect.jpg`) with an organic breathing silhouette animation of young Sam (`young-silhouette.png`) and synthesized WebAudio terminal ambience (room tone, fluorescent hum, rain on glass, distant jet).
+- **Two-Book `Doors` (`www/index.html`):** Full-viewport split hero for **Part 2 (*We All Breathe The Same Air*)** and **Part 1 (*Like Dust*)** with drifting dust particles (`<canvas id="dust">`), silent autoplaying background video loops (`muted` + `playsinline`) across both desktop and mobile (with seamless poster fallback in iOS Low Power Mode so native WebKit play overlays never appear), and safe-area + short-landscape responsive layout.
+- **Unified `#stage` Overlay (`Intro Film` → `Window Scene` → `#begin`):**
+  - Tapping **Start** opens `#stage` and starts `vid/intro.mp4` synchronously inside the user gesture with auto-hiding player controls.
+  - After the **Intro Film** (or **Skip ›**), the **Window Scene** (`#scene`) shows adult Sam looking at the airport window (`reflect.jpg`) while his seventeen-year-old reflection (`young-silhouette.png`) flickers organically in the glass alongside synthesized WebAudio terminal ambience (room tone, fluorescent hum, rain on glass, distant jet).
   - Clicking **young Sam** fades to black (`#begin`) and navigates into `room/index.html`; pressing Browser Back returns cleanly to `#window`.
 
 ---
 
-## 2. Flat 2D Room in Three.js (`room/app.js`)
+## 2. Flat 2D Room in Three.js (`The Room` · `room/app.js`)
 
-- **True Flat 2D Presentation:** Built in Three.js with an `OrthographicCamera` over a `1920 × 1080` stage (`stageGroup`) with zero 2.5D camera parallax, matching the exact framing and artwork of `We All Breathe the Same Air-DEF 2`.
-- **Prologue & In-Room Character Beats:**
-  - **Prologue (`Sam`):** Sam sits on the lower bunk; clicking him plays `standup` with foley footsteps and transitions into his breathing `idle` loop in the sunbeam.
-  - **Chapter 1 (`Passport` · Schiphol):** Clicking the passport on the foreground table triggers Sam's `think` reaction clip + caption before zooming through the passport silhouette into Chapter 1.
-  - **Chapter 2 (`Photo` · The Asylum Centre):** Clicking the framed photo hides the tabletop prop while Sam picks it up (`frame` clip), then transitions into Chapter 2.
-  - **Chapter 3 (`Bike` · Amsterdam):** Clicking the bicycle triggers Sam's `bike` clip (with fluttering banknotes on the foreground table) -> Chapter 3 -> returning to the room plays Sam's `money` counting beat (`countMoney` animated bills).
-  - **Chapter 4 (`Letter` · The Letter):** Clicking the rolled notice on the left brick wall unrolls the rejection poster (`unrollPoster`) and plays Sam's `sad` clip -> Chapter 4 -> returning after all 4 chapters triggers the **Dove Window Cinematic (`birdCine`)** and **Finale (`playFinale`)** ending on *The End* card.
-- **Living Room Atmosphere & Time Progression:**
-  - **Volumetric Sunbeams (`raysA` / `raysB`):** Dual breathing light-ray planes blended with custom screen-blend GLSL shaders that shift angle and warmth as day turns to dusk.
-  - **3D-Lit Dust Motes:** `THREE.Points` particle system with vortex physics, Sam motion turbulence, and sunbeam glint illumination.
-  - **Blackboard & Desk Stack:** Dynamic `CanvasTexture` planes where chalk Dutch lessons (`School b...`) and stamped envelopes/forms accumulate across chapters.
-  - **Ambient Dove:** Occasional wing-flap clip (`pigeon`) on the bedpost prior to the Chapter 4 finale.
+- **True Flat 2D Presentation:** Built in Three.js with an `OrthographicCamera` over a `1920 × 1080` stage (`stageGroup`) with zero 2.5D camera parallax, preserving exact artist framing.
+- **Sam's Poses (`SamPose` — Begin, Think Pose, End):**
+  - **Opening (`Sitting Pose` → `Stand-Up`):** Sam starts sitting quietly on the lower bunk; clicking him plays his single opening animation (`standup` `0s → 1.83s`) with footsteps as he steps into the sunbeam.
+  - **Middle (`Think Pose`):** Throughout Chapters 1–4, Sam holds his calm, continuous standing **Think Pose** (`idle.webp`, hand on chin) in the sunbeam. Clicking any unlocked **Chapter Object** (*Passport*, *Photo Frame*, *Bicycle*, *Rejection Letter*) transitions cleanly via a black fade into that Chapter without intermediate object-pickup or counting animations.
+  - **Closing (`Finale`: `Window Gaze` → `Dove` Flight → *The End*):** After all 4 Chapters are seen, Sam turns to look out the barred window (`standup` `1.83s → 5.08s`), the **Dove** flies out through the window (`birdout.mp4`), Sam fades out, and the camera slowly zooms toward the window into *The End* card.
+- **Living Room Atmosphere & Progressive Props:**
+  - **Progressive Room Props:** Alongside the 4 **Chapter Objects** (*Passport*, *Photo Frame*, *Bicycle*, *Rejection Letter*), `money.png` appears quietly on the foreground table with Chapter 3, and the wall letter transitions cleanly between `reject_rolled.png` (unlocked) and `reject_open.png` (seen) without intermediate object animations.
+  - **Volumetric Sunbeams (`raysA` / `raysB`):** Dual breathing light-ray planes blended with custom screen-blend GLSL shaders that shift angle and warmth as afternoon turns to evening across the 4 Chapters.
+  - **3D-Lit Dust Motes:** `THREE.Points` particle system with vortex physics and sunbeam glint illumination.
+  - **Blackboard & Desk Stack:** Dynamic `CanvasTexture` planes where chalk Dutch lessons and stamped envelopes/forms accumulate across Chapters.
+  - **Ambient Dove:** Occasional wing-flap on the bedpost prior to the Chapter 4 Finale.
 
 ---
 
-## 3. Interactive Video Chapter Player (`room/chapters/` + `room/shared/shared.js`)
+## 3. Interactive Video Chapters (`room/chapters/` + `room/shared/`)
 
-- **Three.js Silhouette Mask Transition:** Clicking an unlocked room object extracts its alpha silhouette from the Three.js scene via an offscreen `WebGLRenderTarget` and expands it smoothly into the full-screen interactive chapter iframe (`Hoofdstuk_1..4`).
-- **Auto-Hiding Video Controls:**
-  - Lower playback bar (`#play`, `#tl` timeline + markers, `#time`, and `#cc`) starts **hidden** during video playback, fades in on tap/click, and auto-hides after **3 seconds** of inactivity.
-- **Custom Subtitle Toggle:**
-  - SVG monitor icon with subtitle bars (`SUBLANG = "nl"`).
-- **Audio Handoff:**
-  - Room ambient soundscape (`amb_room.mp3`) fades out smoothly when entering an interactive video chapter and fades back in upon returning to the room.
+- **Clean Fade & Audio Handoff:** Clicking an unlocked **Chapter Object** fades smoothly to black while the room ambience (`amb_room.mp3`) fades out, opens the interactive **Chapter** (`Hoofdstuk_1..4`), and fades room ambience back in upon returning to **The Room**.
+- **Interactive `Moments`:** Each Chapter film pauses at key story **Moments** (such as holding your breath at passport control, rubbing the **Cell Wall**, or receiving the **Yellow Card**) where the viewer acts on the frozen frame before the film continues.
+- **Auto-Hiding Video Controls:** Lower playback bar (`#play`, `#tl` timeline + Moment markers, `#time`, and optional `#cc` subtitle toggle) starts hidden during playback, fades in on tap/click, and auto-hides after 3 seconds of inactivity.
+- **Unified Multi-Language Support (`en` · `nl` · `fa`):**
+  - Global language switcher (`EN · NL · فارسی`, defaulting to `EN` with `?lang=nl|fa` URL support).
+  - When **English (`en`)** is selected, video overlay **Subtitles** are off and `#cc` is hidden because **Burned-in English** text is already part of the films.
+  - When **Dutch (`nl`)** or **Farsi (`fa`, RTL + offline-bundled `Vazirmatn`)** is selected, UI text, **Sam's Voice**, **Action Prompts**, and film **Subtitles** all switch together via `www/i18n/{en,nl,fa}.json` — with **Subtitles** turned **on by default** and toggleable via the `#cc` button.
 
 ---
 
@@ -49,14 +50,13 @@ A single flag at the top of `Capacitor_Apps/app-room/www/room/shared/shared.js` 
 
 ```javascript
 // Located at the top of Capacitor_Apps/app-room/www/room/shared/shared.js:
-const DEV_DEFAULT = true; // Set to false before building for App Store / Google Play
+const DEV_DEFAULT = false; // Production default (override on web with ?dev=1 or ?dev=0)
 ```
 
 | Element | `DEV_MODE = true` (Testing) | `DEV_MODE = false` (Production) |
 | :--- | :--- | :--- |
-| **Room Top Bar** | `We All Breathe the Same Air · The Room`, 4 progress dots, reset `↺` button | **Hidden** |
-| **Room Bottom Hint** | `keys 1–4: toggle chapter · 0: reset` | **Hidden** |
+| **Room Top Bar** | `← Home` + 4 progress dots | **Hidden** |
+| **Keyboard Shortcuts** | `keys 1–4: toggle chapter · 0: reset` | **Disabled** |
 | **Chapter Tracking** | Dots in top bar | **4 Minimalist SVG Icons (passport, photo frame, bicycle, letter)** in top-right |
 | **Chapter Back Button**| `← Back to room` top-left in video overlay menu | `← Back to room` top-left in video overlay menu |
-| **Assignment Skip** | `Skip ›` button displayed | **Never shown** |
 | **URL Testing Override**| Add `?dev=1` to force on | Add `?dev=0` to preview production mode |
