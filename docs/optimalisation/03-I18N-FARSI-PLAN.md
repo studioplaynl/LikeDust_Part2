@@ -23,7 +23,7 @@ Wat nog **hardcoded in het Engels** staat zonder vertaallaag:
 
 | Onderdeel | Bestand(en) | Aantal strings / cues | Opmerking |
 | :--- | :--- | :--- | :--- |
-| **Homepagina (`/` of `/room/`)** | `www/index.html` | ~38 UI- & verhaalteksten | Boektitels, beschrijvingen, knoppen (`Start`, `Enter`, `Watch the trailer`), credits-rollen (`Script`, `Illustrations`, `Sound`, …). |
+| **Homepagina (`/`)** | `www/index.html` | ~38 UI- & verhaalteksten | Boektitels, beschrijvingen, knoppen (`Start`, `Enter`, `Watch the trailer`), credits-rollen (`Script`, `Illustrations`, `Sound`, …). |
 | **Intro & Raamscène (`#stage`)** | `www/index.html`, `www/intro/index.html` | ~8 UI-strings + **20 intro-cues** | `← Home`, `Skip ›`, `Click young Sam to begin`, + 20 gesproken intro-zinnen. |
 | **De Kamer (Three.js Hub)** | `room/index.html`, `room/app.js`, `room/shared/shared.js` | ~22 strings | Startkaart, Eindkaart (`The End`, `Start again`, `← Home`), `← Back to room`, 4 object-captions (`Click the passport to begin.`, …). *Krijtbord op de muur blijft Nederlands (onderdeel van Sams verhaal: Nederlands leren in het AZC).* |
 | **Hoofdstuk 1 · Schiphol** | `Hoofdstuk_1_Schiphol/index.html` | ~36 UI/stem-keys + **40 ondertitel-cues** | Inclusief celmuur-prompt, verhoor-prompt, gele pasje (`Naam` / `Nummer`), stempel (`FALSE` / `VALS` / `جعلی`). |

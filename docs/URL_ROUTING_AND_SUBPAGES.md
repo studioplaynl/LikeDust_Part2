@@ -14,6 +14,13 @@
 
 Query flags such as `?dev=0` or `?dev=1` are preserved automatically when transitioning from `index.html` → `#intro` / `#window` → `room/index.html` (and back via `← Home`).
 
+### Dev Progress Reset Flag (`?reset=1`)
+
+Pass `?reset=1` (or `?reset`, `#reset`) on any entry page (`index.html`, `intro/index.html`, or `room/index.html`) to wipe saved story progress (`ld2-room-*`, `wabtsa-number`, `wabtsa-line`) before the page initializes while keeping language/subtitle preferences (`wabtsa-lang`, `wabtsa-cc`).
+
+- **One-shot behavior:** `room/shared/progress-reset.js` clears progress immediately on load and strips `reset` from the URL via `history.replaceState` (keeping other flags like `?dev=1&lang=nl` and hashes like `#ch=1`) so reloading or navigating forward won't wipe newly earned progress.
+- **Examples:** `?reset=1`, `?reset=1&dev=1`, `room/?reset=1&lang=fa`.
+
 ---
 
 ## 1. Direct Chapter URLs
@@ -22,10 +29,10 @@ You can share or navigate directly to any chapter on the web using either **hash
 
 | Chapter | URL Format (Hash) | URL Format (Query Param) |
 | :--- | :--- | :--- |
-| **Chapter 1 · Schiphol** | `http://localhost:8771/#ch=1` (or `#ch1`, `#1`) | `http://localhost:8771/?ch=1` |
-| **Chapter 2 · The AZC** | `http://localhost:8771/#ch=2` (or `#ch2`, `#2`) | `http://localhost:8771/?ch=2` |
-| **Chapter 3 · Amsterdam** | `http://localhost:8771/#ch=3` (or `#ch3`, `#3`) | `http://localhost:8771/?ch=3` |
-| **Chapter 4 · The Letter** | `http://localhost:8771/#ch=4` (or `#ch4`, `#4`) | `http://localhost:8771/?ch=4` |
+| **Chapter 1 · Schiphol** | `http://localhost:8771/room/#ch=1` (or `#ch1`, `#1`) | `http://localhost:8771/room/?ch=1` |
+| **Chapter 2 · The AZC** | `http://localhost:8771/room/#ch=2` (or `#ch2`, `#2`) | `http://localhost:8771/room/?ch=2` |
+| **Chapter 3 · Amsterdam** | `http://localhost:8771/room/#ch=3` (or `#ch3`, `#3`) | `http://localhost:8771/room/?ch=3` |
+| **Chapter 4 · The Letter** | `http://localhost:8771/room/#ch=4` (or `#ch4`, `#4`) | `http://localhost:8771/room/?ch=4` |
 
 ### How It Works:
 1. **Direct Navigation:** When loading the page with `#ch=1`, `LD.onRouteChapter` dismisses the Start card, places Sam in the room, and opens Chapter 1 directly with its Three.js object silhouette transition.
@@ -40,9 +47,9 @@ You can share or navigate directly to any chapter on the web using either **hash
 The router includes built-in support for modal subpages (such as About, Credits, Colophon, or Help):
 
 ### URL Formats:
-- `http://localhost:8771/#page=about` or `http://localhost:8771/#about`
-- `http://localhost:8771/#credits`
-- `http://localhost:8771/#colophon`
+- `http://localhost:8771/room/#page=about` or `http://localhost:8771/room/#about`
+- `http://localhost:8771/room/#credits`
+- `http://localhost:8771/room/#colophon`
 
 ### Custom Page Handlers (JavaScript API):
 Register a handler using `LD.onPage`:

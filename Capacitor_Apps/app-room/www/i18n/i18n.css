@@ -27,6 +27,8 @@
   padding: 6px 8px;
   cursor: pointer;
   border-radius: 2px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: color 0.18s ease, background 0.18s ease;
 }
 
@@ -38,8 +40,10 @@
   padding: 5px 8px;
 }
 
-.lang-switch button:hover {
-  color: #ece8de;
+@media (hover: hover) and (pointer: fine) {
+  .lang-switch button:hover {
+    color: #ece8de;
+  }
 }
 
 .lang-switch button[aria-pressed="true"] {
@@ -52,16 +56,14 @@
   outline-offset: 2px;
 }
 
-/* Room floating language switcher (top-left, clear of top-right chapter icons) */
+/* Room floating language switcher (bottom-left, clear of top-left Home link and bottom-center hints) */
 .ld-room-lang {
   position: fixed;
-  top: max(14px, env(safe-area-inset-top, 0px));
+  bottom: max(14px, env(safe-area-inset-bottom, 0px));
   left: max(16px, env(safe-area-inset-left, 0px));
   z-index: 32;
 }
-body.dev-room .ld-room-lang {
-  top: max(56px, calc(46px + env(safe-area-inset-top, 0px)));
-}
+body.card-open .ld-room-lang,
 body.chapter-open .ld-room-lang {
   opacity: 0;
   pointer-events: none;
@@ -123,7 +125,7 @@ html[data-lang="fa"] .credits dd {
   text-transform: none !important;
 }
 
-html[data-lang="fa"] .door h2,
+html[data-lang="fa"] .door :is(h1, h2),
 html[data-lang="fa"] .h-title,
 html[data-lang="fa"] .card h1,
 html[data-lang="fa"] .card h2,

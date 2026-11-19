@@ -19,7 +19,7 @@ flowchart LR
 
 | Term | Wat het is | URL / Route |
 | :--- | :--- | :--- |
-| **`Doors`** | De gesplitste startpagina met *Part 2 (We All Breathe The Same Air)* en *Part 1 (Like Dust)*, met stille achtergrondvideo's op desktop én mobiel. | `/` (of `/room/` op review-dashboard) |
+| **`Doors`** | De gesplitste startpagina met *Part 2 (We All Breathe The Same Air)* en *Part 1 (Like Dust)*, met stille achtergrondvideo's op desktop én mobiel. | `/` |
 | **`Intro Film`** | De proloogfilm (`1:13`) die start zodra je op `Start` klikt. | `/#intro` (of `/intro/`) |
 | **`Window Scene`** | Het vliegveldraam waar volwassen Sam naar de **flikkerende reflectie van jonge Sam** kijkt. Klikken op jonge Sam opent *The Room*. | `/#window` |
 | **`The Room`** | Sams kamer (Three.js 2D). Het centrale punt waar de tijd van middag naar avond schuift en de 4 `Chapter Objects` klaarliggen. | `/room/` |

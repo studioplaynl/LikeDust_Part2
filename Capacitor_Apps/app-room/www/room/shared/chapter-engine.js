@@ -12,19 +12,19 @@
       total: 255.12,
       sfx: ["beat", "stamp", "exhale", "shutter", "scrape", "ring"],
       segs: [
-        { src: "film/s1.mp4",  start: 0,      after: "breath" },
-        { src: "film/s2.mp4",  start: 28.60,  after: "silence" },
-        { src: "film/s2b.mp4", start: 76.20,  after: "wall" },
-        { src: "film/s3.mp4",  start: 155.12, after: "mother" },
+        { src: "film/s1.mp4", start: 0, after: "breath" },
+        { src: "film/s2.mp4", start: 28.60, after: "silence" },
+        { src: "film/s2b.mp4", start: 76.20, after: "wall" },
+        { src: "film/s3.mp4", start: 155.12, after: "mother" },
         { src: "film/s3b.mp4", start: 170.08, after: "photo" },
-        { src: "film/s4.mp4",  start: 237.88, after: null }
+        { src: "film/s4.mp4", start: 237.88, after: null }
       ]
     },
     2: {
       total: 100.41,
       sfx: ["ring", "pickup", "door", "flies", "riot"],
       segs: [
-        { src: "film/c2s1.mp4", start: 0,    after: "call" },
+        { src: "film/c2s1.mp4", start: 0, after: "call" },
         { src: "film/c2s2.mp4", start: 16.4, after: "locker" },
         { src: "film/c2s3.mp4", start: 61.0, after: "hide" },
         { src: "film/c2s4.mp4", start: 76.8, after: null }
@@ -34,11 +34,11 @@
       total: 217.04,
       sfx: ["stamp", "beat", "tick", "pickup", "bell", "inhale", "exhale"],
       segs: [
-        { src: "film/c3s1.mp4", start: 0,      after: "truth" },
-        { src: "film/c3s2.mp4", start: 22.6,   after: "look" },
-        { src: "film/c3s3.mp4", start: 81.2,   after: "card" },
-        { src: "film/c3s4.mp4", start: 130.2,  after: "bike" },
-        { src: "film/c3s5.mp4", start: 185.4,  after: "bird" },
+        { src: "film/c3s1.mp4", start: 0, after: "truth" },
+        { src: "film/c3s2.mp4", start: 22.6, after: "look" },
+        { src: "film/c3s3.mp4", start: 81.2, after: "card" },
+        { src: "film/c3s4.mp4", start: 130.2, after: "bike" },
+        { src: "film/c3s5.mp4", start: 185.4, after: "bird" },
         { src: "film/c3s6.mp4", start: 195.24, after: null }
       ]
     },
@@ -46,7 +46,7 @@
       total: 90.76,
       sfx: ["bubble", "underwater", "exhale", "flap", "scrape"],
       segs: [
-        { src: "film/c4s1.mp4", start: 0,     after: "dive" },
+        { src: "film/c4s1.mp4", start: 0, after: "dive" },
         { src: "film/c4s2.mp4", start: 21.44, after: "candles" },
         { src: "film/c4s3.mp4", start: 27.64, after: "free" },
         { src: "film/c4s4.mp4", start: 53.64, after: "erase" },
@@ -112,12 +112,12 @@
     let beatT = null, bpm = 70, ringT = null, riotNode = null, underNode = null;
 
     function ensureCtx() {
-      try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (_) {}
+      try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (_) { }
       if (!ctx) {
-        try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) {}
+        try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (_) { }
       }
       if (ctx && ctx.state !== "running" && ctx.state !== "closed") {
-        ctx.resume().catch(() => {});
+        ctx.resume().catch(() => { });
       }
       return ctx;
     }
@@ -131,7 +131,7 @@
           .then((r) => r.arrayBuffer())
           .then((ab) => new Promise((ok, no) => c.decodeAudioData(ab, ok, no)))
           .then((buf) => { buffers[name] = buf; })
-          .catch(() => {});
+          .catch(() => { });
       });
     }
 
@@ -145,7 +145,7 @@
         s.buffer = bf;
         s.connect(c.destination);
         s.start(0);
-      } catch (_) {}
+      } catch (_) { }
     }
 
     function playBuffer(name, vol = 1) {
@@ -171,7 +171,7 @@
     function stopNamed(name) {
       for (const rec of [...activeNodes]) {
         if (rec.name === name) {
-          try { rec.src.stop(); } catch (_) {}
+          try { rec.src.stop(); } catch (_) { }
           activeNodes.delete(rec);
         }
       }
@@ -214,7 +214,7 @@
             const now = ctx.currentTime;
             node.gain.gain.setValueAtTime(node.gain.gain.value, now);
             node.gain.gain.linearRampToValueAtTime(0, now + 0.35);
-            setTimeout(() => { try { node.src.stop(); } catch (_) {} activeNodes.delete(node); }, 400);
+            setTimeout(() => { try { node.src.stop(); } catch (_) { } activeNodes.delete(node); }, 400);
           } catch (_) { stopNamed("underwater"); }
         } else {
           stopNamed("underwater");
@@ -233,7 +233,7 @@
             const now = ctx.currentTime;
             node.gain.gain.setValueAtTime(node.gain.gain.value, now);
             node.gain.gain.linearRampToValueAtTime(0, now + 0.85);
-            setTimeout(() => { try { node.src.stop(); } catch (_) {} activeNodes.delete(node); }, 900);
+            setTimeout(() => { try { node.src.stop(); } catch (_) { } activeNodes.delete(node); }, 900);
           } catch (_) { stopNamed("riot"); }
         } else {
           stopNamed("riot");
@@ -259,7 +259,7 @@
         riotNode = null;
         underNode = null;
         for (const rec of [...activeNodes]) {
-          try { rec.src.stop(); } catch (_) {}
+          try { rec.src.stop(); } catch (_) { }
         }
         activeNodes.clear();
       }
@@ -506,7 +506,7 @@
 
   function loadSeg(i, jumpToEndFrame, customTime) {
     const myNav = ++navId;
-    vids.forEach((x) => { try { x.pause(); } catch (_) {} });
+    vids.forEach((x) => { try { x.pause(); } catch (_) { } });
     setPlaying(false);
     endInteraction();
     segI = i;
@@ -628,7 +628,7 @@
       $("endnum").hidden = false;
     }
     if (inRoom) {
-      try { window.parent.postMessage({ type: "ld:ended", ch: CHN }, "*"); } catch (_) {}
+      try { window.parent.postMessage({ type: "ld:ended", ch: CHN }, "*"); } catch (_) { }
       return;
     }
     $("cardEnd").classList.remove("off");
@@ -638,11 +638,11 @@
     timers.forEach(clearTimeout);
     timers.clear();
     if (cleanup) {
-      try { cleanup(); } catch (_) {}
+      try { cleanup(); } catch (_) { }
       cleanup = null;
     }
     ui.querySelectorAll("video, audio").forEach((m) => {
-      try { m.pause(); m.removeAttribute("src"); m.load(); m.onended = null; m.onerror = null; } catch (_) {}
+      try { m.pause(); m.removeAttribute("src"); m.load(); m.onended = null; m.onerror = null; } catch (_) { }
     });
     snd.stopAll();
     ui.innerHTML = "";
@@ -657,7 +657,7 @@
     if (v().paused) {
       v().muted = false;
       v().volume = 1;
-      v().play().then(() => setPlaying(true)).catch(() => {});
+      v().play().then(() => setPlaying(true)).catch(() => { });
     } else {
       v().pause();
       setPlaying(false);
@@ -704,7 +704,7 @@
     a.addEventListener("click", (e) => {
       e.preventDefault();
       if (inRoom) {
-        try { window.parent.postMessage({ type: "ld:back", ch: CHN }, "*"); } catch (_) {}
+        try { window.parent.postMessage({ type: "ld:back", ch: CHN }, "*"); } catch (_) { }
       } else {
         location.href = "../../index.html" + (location.search || "");
       }
@@ -714,7 +714,7 @@
   let ctlTimer = null, lastPaneTap = 0;
   function notifyCtl(on) {
     if (!inRoom) return;
-    try { window.parent.postMessage({ type: "ld:ctl", on: !!on, ch: CHN }, "*"); } catch (_) {}
+    try { window.parent.postMessage({ type: "ld:ctl", on: !!on, ch: CHN }, "*"); } catch (_) { }
   }
   function hideControls() {
     clearTimeout(ctlTimer);
@@ -733,7 +733,7 @@
   (() => {
     const stg = document.querySelector(".stage");
     function paneTap(e) {
-      if (e.target.closest(".ctl,.top,.card,button,a,input,textarea,.wallbox,.veins,.water,.reveal,.numcv,.lang-switch")) return;
+      if (e.target.closest(".ctl,.top,.card,.answer,button,a,input,textarea,.wallbox,.veins,.water,.reveal,.numcv,.lang-switch")) return;
       const now = Date.now();
       if (now - lastPaneTap < 420) return;
       lastPaneTap = now;
@@ -757,12 +757,12 @@
     });
   })();
 
-  let updFsLabel = () => {};
+  let updFsLabel = () => { };
   (() => {
     const b = $("fs");
     if (!b || IS_NATIVE_APP) return;
     let d = document, el = d.documentElement;
-    try { if (window.top && window.top.document) { d = window.top.document; el = d.documentElement; } } catch (_) {}
+    try { if (window.top && window.top.document) { d = window.top.document; el = d.documentElement; } } catch (_) { }
     const req = el.requestFullscreen || el.webkitRequestFullscreen;
     const ext = d.exitFullscreen || d.webkitExitFullscreen;
     if (!(d.fullscreenEnabled || d.webkitFullscreenEnabled) || !req) return;
@@ -777,10 +777,10 @@
         if (isFs()) ext.call(d);
         else {
           const p = req.call(el);
-          if (p && p.catch) p.catch(() => {});
-          try { const o = screen.orientation; if (o && o.lock) o.lock("landscape").catch(() => {}); } catch (_) {}
+          if (p && p.catch) p.catch(() => { });
+          try { const o = screen.orientation; if (o && o.lock) o.lock("landscape").catch(() => { }); } catch (_) { }
         }
-      } catch (_) {}
+      } catch (_) { }
     });
     d.addEventListener("fullscreenchange", updFsLabel);
     d.addEventListener("webkitfullscreenchange", updFsLabel);
@@ -825,10 +825,10 @@
         n = n.replace("V-1999-", "V-1997-");
         localStorage.setItem("wabtsa-number", n);
       }
-    } catch (_) {}
+    } catch (_) { }
     if (!n && make) {
       n = "V-1997-" + String(Math.floor(1000 + Math.random() * 8999));
-      try { localStorage.setItem("wabtsa-number", n); } catch (_) {}
+      try { localStorage.setItem("wabtsa-number", n); } catch (_) { }
     }
     return n;
   }
@@ -841,12 +841,12 @@
       started = true;
       try { db = await window.claude?.use?.("db"); user = await window.claude?.use?.("user"); } catch (_) { db = null; }
       if (!db) return;
-      try { myId = user ? await user.id() : null; } catch (_) {}
-      try { canWrite = user ? await user.can("data.write") : null; } catch (_) {}
+      try { myId = user ? await user.id() : null; } catch (_) { }
+      try { canWrite = user ? await user.can("data.write") : null; } catch (_) { }
       db.collection("wall").orderBy("at", "desc").limit(120).onSnapshot((s) => {
         lines = s.docs.map((d) => ({ id: d.id, ...d.data() })).filter((x) => typeof x.text === "string");
         listeners.forEach((f) => f(lines));
-      }, () => {});
+      }, () => { });
     }
     async function add(text) {
       if (!db || !myId || canWrite === false) return false;
@@ -875,6 +875,31 @@
     const Z = [[8, 52, 14, 4], [52, 28, 53, 4], [4, 22, 77, 9]];
     const z = Z[Math.floor(r() * Z.length)];
     return { x: z[0] + r() * z[1], y: z[2] + r() * z[3], rot: -7 + r() * 10 };
+  }
+
+  /**
+   * Track visualViewport shrink (on-screen keyboard) into `--kb` on an `.answer` form.
+   */
+  function bindViewportKb(el) {
+    const vv = window.visualViewport;
+    const sync = () => {
+      if (!el || !vv) return;
+      const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+      el.style.setProperty("--kb", kb + "px");
+    };
+    if (vv) {
+      vv.addEventListener("resize", sync);
+      vv.addEventListener("scroll", sync);
+      sync();
+    }
+    return {
+      sync,
+      off() {
+        if (!vv) return;
+        vv.removeEventListener("resize", sync);
+        vv.removeEventListener("scroll", sync);
+      }
+    };
   }
 
   /* ============================================================================
@@ -947,25 +972,11 @@
         if (af) af.classList.toggle("typing", active);
         if (qdim) qdim.classList.toggle("on", active);
       };
-      const vv = window.visualViewport;
-      const syncKb = () => {
-        if (!af || !vv) return;
-        const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
-        af.style.setProperty("--kb", kb + "px");
-      };
-      if (vv) {
-        vv.addEventListener("resize", syncKb);
-        vv.addEventListener("scroll", syncKb);
-      }
-      cleanup = () => {
-        if (vv) {
-          vv.removeEventListener("resize", syncKb);
-          vv.removeEventListener("scroll", syncKb);
-        }
-      };
+      const kb = bindViewportKb(af);
+      cleanup = kb.off;
       let idle = later(() => finish(""), 25000);
-      ta.addEventListener("focus", () => { syncTyping(); syncKb(); });
-      ta.addEventListener("blur", () => { later(() => { syncTyping(); syncKb(); }, 80); });
+      ta.addEventListener("focus", () => { syncTyping(); kb.sync(); });
+      ta.addEventListener("blur", () => { later(() => { syncTyping(); kb.sync(); }, 80); });
       ta.addEventListener("input", () => {
         syncTyping();
         clearTimeout(idle); timers.delete(idle);
@@ -1048,7 +1059,7 @@
         if (moves % 20 === 0) check();
       }
       const pos = (e) => { const q = cv.getBoundingClientRect(); return [e.clientX - q.left, e.clientY - q.top]; };
-      cv.onpointerdown = (e) => { downP = true; lastP = null; try { cv.setPointerCapture(e.pointerId); } catch (_) {} rub(...pos(e)); };
+      cv.onpointerdown = (e) => { downP = true; lastP = null; try { cv.setPointerCapture(e.pointerId); } catch (_) { } rub(...pos(e)); };
       cv.onpointermove = (e) => { if (downP) rub(...pos(e)); };
       cv.onpointerup = cv.onpointercancel = () => { downP = false; lastP = null; };
       function check() {
@@ -1078,7 +1089,7 @@
             wl.appendChild(a);
             for (let k = 0; k < 8; k++) later(snd.scrape, k * 120);
             requestAnimationFrame(() => a.classList.add("on"));
-            try { localStorage.setItem("wabtsa-line", line); } catch (_) {}
+            try { localStorage.setItem("wabtsa-line", line); } catch (_) { }
             const saved = await wallStore.add(line);
             if (!saved) { const wc = $("wc"); if (wc) wc.textContent = t("w_fail"); }
             later(next, 4200);
@@ -1106,7 +1117,7 @@
           snd.ring(true, () => {
             rings++;
             ph.innerHTML = t("ph_calling") + `<span class="rc">${rings}</span>`;
-            if (navigator.vibrate) { try { navigator.vibrate(120); } catch (_) {} }
+            if (navigator.vibrate) { try { navigator.vibrate(120); } catch (_) { } }
             if (rings >= 4) later(stop, 1800);
           });
         } else {
@@ -1139,7 +1150,7 @@
             const c = $("ycp").getContext("2d"), vv = v(), vw = vv.videoWidth || 1280, vh = vv.videoHeight || 720;
             const sw = vh * 0.75, sx = (vw - sw) / 2;
             c.drawImage(vv, sx, 0, sw, vh, 0, 0, 300, 400);
-          } catch (_) {}
+          } catch (_) { }
         };
         if (v().readyState >= 2 && !v().seeking) drawPhoto();
         else v().addEventListener("seeked", drawPhoto, { once: true });
@@ -1159,12 +1170,12 @@
       onTap(ph, () => {
         if (calling || done) return;
         calling = true; snd.unlock();
-        try { hc.play().then(() => { if (!done) hc.pause(); }).catch(() => {}); } catch (_) {}
+        try { hc.play().then(() => { if (!done) hc.pause(); }).catch(() => { }); } catch (_) { }
         ph.classList.add("ringing"); ph.innerHTML = t("c_calling"); $("ask").hidden = true; voice(t("c_ring"));
         snd.ring(true, () => {
           rings++;
           ph.innerHTML = t("c_calling") + `<span class="rc">${rings} / 3</span>`;
-          if (navigator.vibrate) { try { navigator.vibrate(120); } catch (_) {} }
+          if (navigator.vibrate) { try { navigator.vibrate(120); } catch (_) { } }
           if (rings >= 3) later(connect, 1400);
         });
       });
@@ -1174,7 +1185,7 @@
           const vb = ui.querySelector(".voice"); if (vb) vb.remove();
           ph.style.transition = "opacity .6s"; ph.style.opacity = 0;
           hc.currentTime = 0; hc.classList.add("on");
-          const p = hc.play(); if (p && p.catch) p.catch(() => {});
+          const p = hc.play(); if (p && p.catch) p.catch(() => { });
           hc.onended = () => later(go, 700);
           later(go, 11500);
         }, 1100);
@@ -1197,17 +1208,17 @@
         if (opened) return;
         opened = true;
         const d = $("door"); d.classList.add("open"); d.disabled = true; $("ask").hidden = true; snd.creak();
-        try { lc.play().then(() => { if (!lc.classList.contains("on")) lc.pause(); }).catch(() => {}); } catch (_) {}
+        try { lc.play().then(() => { if (!lc.classList.contains("on")) lc.pause(); }).catch(() => { }); } catch (_) { }
         later(() => {
           lc.currentTime = 0; lc.classList.add("on");
-          const p = lc.play(); if (p && p.catch) p.catch(() => {});
+          const p = lc.play(); if (p && p.catch) p.catch(() => { });
           later(() => voice(t("l_v")), 5600);
           later(() => snd.flies(), 9300);
           lc.onended = () => later(go, 2200);
           later(go, 17500);
         }, 1100);
       });
-      cleanup = () => { try { lc.pause(); lc.removeAttribute("src"); lc.load(); } catch (_) {} };
+      cleanup = () => { try { lc.pause(); lc.removeAttribute("src"); lc.load(); } catch (_) { } };
     },
 
     /* CH2 · 3 · THAT NIGHT */
@@ -1304,7 +1315,7 @@
         if (seen.size / (GX * GY) > 0.55) finish();
       }
       const pos = (e) => { const q = cv.getBoundingClientRect(); return [e.clientX - q.left, e.clientY - q.top]; };
-      cv.onpointerdown = (e) => { downP = true; lastP = null; try { cv.setPointerCapture(e.pointerId); } catch (_) {} rub(...pos(e)); $("ask").hidden = true; };
+      cv.onpointerdown = (e) => { downP = true; lastP = null; try { cv.setPointerCapture(e.pointerId); } catch (_) { } rub(...pos(e)); $("ask").hidden = true; };
       cv.onpointermove = (e) => { if (downP) rub(...pos(e)); };
       cv.onpointerup = cv.onpointercancel = () => { downP = false; lastP = null; };
       function finish() {
@@ -1400,7 +1411,7 @@
           }
         });
       }
-      svg.onpointerdown = (e) => { downP = true; try { svg.setPointerCapture(e.pointerId); } catch (_) {} add(pt(e)); $("ask").hidden = true; };
+      svg.onpointerdown = (e) => { downP = true; try { svg.setPointerCapture(e.pointerId); } catch (_) { } add(pt(e)); $("ask").hidden = true; };
       svg.onpointermove = (e) => { if (downP) add(pt(e)); };
       svg.onpointerup = svg.onpointercancel = () => { downP = false; };
       function finish() {
@@ -1498,7 +1509,7 @@
         done = true; wt.style.pointerEvents = "none"; layers.push(fin);
         fin.style.clipPath = fin.style.webkitClipPath = `circle(0% at ${x}% ${y}%)`;
         sv.currentTime = 0;
-        const pp = sv.play(); if (pp && pp.catch) pp.catch(() => {});
+        const pp = sv.play(); if (pp && pp.catch) pp.catch(() => { });
         snd.underwater(true);
         requestAnimationFrame(() => requestAnimationFrame(() => {
           fin.classList.add("full");
@@ -1511,13 +1522,13 @@
         later(out, 11500);
       }
       wt.addEventListener("pointerdown", (e) => {
-        if (n === 0) { try { sv.play().then(() => { if (!done) sv.pause(); }).catch(() => {}); } catch (_) {} }
+        if (n === 0) { try { sv.play().then(() => { if (!done) sv.pause(); }).catch(() => { }); } catch (_) { } }
         touch(e);
       });
       const kd = (e) => {
         if (e.code === "Space" && !e.repeat) {
           const r = wt.getBoundingClientRect();
-          touch({ preventDefault() {}, clientX: r.left + r.width * (0.25 + Math.random() * 0.5), clientY: r.top + r.height * (0.3 + Math.random() * 0.4) });
+          touch({ preventDefault() { }, clientX: r.left + r.width * (0.25 + Math.random() * 0.5), clientY: r.top + r.height * (0.3 + Math.random() * 0.4) });
         }
       };
       addEventListener("keydown", kd);
@@ -1529,10 +1540,15 @@
       ui.insertAdjacentHTML("beforeend", `<div class="glow4" id="gl"></div><div class="snuff" id="sn"></div>
         <form class="answer wish" id="wf"><label for="wi">${t("cn_label")}</label>
           <div class="row4"><input id="wi" maxlength="60" autocomplete="off" placeholder="${t("cn_ph")}"><button class="btn" type="submit">${t("cn_blow")}</button><button class="ghost" id="ws" type="button">${t("cn_secret")}</button></div></form>`);
+      const wf = $("wf"), wi = $("wi");
+      const kb = bindViewportKb(wf);
+      cleanup = kb.off;
+      wi.addEventListener("focus", kb.sync);
+      wi.addEventListener("blur", () => later(kb.sync, 80));
       let done = false;
       function blow(text) {
         if (done) return;
-        done = true; $("wf").remove(); snd.exhale(); $("gl").style.opacity = 0; $("sn").classList.add("on");
+        done = true; kb.off(); $("wf").remove(); snd.exhale(); $("gl").style.opacity = 0; $("sn").classList.add("on");
         const words = (text || "").trim().split(/\s+/).filter(Boolean);
         words.forEach((w, i) => later(() => {
           const e = document.createElement("span"); e.className = "wishword"; e.textContent = w;
@@ -1615,7 +1631,7 @@
         if (seen.size / (GX * GY) > 0.6) finish();
       }
       const pos = (e) => { const q = cv.getBoundingClientRect(); return [e.clientX - q.left, e.clientY - q.top]; };
-      cv.onpointerdown = (e) => { downP = true; lastP = null; try { cv.setPointerCapture(e.pointerId); } catch (_) {} rub(...pos(e)); $("ask").hidden = true; };
+      cv.onpointerdown = (e) => { downP = true; lastP = null; try { cv.setPointerCapture(e.pointerId); } catch (_) { } rub(...pos(e)); $("ask").hidden = true; };
       cv.onpointermove = (e) => { if (downP) rub(...pos(e)); };
       cv.onpointerup = cv.onpointercancel = () => { downP = false; lastP = null; };
       function finish() {
@@ -1639,9 +1655,9 @@
     const step = (now) => {
       if (vidEl.paused) { audioFading = false; return; }
       const p = Math.min(1, (now - t0) / durationMs);
-      try { vidEl.volume = p; } catch (_) {}
+      try { vidEl.volume = p; } catch (_) { }
       if (p < 1) requestAnimationFrame(step);
-      else { try { vidEl.volume = 1; } catch (_) {} audioFading = false; }
+      else { try { vidEl.volume = 1; } catch (_) { } audioFading = false; }
     };
     requestAnimationFrame(step);
   }
@@ -1652,7 +1668,7 @@
         vids.forEach((el) => {
           if (el.muted) {
             el.muted = false;
-            if (!audioFading) { try { el.volume = 1; } catch (_) {} }
+            if (!audioFading) { try { el.volume = 1; } catch (_) { } }
           }
         });
       }
@@ -1667,8 +1683,8 @@
     syncSubtitles();
     $("cardStart").classList.add("off");
     document.body.classList.remove("ld-wait");
-    vids.forEach((el) => { el.muted = false; try { el.volume = 0; } catch (_) {} });
-    try { vids[0].currentTime = 0; } catch (_) {}
+    vids.forEach((el) => { el.muted = false; try { el.volume = 0; } catch (_) { } });
+    try { vids[0].currentTime = 0; } catch (_) { }
     vids[0].play().then(() => {
       setPlaying(true);
       fadeInAudio(vids[0], 1600);
@@ -1715,11 +1731,11 @@
           p.then(() => {
             if (document.body.classList.contains("ld-wait")) {
               first.pause();
-              try { first.currentTime = 0; } catch (_) {}
+              try { first.currentTime = 0; } catch (_) { }
             }
-          }).catch(() => {});
+          }).catch(() => { });
         }
-      } catch (_) {}
+      } catch (_) { }
     };
     window.ldStart = startEmbedded;
 
@@ -1753,7 +1769,7 @@
       });
     }
     if (/[?&]embed\b/.test(q) && inRoom) {
-      try { window.parent.postMessage({ type: "ld:ready", ch: CHN }, "*"); } catch (_) {}
+      try { window.parent.postMessage({ type: "ld:ready", ch: CHN }, "*"); } catch (_) { }
     }
   });
 })();

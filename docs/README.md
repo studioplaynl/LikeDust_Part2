@@ -28,7 +28,7 @@ This interactive video-comic experience is built as a single unified codebase ta
 4. [**Store Release Checklist**](file:///Users/maarten/Github_may_be_deleted/LikeDust_Part2/docs/STORE_RELEASE_CHECKLIST.md)
    - Steps to prepare for Apple App Store and Google Play releases.
    - Verifying `DEV_DEFAULT = false` in `www/room/shared/shared.js`.
-   - Building and deploying to Cloudflare Pages (`thesameair.nl` & review dashboard).
+   - Building and deploying to Cloudflare Pages (`thesameair.nl`, serving `Capacitor_Apps/app-room/www/` directly at `/`).
 
 5. [**Shared Terminology, States & Flow Map**](file:///Users/maarten/Github_may_be_deleted/LikeDust_Part2/docs/TERMINOLOGY_AND_STATE_MAP.md)
    - Canonical names for every Space (`Doors`, `Intro Film`, `Window Scene`, `The Room`, `Chapter 1–4`), `SamPose` (`sitting`, `standingUp`, `thinkPose`, `windowGaze`), `RoomFlow` states, `Moments`, and text layers.
@@ -49,9 +49,9 @@ This interactive video-comic experience is built as a single unified codebase ta
 ./Start_Dashboard.command
 # or: python3 start_dashboard.py
 
-# Package and prepare static review build for Cloudflare Pages:
+# Package static root build (dist_pages/) or deploy directly to Cloudflare Pages:
 python3 build_cloudflare_pages.py
-# or: ./Deploy_Cloudflare_Pages.command
+./Deploy_Cloudflare_Pages.command
 
 # Inside the unified Capacitor app (Capacitor_Apps/app-room):
 npm run sync           # Copies www/ assets into ios/ and android/

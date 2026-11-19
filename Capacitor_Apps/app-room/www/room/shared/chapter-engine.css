@@ -1008,7 +1008,7 @@ html,
     }
 
     body.show-ctl:not(.ld-wait) .answer:not(.typing):not(:has(textarea:focus)) {
-      bottom: max(54px, calc(48px + env(safe-area-inset-bottom, 0px)))
+      bottom: max(54px, calc(var(--kb, 0px) + 10px), calc(48px + env(safe-area-inset-bottom, 0px)))
     }
 
     .answer label {
@@ -1950,21 +1950,16 @@ html,
     }
 
     .wish {
-      top: calc(100% + 44px);
-      bottom: auto;
-      transform: translateX(-50%);
-      width: min(100%, 620px);
-      background: none;
-      padding: 0;
+      bottom: max(10px, calc(var(--kb, 0px) + 10px), env(safe-area-inset-bottom, 0px));
+      width: min(92vw, 620px);
       gap: 6px
     }
 
     @media (max-height:600px) {
       .wish {
-        top: calc(100% + 4px);
-        left: 0;
-        transform: none;
-        width: calc(100% - 92px);
+        bottom: max(6px, calc(var(--kb, 0px) + 6px), env(safe-area-inset-bottom, 0px));
+        width: min(92vw, 620px);
+        padding: 5px 10px;
         gap: 0
       }
 
@@ -1992,12 +1987,21 @@ html,
     .wish .row4 {
       display: flex;
       gap: 6px;
-      align-items: stretch
+      align-items: stretch;
+      flex-wrap: wrap
     }
 
     .wish .row4 input {
-      flex: 1;
+      flex: 1 1 180px;
       min-width: 0
+    }
+
+    @media (pointer:coarse) and (min-height:601px) {
+      .wish .row4 input,
+      .wish .btn,
+      .wish .ghost {
+        min-height: 44px
+      }
     }
 
     .wish label {

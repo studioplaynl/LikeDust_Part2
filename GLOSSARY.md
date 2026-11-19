@@ -7,7 +7,7 @@ Interactive graphic novel telling Sam Yazdanpanna's true story of arriving in th
 ### Spaces & Flow
 
 **Doors**:
-The two side-by-side book panels on the landing screen representing Part 1 (*Like Dust*) and Part 2 (*We All Breathe The Same Air*).
+The two split book panels on the landing screen representing Part 1 (*Like Dust*) and Part 2 (*We All Breathe The Same Air*).
 _Avoid_: Hero cards, banners, tiles
 
 **Intro Film**:

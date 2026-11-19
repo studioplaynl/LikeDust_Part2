@@ -1,21 +1,21 @@
 # Optimalisatie & Architectuurplan · We All Breathe The Same Air
 
-Dit overzicht bundelt de technische analyse, root-cause diagnoses en het uitvoeringsplan voor **We All Breathe The Same Air** (`https://thesameair.nl` en `https://maartenvanderglas-com-2hv.pages.dev/room/`).
+Dit overzicht bundelt de technische analyse, root-cause diagnoses en het uitvoeringsplan voor **We All Breathe The Same Air** (`https://thesameair.nl`).
 
 De opbouw volgt het principe **makkelijke dingen eerst (Quick Wins → iOS Media/Audio → State & Architectuur → Farsi Vertaling)** zodat zichtbare en hoorbare bugs direct opgelost kunnen worden zonder te wachten op grotere refactors.
 
 ---
 
-## Hoe de twee live URL's overeenkomen met deze repo
+## Hoe de live URL overeenkomt met deze repo
 
-| Live omgeving | Bronmap / Build script | Pad-mapping |
+| Omgeving | Bronmap / Build script | Pad-mapping |
 | :--- | :--- | :--- |
-| **`https://thesameair.nl`** | [`Deploy_Cloudflare_Pages.command`](file:///Users/maarten/Github_may_be_deleted/LikeDust_Part2/Deploy_Cloudflare_Pages.command) | Publiceert `Capacitor_Apps/app-room/www/` rechtstreeks als root (`/` = homepagina, `/intro/` = losse intro, `/room/` = 2D kamer). |
-| **`https://maartenvanderglas-com-2hv.pages.dev/room/`** | [`build_cloudflare_pages.py`](file:///Users/maarten/Github_may_be_deleted/LikeDust_Part2/build_cloudflare_pages.py) → `dist_pages/` | Zet het review-dashboard op `/` en kopieert `Capacitor_Apps/app-room/www/` naar `/room/` (`/room/` = homepagina, `/room/room/` = 2D kamer). |
+| **`https://thesameair.nl`** | [`Deploy_Cloudflare_Pages.command`](file:///Users/maarten/Github_may_be_deleted/LikeDust_Part2/Deploy_Cloudflare_Pages.command) (en [`build_cloudflare_pages.py`](file:///Users/maarten/Github_may_be_deleted/LikeDust_Part2/build_cloudflare_pages.py) → `dist_pages/`) | Publiceert `Capacitor_Apps/app-room/www/` rechtstreeks als root (`/` = `Doors` homepagina, `/intro/` = losse intro, `/room/` = 2D kamer). |
+| **Lokaal review-dashboard** | [`Start_Dashboard.command`](file:///Users/maarten/Github_may_be_deleted/LikeDust_Part2/Start_Dashboard.command) (`start_dashboard.py`) | Alleen lokaal (`http://localhost:8770/`) om `http://localhost:8771/` te beheren en testen. |
 | **iOS & Android Capacitor App** | `Capacitor_Apps/app-room/www/` (`npm run sync`) | Gebruikt exact dezelfde `www/` bundel in `WKWebView` / Android `WebView`. |
 
 > [!IMPORTANT]
-> Alle wijzigingen vinden plaats in **`Capacitor_Apps/app-room/www/`**, waarna `python3 build_cloudflare_pages.py` en `npm run sync` de review-build (`dist_pages/`) en native apps synchroniseren.
+> Alle wijzigingen vinden plaats in **`Capacitor_Apps/app-room/www/`**, waarna `./Deploy_Cloudflare_Pages.command` (en desgewenst `python3 build_cloudflare_pages.py`) en `npm run sync` de live website en native apps synchroniseren.
 
 ---
 

@@ -50,8 +50,17 @@ canvas.gl{
 }
 [hidden]{display:none!important}
 
-.ld-top, .ld-icons, .ld-dev{transition:opacity .45s ease}
-body.card-open .ld-top, body.card-open .ld-icons, body.card-open .ld-dev{opacity:0;pointer-events:none}
+.ld-top, .ld-icons, .ld-home, .ld-dev{transition:opacity .45s ease}
+body.card-open .ld-top, body.card-open .ld-icons, body.card-open .ld-home, body.card-open .ld-dev,
+body.chapter-open .ld-home{opacity:0;pointer-events:none}
+
+/* Back to landing page (top-left, always available in Room) */
+.ld-home{
+  position:fixed;
+  z-index:31;
+  top:calc(12px + env(safe-area-inset-top,0px));
+  left:max(16px,env(safe-area-inset-left,0px));
+}
 
 /* Dev top bar (?dev=1) */
 .ld-top{
@@ -61,7 +70,7 @@ body.card-open .ld-top, body.card-open .ld-icons, body.card-open .ld-dev{opacity
   left:max(16px,env(safe-area-inset-left,0px));
   right:max(16px,env(safe-area-inset-right,0px));
   display:flex;
-  justify-content:space-between;
+  justify-content:flex-end;
   align-items:center;
   gap:10px;
   pointer-events:none;
@@ -234,10 +243,13 @@ body.card-open .ld-top, body.card-open .ld-icons, body.card-open .ld-dev{opacity
   pointer-events:none;
 }
 @media (hover:none){.ld-dev{display:none}}
+@media (max-width:720px){
+  .ld-hint{bottom:calc(58px + env(safe-area-inset-bottom,0px))}
+}
 @media (max-width:560px){
   .ld-dev{display:none}
   .ld-top .ld-chap{display:none}
-  .ld-top .ghost{padding:7px 10px;font-size:.68rem;letter-spacing:.14em}
+  .ld-top .ghost,.ld-home{padding:7px 10px;font-size:.68rem;letter-spacing:.14em}
   .ld-dots{gap:5px;padding:0 2px}
   .ld-dots i{width:8px;height:8px}
   .ld-icons{gap:9px}

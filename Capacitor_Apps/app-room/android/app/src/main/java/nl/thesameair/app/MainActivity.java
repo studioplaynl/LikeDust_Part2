@@ -1,4 +1,4 @@
-package com.likedust.wabtsa;
+package nl.thesameair.app;
 
 import android.graphics.Color;
 import android.os.Bundle;

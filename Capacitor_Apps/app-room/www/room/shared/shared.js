@@ -61,7 +61,11 @@
       has: (n) => seen.has(n),
       mark(n) { seen.add(n); save(); },
       unmark(n) { seen.delete(n); save(); },
-      reset() { seen.clear(); save(); },
+      reset() {
+        seen.clear();
+        save();
+        if (window.WABTSA_RESET_PROGRESS) window.WABTSA_RESET_PROGRESS({ keepRoomKeys: true });
+      },
       get count() { return seen.size; },
       next() { for (const c of CHAPTERS) if (!seen.has(c.n)) return c.n; return null; },
       list: () => [...seen]
@@ -186,7 +190,7 @@
     }
 
     const qPage = search.get("page") || search.get("p");
-    if (qPage && !/^(?:dev=?[01]|v\d+|room|lang)$/i.test(qPage)) {
+    if (qPage && !/^(?:dev=?[01]|reset(?:=?[01])?|v\d+|room|lang)$/i.test(qPage)) {
       return { type: "page", page: qPage.toLowerCase().trim(), raw: qPage };
     }
 
@@ -198,7 +202,7 @@
       const pageMatch = h.match(/^(?:page[-_=]|p[-_=])?([a-z0-9_-]+)$/i);
       if (pageMatch) {
         const name = pageMatch[1].toLowerCase();
-        if (!/^(?:dev=?[01]|v\d+|room|gl|start|top|ctl|again|end)$/i.test(name)) {
+        if (!/^(?:dev=?[01]|reset(?:=?[01])?|v\d+|room|gl|start|top|ctl|again|end)$/i.test(name)) {
           return { type: "page", page: name, raw: h };
         }
       }
@@ -511,58 +515,55 @@
     }
   });
 
-  /* ---------- HUD (Production = 4 chapter icons + language switcher; Dev = top bar + dots + keys 1–4, 0) ---------- */
+  /* ---------- HUD (Production = Home top-left + 4 chapter icons top-right + language switcher bottom-left; Dev = Home top-left + dots + keys 1–4, 0) ---------- */
   function hud({ st, onReset, onDev }) {
     if (window.WABTSA_I18N) {
       WABTSA_I18N.mountSwitcher(document.body, "ld-room-lang");
     }
+    const homeLink = el("a", "ghost ld-home", tr("common.backHome", "← Home"));
+    homeLink.id = "roomHomeLink";
+    homeLink.href = "../index.html" + (location.search || "");
+    document.body.appendChild(homeLink);
+
+    let items, bar;
     if (!DEV_MODE) {
-      const bar = el("div", "ld-icons");
+      bar = el("div", "ld-icons");
       bar.setAttribute("aria-label", tr("room.chaptersAria", "Chapters"));
       bar.innerHTML = CHAPTERS.map((c) => `<span class="ld-ico" title="${c.n} · ${chapterTitle(c.n)}">${c.icon}</span>`).join("");
       document.body.appendChild(bar);
-      const icons = [...bar.querySelectorAll(".ld-ico")];
-      const update = () => {
-        bar.setAttribute("aria-label", tr("room.chaptersAria", "Chapters"));
-        icons.forEach((ic, i) => {
-          ic.title = `${i + 1} · ${chapterTitle(i + 1)}`;
-          ic.classList.toggle("on", st.has(i + 1));
-        });
-      };
-      if (window.WABTSA_I18N) WABTSA_I18N.onChange(update);
-      update();
-      return { update };
+      items = [...bar.querySelectorAll(".ld-ico")];
+    } else {
+      document.body.classList.add("dev-room");
+      const top = el("div", "ld-top");
+      top.innerHTML = `<div class="ld-tools"><div class="ld-dots" aria-label="${tr("room.completedAria", "Completed chapters")}">${CHAPTERS.map((c) => `<i title="${c.n} · ${chapterTitle(c.n)}"></i>`).join("")}</div></div>`;
+      document.body.appendChild(top);
+      items = [...top.querySelectorAll(".ld-dots i")];
+
+      addEventListener("keydown", (e) => {
+        if (chapterOpen || e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+        if (e.key >= "1" && e.key <= "4") {
+          const n = +e.key;
+          if (st.has(n)) st.unmark(n); else st.mark(n);
+          update();
+          if (onDev) onDev(n);
+        }
+        if (e.key === "0") {
+          st.reset();
+          update();
+          if (onReset) onReset();
+        }
+      });
     }
 
-    document.body.classList.add("dev-room");
-    const top = el("div", "ld-top");
-    top.innerHTML = `<div class="ld-tools"><a class="ghost" id="devHomeLink" href="../index.html${location.search || ""}">${tr("common.backHome", "← Home")}</a></div>
-    <div class="ld-tools"><div class="ld-dots" aria-label="${tr("room.completedAria", "Completed chapters")}">${CHAPTERS.map((c) => `<i title="${c.n} · ${chapterTitle(c.n)}"></i>`).join("")}</div></div>`;
-    document.body.appendChild(top);
-    const dots = [...top.querySelectorAll(".ld-dots i")];
-    const homeLink = top.querySelector("#devHomeLink");
     const update = () => {
-      if (homeLink) homeLink.textContent = tr("common.backHome", "← Home");
-      dots.forEach((d, i) => {
-        d.title = `${i + 1} · ${chapterTitle(i + 1)}`;
-        d.classList.toggle("on", st.has(i + 1));
+      homeLink.textContent = tr("common.backHome", "← Home");
+      if (bar) bar.setAttribute("aria-label", tr("room.chaptersAria", "Chapters"));
+      items.forEach((node, i) => {
+        node.title = `${i + 1} · ${chapterTitle(i + 1)}`;
+        node.classList.toggle("on", st.has(i + 1));
       });
     };
     if (window.WABTSA_I18N) WABTSA_I18N.onChange(update);
-    addEventListener("keydown", (e) => {
-      if (chapterOpen || e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
-      if (e.key >= "1" && e.key <= "4") {
-        const n = +e.key;
-        if (st.has(n)) st.unmark(n); else st.mark(n);
-        update();
-        if (onDev) onDev(n);
-      }
-      if (e.key === "0") {
-        st.reset();
-        update();
-        if (onReset) onReset();
-      }
-    });
     update();
     return { update };
   }

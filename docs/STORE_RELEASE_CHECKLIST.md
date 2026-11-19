@@ -49,27 +49,32 @@ npm run sync
 
 ---
 
-## 4. Google Play Store Build (Android Studio)
+## 4. Google Play Store Build (Android)
 
-1. Open project in Android Studio:
+- **Play Console app:** *We All Breathe the Same Air* (StudioPlay NL account)
+- **applicationId / namespace:** `nl.thesameair.app` (Android only — iOS keeps `com.likedust.wabtsa`). Permanent once uploaded.
+- **Launcher name:** *The Same Air* (`android/app/src/main/res/values/strings.xml`)
+- **Upload key:** `~/AndroidKeys/the-same-air/upload-keystore.jks` + `keystore.properties` (outside the repo — back both up; Play App Signing holds the real app signing key, so a lost upload key can be reset via Play support).
+
+1. Bump `versionCode` (must increase every upload) and `versionName` in `android/app/build.gradle`.
+2. Build the signed bundle from the command line:
    ```bash
    cd Capacitor_Apps/app-room
-   npm run open:android
+   npx cap sync android
+   cd android && ./gradlew bundleRelease
    ```
-2. Verify `applicationId` (`com.likedust.wabtsa`), `versionCode`, and `versionName` in `android/app/build.gradle`.
-3. In menu bar: **Build > Generate Signed Bundle / APK**.
-4. Select **Android App Bundle (.aab)**.
-5. Choose your release keystore, key alias, and passwords.
-6. Select the `release` build variant and export.
-7. Upload the `.aab` file to Google Play Console.
-
----
+   Output: `android/app/build/outputs/bundle/release/app-release.aab` (signing is picked up automatically from `keystore.properties`).
+3. Upload the `.aab` in Play Console → *Test and release* → Internal testing (or Production).
 
 ## 5. Web Deployment (Cloudflare Pages)
 
-1. Run the packaging script:
+1. Deploy `Capacitor_Apps/app-room/www/` directly to the live root (`https://thesameair.nl` / `https://thesameair-nl.pages.dev`) by double-clicking or running:
+   ```bash
+   ./Deploy_Cloudflare_Pages.command
+   ```
+   This publishes `www/index.html` (`Doors`) at `/`, `www/intro/` at `/intro/`, and `www/room/` at `/room/` (the local review dashboard remains local-only via `start_dashboard.py`).
+2. Or, if you need a local static `dist_pages/` folder first, run:
    ```bash
    python3 build_cloudflare_pages.py
-   # or double-click ./Deploy_Cloudflare_Pages.command
    ```
-2. Deploy the generated `dist_pages/` directory (`dist_pages/index.html` dashboard + `dist_pages/room/` app) via Wrangler or git push to your Cloudflare Pages project.
+   and deploy `dist_pages/` (`dist_pages/index.html` landing page + `intro/` + `room/`) to the `thesameair-nl` Cloudflare Pages project via Wrangler.
