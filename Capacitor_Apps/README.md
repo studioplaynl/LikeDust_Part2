@@ -7,7 +7,7 @@ Unified Capacitor 7 application (Web + iOS + Android) combining the branching la
   - **Interactive Intro (`www/intro/index.html`)** — Intro film + Schiphol airport window reflection where clicking **young Sam** transitions directly into the 2D Room
   - **Flat 2D Room (`www/room/index.html`)** — `1920 × 1080` orthographic stage in Three.js (zero 2.5D parallax distortion), Sam's chroma-keyed video clips on desktop & WebP sprite sheets on mobile (`LITE`)
   - Dynamic volumetric sunbeams, floating dust motes, blackboard chalk progression, growing desk letter stack, evening sunset progression, and dove window finale
-  - Object silhouette mask transitions into all 4 interactive video chapters (`Schiphol`, `The AZC`, `Amsterdam`, `The Letter`)
+  - Clean `0.5s` black fade + master room audio fade-out (with click SFX and pending room audio cancellation) into all 4 interactive video chapters (`Schiphol`, `The AZC`, `Amsterdam`, `The Letter`), which open after the `0.5s` fade and fade in video audio over `1.0s`
   - Landscape lock + inline unmuted chapter video playback on iOS & Android
 
 *(Earlier 2.5D/3D room prototypes `app-v1-herinneringskamer` and `app-v2-zolderkamer` have been moved to `../archive/Capacitor_Apps/`.)*

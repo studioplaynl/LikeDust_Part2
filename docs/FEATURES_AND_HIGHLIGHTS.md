@@ -34,7 +34,7 @@ For shared project terminology (`Doors`, `Window Scene`, `The Room`, `SamPose`, 
 
 ## 3. Interactive Video Chapters (`room/chapters/` + `room/shared/`)
 
-- **Clean Fade & Audio Handoff:** Clicking an unlocked **Chapter Object** fades smoothly to black while the room ambience (`amb_room.mp3`) fades out, opens the interactive **Chapter** (`Hoofdstuk_1..4`), and fades room ambience back in upon returning to **The Room**.
+- **Clean Fade & Deterministic Audio Handoff (`0.5s` Room Fade-Out → `1.0s` Video Fade-In):** Clicking an unlocked **Chapter Object** plays its click SFX (`rustle`, `pickup`, `bell`, `cloth`), immediately cancels any pending room audio timers (footsteps, chirps, chalk, letter-stack rustles), and fades all active room audio (`roomBus` master gain, `amb_room.mp3`, and any in-progress foley such as `standup2.mp3`) to `0` in `0.5s` (`500ms`) alongside the black visual fade-in. Once the `0.5s` fade completes, the interactive **Chapter** (`Hoofdstuk_1..4`) opens and fades in its video audio over `1.0s` (`1000ms`). Upon returning to **The Room**, room ambience and time progression (`timeProgression`) resume cleanly.
 - **Interactive `Moments`:** Each Chapter film pauses at key story **Moments** (such as holding your breath at passport control, rubbing the **Cell Wall**, or receiving the **Yellow Card**) where the viewer acts on the frozen frame before the film continues.
 - **Auto-Hiding Video Controls:** Lower playback bar (`#play`, `#tl` timeline + Moment markers, `#time`, and optional `#cc` subtitle toggle) starts hidden during playback, fades in on tap/click, and auto-hides after 3 seconds of inactivity.
 - **Unified Multi-Language Support (`en` · `nl` · `fa`):**

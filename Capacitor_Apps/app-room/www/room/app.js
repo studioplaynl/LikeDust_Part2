@@ -915,6 +915,9 @@
   /* ===== WebAudio Engine (Clean WebAudio Only — NO 10Hz keepAlive <audio> loop!) ===== */
   let muted = false;
   let actx = null;
+  let roomBus = null;
+  const pendingSndTimers = new Set();
+  const activeRoomNodes = new Set();
   try { if (navigator.audioSession) navigator.audioSession.type = "playback"; } catch (_) {}
 
   function ac() {
@@ -925,6 +928,130 @@
       actx.resume().catch(() => {});
     }
     return actx;
+  }
+
+  function dest(c = ac()) {
+    if (!c) return null;
+    if (!roomBus) {
+      roomBus = c.createGain();
+      roomBus.gain.value = 1;
+      roomBus.connect(c.destination);
+    }
+    return roomBus;
+  }
+
+  function trackSource(s) {
+    if (!s) return s;
+    activeRoomNodes.add(s);
+    s.onended = () => activeRoomNodes.delete(s);
+    return s;
+  }
+
+  function scheduleRoomSnd(fn, ms) {
+    const id = setTimeout(() => {
+      pendingSndTimers.delete(id);
+      if (muted || LD.busy || !roomFlow.in("prologueSitting", "standingUp", "roomIdle", "finale")) return;
+      try { fn(); } catch (_) {}
+    }, ms);
+    pendingSndTimers.add(id);
+    return id;
+  }
+
+  function cancelPendingRoomSnds() {
+    for (const id of pendingSndTimers) clearTimeout(id);
+    pendingSndTimers.clear();
+  }
+
+  function restoreRoomAudioBus() {
+    const c = ac();
+    if (!c) return;
+    const bus = dest(c);
+    if (!bus) return;
+    const t = c.currentTime;
+    bus.gain.cancelScheduledValues(t);
+    bus.gain.setValueAtTime(1, t);
+  }
+
+  /**
+   * Cancels all pending room sound timers and fades out all currently playing
+   * room audio (ambience + any active foley like standup2) over fadeSec (0.5s).
+   * If clickSfx is provided, plays the click sound on a fresh bus so it sounds
+   * immediately on click and also finishes cleanly before the video opens.
+   */
+  function fadeOutRoomAudioForChapter(fadeSec = 0.5, clickSfx = null) {
+    cancelPendingRoomSnds();
+    ambWant = null;
+    const c = ac();
+    if (!c) return Promise.resolve();
+    const t = c.currentTime;
+
+    /* 1. Fade out existing room bus (and any active nodes / ambience on it) over fadeSec */
+    const oldBus = roomBus;
+    const oldAmb = ambCur;
+    const nodesToStop = [...activeRoomNodes];
+    activeRoomNodes.clear();
+    ambCur = null;
+    roomBus = null;
+
+    if (oldAmb) {
+      try {
+        oldAmb.g.gain.cancelScheduledValues(t);
+        oldAmb.g.gain.setValueAtTime(oldAmb.g.gain.value, t);
+        oldAmb.g.gain.linearRampToValueAtTime(0, t + fadeSec);
+      } catch (_) {}
+    }
+
+    if (oldBus) {
+      try {
+        oldBus.gain.cancelScheduledValues(t);
+        oldBus.gain.setValueAtTime(oldBus.gain.value, t);
+        oldBus.gain.linearRampToValueAtTime(0, t + fadeSec);
+      } catch (_) {}
+    }
+
+    /* 2. Create a fresh roomBus for the click feedback sound, and fade it to 0 by the end of fadeSec */
+    if (clickSfx && !muted) {
+      const clickBus = dest(c);
+      playSfx(clickSfx);
+      const clickNodes = [...activeRoomNodes];
+      activeRoomNodes.clear();
+      if (clickBus) {
+        try {
+          const hold = Math.min(0.18, fadeSec * 0.35);
+          clickBus.gain.cancelScheduledValues(t);
+          clickBus.gain.setValueAtTime(1, t);
+          clickBus.gain.setValueAtTime(1, t + hold);
+          clickBus.gain.linearRampToValueAtTime(0, t + fadeSec);
+        } catch (_) {}
+      }
+      roomBus = null;
+      setTimeout(() => {
+        for (const s of clickNodes) {
+          try { s.stop(); } catch (_) {}
+          try { s.disconnect(); } catch (_) {}
+        }
+        if (clickBus) {
+          try { clickBus.disconnect(); } catch (_) {}
+        }
+      }, fadeSec * 1000 + 40);
+    }
+
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        if (oldAmb) {
+          try { oldAmb.s.stop(); } catch (_) {}
+          try { oldAmb.s.disconnect(); } catch (_) {}
+        }
+        for (const s of nodesToStop) {
+          try { s.stop(); } catch (_) {}
+          try { s.disconnect(); } catch (_) {}
+        }
+        if (oldBus) {
+          try { oldBus.disconnect(); } catch (_) {}
+        }
+        resolve();
+      }, fadeSec * 1000);
+    });
   }
 
   function unlockAudio() {
@@ -947,14 +1074,16 @@
     unlockAudio();
     loadSounds();
     loadAmb();
-    if (!LD.busy) amb("room", 3.0);
+    if (!LD.busy && roomFlow.in("booting", "prologueSitting", "roomIdle")) amb("room", 3.0);
   }
 
   ["pointerdown", "touchstart", "touchend", "keydown", "click"].forEach((ev) => {
     addEventListener(ev, () => {
       primeRoomAudioAndVideo();
       if (actx && actx.state !== "running") unlockAudio();
-      if (!LD.busy && !ambCur && ambWant && AMB[ambWant]) amb(ambWant, 2.5);
+      if (!LD.busy && roomFlow.in("prologueSitting", "roomIdle") && !ambCur && ambWant && AMB[ambWant]) {
+        amb(ambWant, 2.5);
+      }
     }, { passive: true });
   });
 
@@ -965,25 +1094,26 @@
     for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * shape(i / len);
     const s = c.createBufferSource();
     s.buffer = b;
-    return s;
+    return trackSource(s);
   }
   function out(c, vol) {
     const g = c.createGain();
     g.gain.value = vol;
-    g.connect(c.destination);
+    g.connect(dest(c));
     return g;
   }
   function bell() {
     const c = ac(); if (!c) return;
+    const dNode = dest(c);
     const t = c.currentTime;
     [[2350, 0.18], [3120, 0.09], [4720, 0.05]].forEach(([f, g]) => {
       for (const d of [0, 0.16]) {
-        const o = c.createOscillator(), a = c.createGain();
+        const o = trackSource(c.createOscillator()), a = c.createGain();
         o.frequency.value = f;
         a.gain.setValueAtTime(0, t + d);
         a.gain.linearRampToValueAtTime(g, t + d + 0.005);
         a.gain.exponentialRampToValueAtTime(0.0001, t + d + 1.1);
-        o.connect(a).connect(c.destination);
+        o.connect(a).connect(dNode);
         o.start(t + d); o.stop(t + d + 1.2);
       }
     });
@@ -992,20 +1122,21 @@
     const c = ac(); if (!c) return;
     const len = c.sampleRate * 0.7, b = c.createBuffer(1, len, c.sampleRate), d = b.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(Math.sin(Math.PI * i / len), 2) * (0.5 + 0.5 * Math.random() * Math.random());
-    const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    const s = trackSource(c.createBufferSource()), f = c.createBiquadFilter(), g = c.createGain();
     s.buffer = b; f.type = "bandpass"; f.frequency.value = 3200; f.Q.value = 0.7; g.gain.value = 0.22;
-    s.connect(f).connect(g).connect(c.destination); s.start();
+    s.connect(f).connect(g).connect(dest(c)); s.start();
   }
   function creak() {
     const c = ac(); if (!c) return;
+    const dNode = dest(c);
     const t = c.currentTime + 0.02;
     for (const [d, f0, f1, v] of [[0, 190, 150, 0.045], [0.22, 240, 175, 0.035]]) {
-      const o = c.createOscillator(), lfo = c.createOscillator(), lg = c.createGain(), bp = c.createBiquadFilter(), g = c.createGain();
+      const o = trackSource(c.createOscillator()), lfo = trackSource(c.createOscillator()), lg = c.createGain(), bp = c.createBiquadFilter(), g = c.createGain();
       o.type = "sawtooth"; o.frequency.setValueAtTime(f0, t + d); o.frequency.linearRampToValueAtTime(f1, t + d + 0.45);
       lfo.frequency.value = 23; lg.gain.value = 18; lfo.connect(lg).connect(o.frequency);
       bp.type = "bandpass"; bp.frequency.value = 900; bp.Q.value = 2.5;
       g.gain.setValueAtTime(0, t + d); g.gain.linearRampToValueAtTime(v, t + d + 0.06); g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.5);
-      o.connect(bp).connect(g).connect(c.destination); o.start(t + d); lfo.start(t + d); o.stop(t + d + 0.55); lfo.stop(t + d + 0.55);
+      o.connect(bp).connect(g).connect(dNode); o.start(t + d); lfo.start(t + d); o.stop(t + d + 0.55); lfo.stop(t + d + 0.55);
     }
   }
   function cloth(vol = 0.16) {
@@ -1020,7 +1151,7 @@
     const s = nz(c, 0.12, (p) => Math.pow(1 - p, 4));
     const f = c.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = 420;
     const g = c.createGain(); g.gain.value = vol;
-    s.connect(f).connect(g).connect(c.destination); s.start(t);
+    s.connect(f).connect(g).connect(dest(c)); s.start(t);
     const s2 = nz(c, 0.06, (p) => Math.pow(1 - p, 6)), f2 = c.createBiquadFilter();
     f2.type = "highpass"; f2.frequency.value = 2500;
     s2.connect(f2).connect(out(c, 0.05)); s2.start(t + 0.01);
@@ -1028,25 +1159,26 @@
   function pickup() {
     const c = ac(); if (!c) return;
     const t = c.currentTime + 0.02;
-    const o = c.createOscillator(), g = c.createGain();
+    const o = trackSource(c.createOscillator()), g = c.createGain();
     o.type = "sine"; o.frequency.setValueAtTime(320, t); o.frequency.exponentialRampToValueAtTime(140, t + 0.08);
     g.gain.setValueAtTime(0.12, t); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
-    o.connect(g).connect(c.destination); o.start(t); o.stop(t + 0.14);
+    o.connect(g).connect(dest(c)); o.start(t); o.stop(t + 0.14);
     const s = nz(c, 0.05, (p) => Math.pow(1 - p, 3)), f = c.createBiquadFilter();
     f.type = "bandpass"; f.frequency.value = 1800; s.connect(f).connect(out(c, 0.12)); s.start(t);
   }
   function chirp(vol = 0.12) {
     const c = ac(); if (!c || muted) return;
+    const dNode = dest(c);
     let t = c.currentTime + 0.02;
     const n = 3 + Math.floor(Math.random() * 4);
     for (let i = 0; i < n; i++) {
       const f0 = 3200 + Math.random() * 900, f1 = f0 + 900 + Math.random() * 1300, d = 0.05 + Math.random() * 0.05;
-      const o = c.createOscillator(), g = c.createGain(), v = c.createOscillator(), vg = c.createGain();
+      const o = trackSource(c.createOscillator()), g = c.createGain(), v = trackSource(c.createOscillator()), vg = c.createGain();
       o.type = "sine";
       o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + d * 0.6); o.frequency.exponentialRampToValueAtTime(f0 * 0.9, t + d);
       v.frequency.value = 38; vg.gain.value = 120; v.connect(vg).connect(o.frequency);
       g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
-      o.connect(g).connect(c.destination); o.start(t); v.start(t); o.stop(t + d + 0.02); v.stop(t + d + 0.02);
+      o.connect(g).connect(dNode); o.start(t); v.start(t); o.stop(t + d + 0.02); v.stop(t + d + 0.02);
       t += d + (i % 2 ? 0.04 : 0.09) + Math.random() * 0.06;
     }
   }
@@ -1058,9 +1190,9 @@
       const flap = Math.pow(Math.max(0, Math.sin(tt * 2 * Math.PI * 11)), 3);
       d[i] = (Math.random() * 2 - 1) * flap * Math.min(1, (dur - tt) * 2) * Math.min(1, tt * 8);
     }
-    const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    const s = trackSource(c.createBufferSource()), f = c.createBiquadFilter(), g = c.createGain();
     s.buffer = b; f.type = "bandpass"; f.frequency.value = 900; f.Q.value = 0.6; g.gain.value = 0.35;
-    s.connect(f).connect(g).connect(c.destination); s.start(t);
+    s.connect(f).connect(g).connect(dest(c)); s.start(t);
   }
 
   /* Only load the 2 used foley sounds & 1 room ambience (saves ~1.5 MB network + 50 MB RAM on iOS) */
@@ -1082,13 +1214,13 @@
     if (muted) return;
     const c = ac();
     if (c && SND[n]) {
-      const s = c.createBufferSource(), g = c.createGain();
+      const s = trackSource(c.createBufferSource()), g = c.createGain();
       s.buffer = SND[n]; g.gain.value = SNDV[n];
-      s.connect(g).connect(c.destination);
+      s.connect(g).connect(dest(c));
       s.start(c.currentTime + at);
       return;
     }
-    if (fallback) setTimeout(fallback, at * 1000);
+    if (fallback) scheduleRoomSnd(fallback, at * 1000);
   }
   function playSfx(n) {
     if (muted || !n) return;
@@ -1111,7 +1243,9 @@
       .then((b) => new Promise((ok, no) => c.decodeAudioData(b, ok, no)))
       .then((buf) => {
         AMB.room = buf;
-        if (ambWant === "room" && (!ambCur || ambCur.n !== "room")) amb("room");
+        if (ambWant === "room" && !LD.busy && roomFlow.in("prologueSitting", "roomIdle") && (!ambCur || ambCur.n !== "room")) {
+          amb("room");
+        }
       })
       .catch(() => {});
   }
@@ -1130,14 +1264,15 @@
       ambCur = null;
     }
     if (!n || !AMB[n]) return;
-    const s = c.createBufferSource(), g = c.createGain();
+    const dNode = dest(c);
+    const s = trackSource(c.createBufferSource()), g = c.createGain();
     s.buffer = AMB[n];
     s.loop = true;
     s.loopStart = 0.06;
     s.loopEnd = Math.max(0.2, AMB[n].duration - 0.06);
     g.gain.setValueAtTime(0, t);
     g.gain.linearRampToValueAtTime(muted ? 0 : AMBV[n], t + fade);
-    s.connect(g).connect(c.destination);
+    s.connect(g).connect(dNode);
     s.start(t, 0.06);
     ambCur = { n, s, g };
   }
@@ -1160,14 +1295,17 @@
     const wantReg = (t) => REG.map((r, i) => (t >= r[0] - 1e-4 ? i : -1)).filter((i) => i >= 0);
 
     function chalkSnd(at) {
-      const c = actx; if (!c || muted) return;
-      for (let j = 0; j < 7; j++) {
-        const t0 = c.currentTime + at + j * 0.11 + Math.random() * 0.05;
-        const s = nz(c, 0.07 + Math.random() * 0.06, (p) => Math.sin(Math.PI * p) * (0.5 + 0.5 * Math.random()));
-        const f = c.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 3200 + Math.random() * 1800; f.Q.value = 1.4;
-        const g = c.createGain(); g.gain.value = 0.05;
-        s.connect(f).connect(g).connect(c.destination); s.start(t0);
-      }
+      scheduleRoomSnd(() => {
+        const c = actx; if (!c || muted || !roomFlow.is("roomIdle")) return;
+        const dNode = dest(c);
+        for (let j = 0; j < 7; j++) {
+          const t0 = c.currentTime + j * 0.11 + Math.random() * 0.05;
+          const s = nz(c, 0.07 + Math.random() * 0.06, (p) => Math.sin(Math.PI * p) * (0.5 + 0.5 * Math.random()));
+          const f = c.createBiquadFilter(); f.type = "bandpass"; f.frequency.value = 3200 + Math.random() * 1800; f.Q.value = 1.4;
+          const g = c.createGain(); g.gain.value = 0.05;
+          s.connect(f).connect(g).connect(dNode); s.start(t0);
+        }
+      }, at * 1000);
     }
 
     function applyBoard(t, instant) {
@@ -1181,7 +1319,7 @@
       }
       if (t >= 0.999 && fullT === null) fullT = instant ? -1e9 : now + k * 900 + 600;
       bDirty = true;
-      if (!instant && k && !muted && actx) {
+      if (!instant && k && !muted && actx && roomFlow.is("roomIdle")) {
         for (let q = 0; q < k; q++) chalkSnd(q * 0.9);
       }
     }
@@ -1260,8 +1398,12 @@
       if (n <= sShown) return;
       const now = performance.now();
       for (let i = sShown; i < n; i++) drops.push({ i, t0: instant ? -1e9 : now + (i - sShown) * 380 });
-      if (!instant && !muted && actx) {
-        for (let i = 0; i < n - sShown; i++) setTimeout(() => { try { rustle(); } catch (_) {} }, i * 380 + 250);
+      if (!instant && !muted && actx && roomFlow.is("roomIdle")) {
+        for (let i = 0; i < n - sShown; i++) {
+          scheduleRoomSnd(() => {
+            if (roomFlow.is("roomIdle")) rustle();
+          }, i * 380 + 250);
+        }
       }
       sShown = n;
       sDirty = true;
@@ -1430,8 +1572,8 @@
     if (!muted && actx) {
       playReal("bird", () => {
         chirp(0.12);
-        setTimeout(() => wingFlutterSnd(), 1000);
-        setTimeout(() => chirp(0.07), 2600);
+        scheduleRoomSnd(() => wingFlutterSnd(), 1000);
+        scheduleRoomSnd(() => chirp(0.07), 2600);
       });
     }
     const p = cineV.play();
@@ -1451,14 +1593,14 @@
   /* ===== Occasional Ambient Dove Movement on Bedpost ===== */
   let birdBusy = false;
   async function birdMove() {
-    if (birdBusy || objs.bird.gone || $("start").classList.contains("show") || LD.busy) return;
+    if (birdBusy || objs.bird.gone || $("start").classList.contains("show") || LD.busy || !roomFlow.in("prologueSitting", "roomIdle")) return;
     birdBusy = true;
     const v = await startClip("pigeon");
     showClip("pigeon", 150);
     setGone("bird", true, 0.12);
     if (!muted && actx) {
       chirp(0.1);
-      setTimeout(() => chirp(0.08), 900);
+      scheduleRoomSnd(() => chirp(0.08), 900);
     }
     await waitClipEnded(v);
     hideClip("pigeon", 150);
@@ -1749,8 +1891,8 @@
     if (!muted && actx) {
       playReal("standup2", () => {
         playSfx("creak");
-        setTimeout(() => playSfx("cloth"), 350);
-        [1.15, 1.62].forEach((a, idx) => footstep(a, 0.42 - idx * 0.06));
+        scheduleRoomSnd(() => playSfx("cloth"), 350);
+        [1.15, 1.62].forEach((a, idx) => scheduleRoomSnd(() => footstep(0, 0.42 - idx * 0.06), a * 1000));
       });
     }
 
@@ -1825,7 +1967,7 @@
     await zoom;
   }
 
-  /* ===== Chapter Trigger: Clean Black Fade -> Interactive Video Chapter -> Return to Think Pose ===== */
+  /* ===== Chapter Trigger: 0.5s Room Audio Fade-Out + Click SFX -> Open Video (1s Audio Fade-In) -> Return to Think Pose ===== */
   async function triggerChapter(i, skipUnlockCheck = false, fromHistory = false) {
     const c = CHAPTERS[i];
     if (!c || LD.busy) return;
@@ -1845,7 +1987,7 @@
     roomFlow.transition("chapterOpening", { ch: c.n });
     clearAllGlows();
     say("", 0);
-    refresh();
+    refresh(true);
 
     /* Reveal open REJECT letter when Chapter 4 is opened */
     if (c.id === "reject") {
@@ -1853,19 +1995,27 @@
       setGone("rejectOpen", false, 0);
     }
 
-    const nextCount = st.count + (st.has(c.n) ? 0 : 1);
-    timeProgression.advanceTo(0.35 + 0.65 * Math.min(1, nextCount / CHAPTERS.length));
-
     if (c.id === "bike" || c.id === "reject") loadCine();
 
-    if (!skipUnlockCheck && c.fb) playSfx(c.fb);
-    amb(null, 0.8);
+    /* On click:
+       1. Play the prop click sound (`c.fb`)
+       2. Cancel all pending room sounds (chalk, rustles, footsteps, chirps)
+       3. Fade out all active room audio (ambience + any active standup2/foley) to 0 in 0.5s
+       4. Wait for the 0.5s fade before `LD.openChapter` starts the chapter video (which fades in audio over 1.0s) */
+    const clickSfx = !skipUnlockCheck && c.fb ? c.fb : null;
+    const audioFadePromise = fadeOutRoomAudioForChapter(0.5, clickSfx);
 
-    roomFlow.transition("chapterActive", { ch: c.n });
     LD.openChapter(c.n, {
       fromHistory,
+      fadeMs: 500,
+      videoFadeInMs: 1000,
+      beforeStart: async () => {
+        await audioFadePromise;
+        roomFlow.transition("chapterActive", { ch: c.n });
+      },
       onClose: async (chNum, seen) => {
         roomFlow.transition("chapterClosing", { ch: chNum });
+        restoreRoomAudioBus();
         if (seen && !st.has(chNum)) {
           st.mark(chNum);
           hudUi.update();
@@ -1965,9 +2115,11 @@
     unlockAudio();
     loadSounds();
     loadAmb();
-    amb("room", 3.5);
+    if (!LD.busy && roomFlow.in("prologueSitting", "roomIdle")) {
+      amb("room", 3.5);
+    }
     LD.prepareChapter(st.next() || 1);
-    if (!st.has(4)) setTimeout(() => birdMove(), 2000);
+    if (!st.has(4)) scheduleRoomSnd(() => birdMove(), 2000);
   }
 
   function onClipLoaded() {
@@ -2023,10 +2175,12 @@
   window.addEventListener("ld:pause", () => {
     flushClosingClips();
     running = false;
-    amb(null, 0.3);
+    cancelPendingRoomSnds();
+    if (ambCur) amb(null, 0.3);
   });
   window.addEventListener("ld:resume", () => {
     flushClosingClips();
+    restoreRoomAudioBus();
     if (!running) {
       running = true;
       lastFrameNow = performance.now();

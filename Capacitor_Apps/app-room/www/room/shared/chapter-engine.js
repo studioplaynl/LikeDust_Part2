@@ -1647,7 +1647,7 @@
      - Safe muted video prime (NO volume=1 play+pause blip on iOS!)
      ============================================================================ */
   let audioFading = false;
-  function fadeInAudio(vidEl, durationMs = 1600) {
+  function fadeInAudio(vidEl, durationMs = 1000) {
     if (!vidEl) return;
     audioFading = true;
     vidEl.volume = 0;
@@ -1687,12 +1687,12 @@
     try { vids[0].currentTime = 0; } catch (_) { }
     vids[0].play().then(() => {
       setPlaying(true);
-      fadeInAudio(vids[0], 1600);
+      fadeInAudio(vids[0], 1000);
     }).catch(() => {
       vids.forEach((el) => { el.muted = true; });
       vids[0].play().then(() => {
         setPlaying(true);
-        fadeInAudio(vids[0], 1600);
+        fadeInAudio(vids[0], 1000);
       }).catch(() => {
         startedOnce = false;
         $("cardStart").classList.remove("off");

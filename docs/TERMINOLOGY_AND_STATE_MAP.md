@@ -58,12 +58,13 @@ De besturing van *The Room* in `room/shared/fsm.js`:
 
 | `RoomFlow` state | Wat de speler ziet & kan doen |
 | :--- | :--- |
+| **`booting`** | Initiële opstart en preloading van de 3 sprite-sheets (`standup`, `idle`, `pigeon`). |
 | **`prologueSitting`** | Sam zit op bed (`sitting`), gouden cirkel pulseert op Sam. Alleen Sam is klikbaar. |
 | **`standingUp`** | Sam staat op (`standingUp`). Invoer kort geblokkeerd tot hij in `thinkPose` staat. |
 | **`roomIdle`** | Sam staat in `thinkPose`. Ontgrendelde `Chapter Objects` zijn klikbaar; gouden cirkel wijst het eerstvolgende hoofdstuk aan. |
-| **`chapterTransitionIn`** | Zwarte fade-in (`wipe`), kamer-audio fadet uit, hoofdstuk wordt klaargezet. |
-| **`chapterActive`** | Hoofdstuk draait fullscreen (`#ch=1..4`), kamer-renderloop gepauzeerd en `inert`. |
-| **`chapterTransitionOut`** | Terugkeer uit hoofdstuk (zwarte fade-out), kamer-tijd/licht/krijtbord/brievenstapel schuiven door, Sam staat direct in `thinkPose`. |
+| **`chapterOpening`** | Start bij klik op een `Chapter Object` (`0.5s`): het klik-geluid (`rustle`, `pickup`, `bell`, `cloth`) klinkt, alle geplande kamer-geluiden worden geannuleerd, en alle actieve kamer-audio (`roomBus` + `amb_room` + evt. `standup2`) fadet in `0.5s` uit naar `0` tijdens de zwarte fade-in (`wipe`). |
+| **`chapterActive`** | Start ná de `0.5s` fade-out: hoofdstuk-video start (`ldStart`) met een `1.0s` audio fade-in (`#ch=1..4`), kamer-renderloop gepauzeerd en `inert`. |
+| **`chapterClosing`** | Terugkeer uit hoofdstuk (zwarte fade-out), kamer-audio-bus wordt hersteld, kamer-tijd/licht/krijtbord/brievenstapel schuiven door in `roomIdle`, Sam staat direct in `thinkPose`. |
 | **`finale`** | Start na voltooiing van alle 4 hoofdstukken: `windowGaze` → `Dove` vliegt uit raam (`birdout.mp4`) → raam-zoom. |
 | **`endCard`** | *The End* scherm met `Start again` en `← Home`. |
 

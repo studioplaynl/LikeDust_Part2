@@ -320,7 +320,7 @@
     prompt(tr("room.sharePrompt", "Shareable link:"), link);
   }
 
-  function openChapter(n, { onClose, fromHistory = false } = {}) {
+  function openChapter(n, { onClose, fromHistory = false, fadeMs: customFadeMs, videoFadeInMs: customVideoFadeInMs, beforeStart } = {}) {
     if (chapterOpen) return;
     chapterOpen = true;
     currentChapter = n;
@@ -362,10 +362,14 @@
 
     const t0 = performance.now();
     let closingStarted = false;
-    const fadeMs = window.LD_FADE_MS || 520;
-    const videoFadeInMs = window.LD_VIDEO_FADE_IN_MS || 1600;
+    const fadeMs = customFadeMs || window.LD_FADE_MS || 500;
+    const videoFadeInMs = customVideoFadeInMs || window.LD_VIDEO_FADE_IN_MS || 1000;
 
-    Promise.all([wipe("#000", "in", fadeMs), whenReady(o, 6000)]).then(() => {
+    Promise.all([
+      wipe("#000", "in", fadeMs),
+      whenReady(o, 6000),
+      typeof beforeStart === "function" ? Promise.resolve(beforeStart()) : Promise.resolve()
+    ]).then(() => {
       if (closingStarted) return;
       wrap.classList.add("on");
       wrap.classList.remove("reveal");
@@ -391,7 +395,7 @@
       window.dispatchEvent(new CustomEvent("ld:route", { detail: { type: "room" } }));
 
       const seen = Boolean(ended || performance.now() - t0 > 15000);
-      const outMs = window.LD_FADE_MS || 520;
+      const outMs = window.LD_FADE_MS || 500;
       wipe("#000", "in", outMs).then(() => {
         wrap.classList.remove("on", "reveal");
         back.remove();
